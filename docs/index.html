@@ -161,6 +161,14 @@
             <li><a href="#s-keybind">CreateKeybind <span class="tag">Key</span></a></li>
             <li><a href="#s-color">CreateColorPicker <span class="tag">RGB</span></a></li>
             <li><a href="#s-button">CreateButton <span class="tag">Btn</span></a></li>
+            <li><a href="#s-multidd">CreateMultiDropdown <span class="tag">Multi</span></a></li>
+        </ul>
+    </div>
+    <div class="ng"><h4>Hub Özellikleri</h4>
+        <ul class="nl">
+            <li><a href="#s-notify">Notify <span class="tag">Toast</span></a></li>
+            <li><a href="#s-watermark">SetWatermark <span class="tag">HUD</span></a></li>
+            <li><a href="#s-config">SaveConfig / LoadConfig <span class="tag">Save</span></a></li>
         </ul>
     </div>
 </aside>
@@ -179,6 +187,10 @@
         <div class="feat"><span>✓</span> İnce Slider</div>
         <div class="feat"><span>✓</span> Ripple Button</div>
         <div class="feat"><span>✓</span> SetAccent() Canlı</div>
+        <div class="feat"><span>✓</span> Notification Toast</div>
+        <div class="feat"><span>✓</span> Config Save / Load</div>
+        <div class="feat"><span>✓</span> Multi-Select Dropdown</div>
+        <div class="feat"><span>✓</span> FPS Watermark</div>
     </div>
     <div class="cc">
         <div class="cc-hdr"><span class="cc-lang">Luau · Hızlı Kurulum</span><button class="cp" onclick="copySnippet(this,'qs-code')">Kopyala</button></div>
@@ -479,6 +491,110 @@
 <span class="vr">CfgL</span>:<span class="fn">CreateColorPicker</span>({ <span class="vr">Title</span>=<span class="str">"Accent Color"</span>, <span class="vr">Default</span>=Color3.<span class="fn">fromRGB</span>(<span class="num">220</span>,<span class="num">50</span>,<span class="num">50</span>), <span class="vr">Callback</span>=<span class="kw">function</span>(<span class="vr">c</span>) <span class="vr">Hub</span>:<span class="fn">SetAccent</span>(<span class="vr">c</span>) <span class="kw">end</span> })
 <span class="vr">CfgR</span>:<span class="fn">CreateTextbox</span>({ <span class="vr">Title</span>=<span class="str">"Webhook URL"</span>, <span class="vr">Placeholder</span>=<span class="str">"https://discord.com/..."</span> })
 <span class="vr">CfgR</span>:<span class="fn">CreateButton</span>({ <span class="vr">Title</span>=<span class="str">"Destroy UI"</span>, <span class="vr">Callback</span>=<span class="kw">function</span>() <span class="vr">Hub</span>:<span class="fn">Destroy</span>() <span class="kw">end</span> })</code></pre></div>
+</section>
+
+<!-- ── Multi-Select Dropdown ── -->
+<section class="ds" id="s-multidd">
+    <div class="dt"><code>Section:CreateMultiDropdown(config)</code></div>
+    <p class="dd">Aynı anda birden fazla seçim yapılabilen açılır liste. Seçili öğeler checkbox ile işaretlenir, inline özet gösterilir.</p>
+    <div class="ret">→ Returns: { Selected: table, Set(tbl), GetSelected(), Refresh(opts) }</div>
+    <table class="api">
+        <thead><tr><th>Parametre</th><th>Tip</th><th>Varsayılan</th><th>Açıklama</th></tr></thead>
+        <tbody>
+            <tr><td><code>Title</code></td><td>string</td><td>"MultiDropdown"</td><td>Sol taraftaki etiket</td></tr>
+            <tr><td><code>Options</code></td><td>table</td><td>{}</td><td>Seçenek listesi: <code>{"Head","Torso","HRP"}</code></td></tr>
+            <tr><td><code>Default</code></td><td>table</td><td>{}</td><td>Başlangıçta seçili değerler: <code>{"Head"}</code></td></tr>
+            <tr><td><code>MaxShow</code></td><td>number</td><td>2</td><td>İnline gösterilen max seçim sayısı (sonrası "+N" olur)</td></tr>
+            <tr><td><code>ConfigKey</code></td><td>string</td><td>nil</td><td>Config Save/Load için benzersiz anahtar</td></tr>
+            <tr><td><code>Callback</code></td><td>function(table)</td><td>nil</td><td>Seçim değişince seçili değerlerin table'ını döndürür</td></tr>
+        </tbody>
+    </table>
+    <div class="cc"><div class="cc-hdr"><span class="cc-lang">Örnek</span><button class="cp" onclick="copySnippet(this,'ex-mdd')">Kopyala</button></div>
+    <pre id="ex-mdd"><code><span class="kw">local</span> <span class="vr">mdd</span> = <span class="vr">Left</span>:<span class="fn">CreateMultiDropdown</span>({
+    <span class="vr">Title</span>     = <span class="str">"Hitbox Parts"</span>,
+    <span class="vr">Options</span>   = {<span class="str">"Head"</span>, <span class="str">"Torso"</span>, <span class="str">"HumanoidRootPart"</span>, <span class="str">"LeftArm"</span>, <span class="str">"RightArm"</span>},
+    <span class="vr">Default</span>   = {<span class="str">"Head"</span>},
+    <span class="vr">MaxShow</span>   = <span class="num">2</span>,
+    <span class="vr">ConfigKey</span> = <span class="str">"hitbox_parts"</span>,
+    <span class="vr">Callback</span>  = <span class="kw">function</span>(<span class="vr">selected</span>)
+        <span class="cmt">-- selected = {"Head", "Torso"} gibi sıralı table</span>
+        <span class="fn">print</span>(<span class="fn">table.concat</span>(<span class="vr">selected</span>, <span class="str">", "</span>))
+    <span class="kw">end</span>
+})
+
+<span class="vr">mdd</span>:<span class="fn">Set</span>({<span class="str">"Head"</span>, <span class="str">"Torso"</span>})  <span class="cmt">-- programatik set</span>
+<span class="vr">mdd</span>:<span class="fn">GetSelected</span>()           <span class="cmt">-- mevcut seçimleri döndürür</span>
+<span class="vr">mdd</span>:<span class="fn">Refresh</span>({<span class="str">"A"</span>,<span class="str">"B"</span>,<span class="str">"C"</span>})  <span class="cmt">-- seçenekleri güncelle</span></code></pre></div>
+</section>
+
+<!-- ── Notification ── -->
+<section class="ds" id="s-notify">
+    <div class="dt"><code>Hub:Notify(config)</code></div>
+    <p class="dd">Sağ alt köşeden kayan toast bildirimleri. Otomatik kaybolur, progress bar ve kapatma butonu içerir.</p>
+    <div class="ret">→ Returns: nil (fire-and-forget)</div>
+    <table class="api">
+        <thead><tr><th>Parametre</th><th>Tip</th><th>Varsayılan</th><th>Açıklama</th></tr></thead>
+        <tbody>
+            <tr><td><code>Title</code></td><td>string</td><td>"Notification"</td><td>Kalın başlık metni</td></tr>
+            <tr><td><code>Text</code></td><td>string</td><td>""</td><td>Açıklama satırı (boş bırakılırsa tek satır)</td></tr>
+            <tr><td><code>Type</code></td><td>string</td><td>"info"</td><td><code>"info"</code> · <code>"success"</code> · <code>"error"</code> · <code>"warning"</code></td></tr>
+            <tr><td><code>Duration</code></td><td>number</td><td>3</td><td>Saniye cinsinden ekranda kalma süresi</td></tr>
+        </tbody>
+    </table>
+    <div class="cc"><div class="cc-hdr"><span class="cc-lang">Örnek</span><button class="cp" onclick="copySnippet(this,'ex-notify')">Kopyala</button></div>
+    <pre id="ex-notify"><code><span class="vr">Hub</span>:<span class="fn">Notify</span>({ <span class="vr">Title</span>=<span class="str">"Silent Aim"</span>, <span class="vr">Text</span>=<span class="str">"Enabled"</span>,        <span class="vr">Type</span>=<span class="str">"success"</span>, <span class="vr">Duration</span>=<span class="num">3</span> })
+<span class="vr">Hub</span>:<span class="fn">Notify</span>({ <span class="vr">Title</span>=<span class="str">"Error"</span>,       <span class="vr">Text</span>=<span class="str">"API unreachable"</span>, <span class="vr">Type</span>=<span class="str">"error"</span>,   <span class="vr">Duration</span>=<span class="num">4</span> })
+<span class="vr">Hub</span>:<span class="fn">Notify</span>({ <span class="vr">Title</span>=<span class="str">"Warning"</span>,     <span class="vr">Text</span>=<span class="str">"Low FPS detected"</span>, <span class="vr">Type</span>=<span class="str">"warning"</span>, <span class="vr">Duration</span>=<span class="num">5</span> })
+<span class="vr">Hub</span>:<span class="fn">Notify</span>({ <span class="vr">Title</span>=<span class="str">"Update"</span>,      <span class="vr">Text</span>=<span class="str">"v2.1 available"</span>,  <span class="vr">Type</span>=<span class="str">"info"</span> })</code></pre></div>
+</section>
+
+<!-- ── Watermark ── -->
+<section class="ds" id="s-watermark">
+    <div class="dt"><code>Hub:SetWatermark(config)</code></div>
+    <p class="dd">Ekran köşesinde sabit bir HUD overlay. FPS renk-kodlamalıdır: yeşil ≥50, sarı ≥30, kırmızı &lt;30.</p>
+    <div class="ret">→ Methods: SetWatermark · UpdateWatermark(fmt) · RemoveWatermark()</div>
+    <table class="api">
+        <thead><tr><th>Parametre</th><th>Tip</th><th>Varsayılan</th><th>Açıklama</th></tr></thead>
+        <tbody>
+            <tr><td><code>Format</code></td><td>string</td><td>"{player} | {fps} fps"</td><td>Desteklenen placeholder'lar: <code>{player}</code> <code>{fps}</code> <code>{ping}</code> <code>{time}</code> <code>{game}</code></td></tr>
+            <tr><td><code>Position</code></td><td>string</td><td>"TopRight"</td><td><code>"TopLeft"</code> · <code>"TopRight"</code> · <code>"BottomLeft"</code> · <code>"BottomRight"</code></td></tr>
+            <tr><td><code>BgAlpha</code></td><td>number</td><td>0.45</td><td>Arkaplan şeffaflığı (0 = opak, 1 = tamamen şeffaf)</td></tr>
+        </tbody>
+    </table>
+    <div class="cc"><div class="cc-hdr"><span class="cc-lang">Örnek</span><button class="cp" onclick="copySnippet(this,'ex-wm')">Kopyala</button></div>
+    <pre id="ex-wm"><code><span class="vr">Hub</span>:<span class="fn">SetWatermark</span>({
+    <span class="vr">Format</span>   = <span class="str">"{player}  |  {fps} fps  |  {ping}ms"</span>,
+    <span class="vr">Position</span> = <span class="str">"TopRight"</span>,
+    <span class="vr">BgAlpha</span>  = <span class="num">0.45</span>
+})
+
+<span class="vr">Hub</span>:<span class="fn">UpdateWatermark</span>(<span class="str">"{player}  |  {game}  |  {time}"</span>)  <span class="cmt">-- format değiştir</span>
+<span class="vr">Hub</span>:<span class="fn">RemoveWatermark</span>()                                    <span class="cmt">-- kaldır</span></code></pre></div>
+</section>
+
+<!-- ── Config Save/Load ── -->
+<section class="ds" id="s-config">
+    <div class="dt"><code>Hub:SaveConfig(name) · Hub:LoadConfig(name)</code></div>
+    <p class="dd"><code>ConfigKey</code> parametresi olan her element otomatik olarak kayıt sistemine dahil olur. Veriler <code>HutameHub_name.cfg</code> dosyasına yazılır (executor'da <code>writefile</code>/<code>readfile</code> gerektirir).</p>
+    <div class="ret">→ Başarı/hata sonucu Notify ile bildirilir</div>
+    <table class="api">
+        <thead><tr><th>Method</th><th>Parametre</th><th>Açıklama</th></tr></thead>
+        <tbody>
+            <tr><td><code>Hub:SaveConfig(name)</code></td><td>string</td><td>Tüm kayıtlı elementleri dosyaya yazar</td></tr>
+            <tr><td><code>Hub:LoadConfig(name)</code></td><td>string</td><td>Dosyadan okur ve elementleri geri yükler</td></tr>
+            <tr><td><code>Hub:_regElement(key, getter, setter)</code></td><td>—</td><td>Manuel element kaydı (genellikle gerekmez)</td></tr>
+        </tbody>
+    </table>
+    <div class="cc"><div class="cc-hdr"><span class="cc-lang">Örnek</span><button class="cp" onclick="copySnippet(this,'ex-cfg')">Kopyala</button></div>
+    <pre id="ex-cfg"><code><span class="cmt">-- ConfigKey olan her element otomatik kaydedilir:</span>
+<span class="vr">Left</span>:<span class="fn">CreateToggle</span>({ <span class="vr">Title</span>=<span class="str">"Silent Aim"</span>, <span class="vr">Default</span>=<span class="kw">false</span>, <span class="vr">ConfigKey</span>=<span class="str">"silent_aim"</span> })
+<span class="vr">Left</span>:<span class="fn">CreateSlider</span>({ <span class="vr">Title</span>=<span class="str">"FOV"</span>, <span class="vr">Min</span>=<span class="num">10</span>, <span class="vr">Max</span>=<span class="num">500</span>, <span class="vr">Default</span>=<span class="num">150</span>, <span class="vr">ConfigKey</span>=<span class="str">"fov"</span> })
+<span class="vr">Right</span>:<span class="fn">CreateDropdown</span>({ <span class="vr">Title</span>=<span class="str">"Aim Part"</span>, <span class="vr">Options</span>={<span class="str">"Head"</span>,<span class="str">"Torso"</span>}, <span class="vr">ConfigKey</span>=<span class="str">"aim_part"</span> })
+<span class="vr">Right</span>:<span class="fn">CreateMultiDropdown</span>({ <span class="vr">Title</span>=<span class="str">"Parts"</span>, <span class="vr">Options</span>={<span class="str">"Head"</span>,<span class="str">"Torso"</span>}, <span class="vr">ConfigKey</span>=<span class="str">"parts"</span> })
+
+<span class="cmt">-- Kaydet / Yükle:</span>
+<span class="vr">Hub</span>:<span class="fn">SaveConfig</span>(<span class="str">"default"</span>)  <span class="cmt">-- → HutameHub_default.cfg</span>
+<span class="vr">Hub</span>:<span class="fn">LoadConfig</span>(<span class="str">"default"</span>)  <span class="cmt">-- geri yükler + başarı bildirimi gösterir</span></code></pre></div>
 </section>
 
 </main>
