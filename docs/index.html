@@ -688,7 +688,7 @@ p code, li code, td code{
 
   <div class="callout blue">
     <span class="callout-icon">💡</span>
-    <span>Press <strong>RightControl</strong> to hide/show the window and <strong>F</strong> to test the checkbox binding. Hover controls for 0.4 s for tooltips. Use the <strong>Features</strong> tab for feature tests; test Destroy last.</span>
+    <span>Press <strong>RightControl</strong> or <strong>Minus (-)</strong> to hide/show the entire window and <strong>F</strong> to test the checkbox binding. Hover controls for 0.4 s for tooltips. Use the <strong>Features</strong> tab for feature tests; test Destroy last.</span>
   </div>
 
   <div class="code-block">
@@ -839,7 +839,8 @@ button(Actions, &quot;Destroy UI (test last)&quot;, function() Hub:Destroy() end
 
 -- Save -&gt; change the four ConfigKey controls -&gt; Load -&gt; inspect restored values.
 -- Textbox, Keybind and ColorPicker are not registered by Source.lua config save.
--- RightControl hides/shows the window; F toggles the test checkbox.
+-- RightControl or Minus (-) hides/shows the entire window; F toggles the checkbox.
+-- Type a minus in the textbox: the UI must stay visible while typing.
 -- Hover a control for 0.4 seconds to inspect its tooltip.
 -- To compare startup effects, change LoadingScreen/SnowEffect above and run
 -- in a fresh session. SnowEffect controls main-window snow only.
@@ -886,7 +887,7 @@ button(Actions, &quot;Destroy UI (test last)&quot;, function() Hub:Destroy() end
         <td><span class="p-name">ToggleKey</span></td>
         <td><span class="type type-kc">KeyCode</span></td>
         <td><span class="p-default">RightControl</span></td>
-        <td class="p-desc">Keyboard key to show/hide the window.</td>
+        <td class="p-desc">Keyboard key to show/hide the entire window. Minus (-) is always an additional shortcut, even with a custom ToggleKey. Shortcuts are ignored while typing in a textbox or when input is already processed.</td>
       </tr>
       <tr>
         <td><span class="p-name">SnowEffect</span></td>

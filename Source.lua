@@ -565,9 +565,10 @@ function Library:_build()
     body.ClipsDescendants = true
     self._body = body
 
-    -- toggle key
-    UserInputService.InputBegan:Connect(function(input, gp)
-        if not gp and input.KeyCode == self.ToggleKey then
+    -- Minus is an additional shortcut; keep the configured ToggleKey working.
+    self._toggleConn = UserInputService.InputBegan:Connect(function(input, gp)
+        if gp or UserInputService:GetFocusedTextBox() then return end
+        if input.KeyCode == self.ToggleKey or input.KeyCode == Enum.KeyCode.Minus then
             mf.Visible = not mf.Visible
         end
     end)
@@ -1688,6 +1689,10 @@ end
 -- Window-level helpers
 -- ─────────────────────────────────────────────
 function Library:Destroy()
+    if self._toggleConn then
+        self._toggleConn:Disconnect()
+        self._toggleConn = nil
+    end
     if self._stopUISnow then self._stopUISnow() end
     if self.ScreenGui then self.ScreenGui:Destroy() end
     if self._wmConn  then self._wmConn:Disconnect() end

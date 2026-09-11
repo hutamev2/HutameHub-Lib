@@ -22,6 +22,8 @@ Koyu mor yüzeyler, lila vurgu, keskin köşeler, ince iç çerçeve, monospace 
 
 [Tüm UI özelliklerini test et](docs/examples/ui-test.lua) · [Dokümantasyon örneği](https://hutamev2.github.io/HutameHub-Lib/#s-fullexample)
 
+UI penceresini `RightControl` veya `Minus (-)` ile gizleyip gösterebilirsin. Minus, özel `ToggleKey` ayarlansa da çalışır; metin kutusuna yazarken kısayollar devreye girmez.
+
 ## ✨ Özellikler
 
 | Özellik | Detay |

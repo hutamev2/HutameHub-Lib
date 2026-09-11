@@ -139,7 +139,8 @@ button(Actions, "Destroy UI (test last)", function() Hub:Destroy() end)
 
 -- Save -> change the four ConfigKey controls -> Load -> inspect restored values.
 -- Textbox, Keybind and ColorPicker are not registered by Source.lua config save.
--- RightControl hides/shows the window; F toggles the test checkbox.
+-- RightControl or Minus (-) hides/shows the entire window; F toggles the checkbox.
+-- Type a minus in the textbox: the UI must stay visible while typing.
 -- Hover a control for 0.4 seconds to inspect its tooltip.
 -- To compare startup effects, change LoadingScreen/SnowEffect above and run
 -- in a fresh session. SnowEffect controls main-window snow only.
