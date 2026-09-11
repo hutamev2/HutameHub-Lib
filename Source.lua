@@ -69,6 +69,27 @@ local function shade(surface)
     gradient.Parent = surface
 end
 
+-- Lists participate in section layout instead of floating over following rows.
+local function dropdownLayout(container, list, config)
+    local visibleItems = math.clamp(math.floor(tonumber(config.MaxVisibleItems) or 6), 1, 20)
+    list.ScrollingDirection = Enum.ScrollingDirection.Y
+    list.ScrollBarThickness = 4
+    list.ScrollBarImageColor3 = T.TextDim
+    list.CanvasSize = UDim2.fromOffset(0, 0)
+    list.AutomaticCanvasSize = Enum.AutomaticSize.None
+    container.ZIndex = 2
+    return function(opened, count)
+        -- 20px rows, 1px gaps, 3px top and bottom padding.
+        local contentHeight = 6 + count * 20 + math.max(0, count - 1)
+        local viewportHeight = math.min(contentHeight, 6 + visibleItems * 20 + visibleItems - 1)
+        list.CanvasSize = UDim2.fromOffset(0, contentHeight)
+        list.Size = UDim2.new(1, 0, 0, viewportHeight)
+        list.Visible = opened
+        list.CanvasPosition = Vector2.new(0, math.clamp(list.CanvasPosition.Y, 0, math.max(0, contentHeight - viewportHeight)))
+        container.Size = UDim2.new(1, 0, 0, opened and (24 + viewportHeight) or 22)
+    end
+end
+
 -- ─────────────────────────────────────────────
 -- Library
 -- ─────────────────────────────────────────────
@@ -823,33 +844,43 @@ function Library:_createSection(title, parent)
     sep.BorderSizePixel  = 0
     sep.LayoutOrder      = 1
 
-    -- ── Collapse logic ───────────────────────────
+    -- One cancellable size tween; no delayed AutomaticSize switch to race clicks.
     local collapsed = false
-    local function setCollapsed(val)
-        collapsed = val
-        card:SetAttribute("Collapsed", val)
-        colArrow.Text = val and "▼" or "▲"
-        -- hide/show all children except header and sep
-        for _, child in ipairs(card:GetChildren()) do
-            if child ~= hdrBtn and child ~= sep
-               and not child:IsA("UIListLayout")
-               and not child:IsA("UIPadding")
-               and not child:IsA("UIStroke")
-               and not child:IsA("UICorner") then
-                child.Visible = not val and child:GetAttribute("ConditionVisible") ~= false
-            end
-        end
-        if val then
-            card.AutomaticSize = Enum.AutomaticSize.None
-            tw(card, 0.2, {Size = UDim2.new(1,0,0,28)})
+    local sizeTween
+    card.AutomaticSize = Enum.AutomaticSize.None
+    card.ClipsDescendants = true
+    local collapsedHeight = 6 + 18 + 5 + 1 + 8
+    local function resizeSection(animate)
+        local target = collapsed and collapsedHeight
+            or math.max(collapsedHeight, layout.AbsoluteContentSize.Y + 14)
+        if sizeTween then sizeTween:Cancel(); sizeTween = nil end
+        if animate then
+            sizeTween = TweenService:Create(card, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                {Size = UDim2.new(1,0,0,target)})
+            sizeTween:Play()
         else
-            task.delay(0.21, function()
-                card.AutomaticSize = Enum.AutomaticSize.Y
-                card.Size = UDim2.new(1,0,0,0)
-            end)
+            card.Size = UDim2.new(1,0,0,target)
         end
     end
-
+    local function setCollapsed(val)
+        if collapsed == val then return end
+        collapsed = val
+        card:SetAttribute("Collapsed", val)
+        if not val then
+            for _, child in ipairs(card:GetChildren()) do
+                if child:IsA("GuiObject") and child ~= hdrBtn and child ~= sep then
+                    child.Visible = child:GetAttribute("ConditionVisible") ~= false
+                end
+            end
+        end
+        tw(colArrow, 0.2, {Rotation = val and 180 or 0})
+        resizeSection(true)
+    end
+    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        if not collapsed then resizeSection(true) end
+    end)
+    card.Destroying:Connect(function() if sizeTween then sizeTween:Cancel() end end)
+    resizeSection(false)
     hdrBtn.MouseButton1Click:Connect(function() setCollapsed(not collapsed) end)
     hdrBtn.MouseEnter:Connect(function() tw(hdr,0.1,{TextColor3=T.TextDim}) end)
     hdrBtn.MouseLeave:Connect(function() tw(hdr,0.1,{TextColor3=T.Text}) end)
@@ -955,7 +986,7 @@ function Library:_createSection(title, parent)
             valLbl.Text      = "["..bindKey.Name.."]"
             valLbl.TextColor3= T.TextMute
             UserInputService.InputBegan:Connect(function(input, gp)
-                if not gp and not self._lib._listeningForKey and not UserInputService:GetFocusedTextBox() and row.Visible and row:GetAttribute("ConditionEnabled") ~= false and input.KeyCode == bindKey then
+                if not gp and not self._lib._listeningForKey and not UserInputService:GetFocusedTextBox() and row.Parent:GetAttribute("Collapsed") ~= true and row.Visible and row:GetAttribute("ConditionEnabled") ~= false and input.KeyCode == bindKey then
                     Toggle:Set(not Toggle.State)
                 end
             end)
@@ -1124,8 +1155,8 @@ function Library:_createSection(title, parent)
         arrow.TextColor3            = T.TextMute
         arrow.Text                  = "▼"
 
-        -- dropdown list panel (floats above other content)
-        local listFrame = Instance.new("Frame", container)
+        -- In-flow list panel: reserves height before the next control.
+        local listFrame = Instance.new("ScrollingFrame", container)
         listFrame.Name             = "List"
         listFrame.Size             = UDim2.new(1,0,0,0)
         listFrame.Position         = UDim2.fromOffset(0,24)
@@ -1146,13 +1177,14 @@ function Library:_createSection(title, parent)
         listPad.PaddingTop    = UDim.new(0,3)
         listPad.PaddingBottom = UDim.new(0,3)
 
+        local updateLayout = dropdownLayout(container, listFrame, config)
         local function buildList()
             for _, c in ipairs(listFrame:GetChildren()) do
                 if c:IsA("TextButton") then c:Destroy() end
             end
             for _, opt in ipairs(Dropdown.Options) do
                 local ob = Instance.new("TextButton", listFrame)
-                ob.Size              = UDim2.new(1,0,0,20)
+                ob.Size              = UDim2.new(1,-6,0,20)
                 ob.BackgroundColor3  = opt==Dropdown.Selected and self._lib.Accent or T.Element
                 ob.BackgroundTransparency = opt==Dropdown.Selected and 0.3 or 0.95
                 ob.BorderSizePixel   = 0
@@ -1172,7 +1204,7 @@ function Library:_createSection(title, parent)
                     Dropdown:Close()
                 end)
             end
-            listFrame.Size = UDim2.new(1,0,0, listLayout.AbsoluteContentSize.Y + 6)
+            updateLayout(Dropdown.Opened, #Dropdown.Options)
         end
 
         function Dropdown:Open()
@@ -1188,7 +1220,7 @@ function Library:_createSection(title, parent)
             Dropdown.Opened = false
             tw(arrow, 0.15, {Rotation=0})
             tw(hStroke, 0.15, {Color=T.Border})
-            task.delay(0.15, function() if not Dropdown.Opened then listFrame.Visible=false end end)
+            updateLayout(false, #Dropdown.Options)
         end
 
         function Dropdown:Set(opt)
@@ -1777,7 +1809,7 @@ local function _buildMultiDropdown(Section, card, nextOrder, config)
     arrow.TextSize=8; arrow.TextColor3=T.TextMute; arrow.Text="▼"
 
     -- dropdown list
-    local listFrame = Instance.new("Frame", container)
+    local listFrame = Instance.new("ScrollingFrame", container)
     listFrame.Name="List"; listFrame.Size=UDim2.new(1,0,0,0)
     listFrame.Position=UDim2.fromOffset(0,24)
     listFrame.BackgroundColor3=T.Element; listFrame.BorderSizePixel=0
@@ -1790,6 +1822,7 @@ local function _buildMultiDropdown(Section, card, nextOrder, config)
     local lPad=Instance.new("UIPadding",listFrame)
     lPad.PaddingTop=UDim.new(0,3); lPad.PaddingBottom=UDim.new(0,3)
 
+    local updateLayout = dropdownLayout(container, listFrame, config)
     local function buildList()
         for _, c in ipairs(listFrame:GetChildren()) do
             if c:IsA("TextButton") then c:Destroy() end
@@ -1797,7 +1830,7 @@ local function _buildMultiDropdown(Section, card, nextOrder, config)
         for _, opt in ipairs(MDD.Options) do
             local isSel = selected[opt] == true
             local ob = Instance.new("TextButton", listFrame)
-            ob.Size=UDim2.new(1,0,0,20); ob.BorderSizePixel=0
+            ob.Size=UDim2.new(1,-6,0,20); ob.BorderSizePixel=0
             ob.BackgroundColor3 = isSel and Window.Accent or T.Element
             ob.BackgroundTransparency = isSel and 0.3 or 0.95
             ob.Font=Enum.Font.Code; ob.TextSize=11
@@ -1832,7 +1865,7 @@ local function _buildMultiDropdown(Section, card, nextOrder, config)
                 pcall(cb, res)
             end)
         end
-        listFrame.Size=UDim2.new(1,0,0, listLayout.AbsoluteContentSize.Y+6)
+        updateLayout(MDD.Opened, #MDD.Options)
     end
 
     function MDD:Open()
@@ -1843,7 +1876,7 @@ local function _buildMultiDropdown(Section, card, nextOrder, config)
     function MDD:Close()
         MDD.Opened=false
         tw(arrow,0.15,{Rotation=0}); tw(hStroke,0.15,{Color=T.Border})
-        task.delay(0.15,function() if not MDD.Opened then listFrame.Visible=false end end)
+        updateLayout(false, #MDD.Options)
     end
     function MDD:Set(tbl)   -- tbl = {"Head","Torso"}
         selected={}; for _,v in ipairs(tbl) do selected[v]=true end

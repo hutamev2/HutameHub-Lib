@@ -26,6 +26,8 @@ UI penceresini `RightControl` veya `Minus (-)` ile gizleyip gösterebilirsin. Mi
 
 ## ✨ Özellikler
 
+- **Dropdown yerleşimi:** tekli/çoklu liste section içinde yer açar; alttaki düğmeleri aşağı iter. `MaxVisibleItems` (varsayılan 6, 1–20) sonrası iç kaydırma kullanılır. Section aç/kapat geçişi iptal edilebilir 0.2 saniyelik tween ile çalışır. Test örneğindeki **Layout** sekmesinden kontrol edebilirsin.
+
 - **Config profilleri:** oluştur, yükle, yeniden adlandır, sil ve varsayılan seç. Yedi değer kontrolü `ConfigKey` ile kaydedilir.
 - **Mobil düğme:** dokunmatik cihazlarda otomatik; `MobileToggle = true` ile masaüstünde de gösterilir. Taşı veya dokunarak UI'ı aç/kapat.
 - **Sıfırlama:** `control:Reset()` ve `Hub:ResetValues()`.

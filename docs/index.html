@@ -678,6 +678,7 @@ p code, li code, td code{
 
 <!-- ════ FULL EXAMPLE ════ -->
 <section class="doc-section" id="s-fullexample">
+<div class="callout blue"><span class="callout-icon">↕</span><span><strong>Dropdown layout fix:</strong> lists now expand their section and push following buttons down. Long lists scroll internally; closing restores the row height. Section collapse/expand uses a cancellable 0.2 s tween, so rapid clicks follow the latest state. Try the <strong>Layout</strong> tab in Full Example.</span></div>
   <div class="callout blue"><span class="callout-icon">+</span><span><strong>Profiles &amp; control utilities</strong> — create, load, rename, delete and select a default profile; draggable mobile toggle; per-control and global reset; key conflict warnings; confirmation dialogs; conditional visibility and input. <a href="features.html">Read the complete API guide</a> or try the Profiles tab in the example below.</span></div>
   <div class="callout blue"><span class="callout-icon">◇</span><span><strong>v2.2 · Violet Studio</strong> — dark violet panels, lilac accents, square corners, fine inset borders and compact monospace typography. The two-column layout and public API stay familiar. Buttons and input surfaces now use subtle vertical shading; active tabs and values carry the accent. Main-window snow is opt-in.</span></div>
   <p class="method-desc">Visual direction studied from <a href="https://github.com/ro0ti/Roblox-Scripting-UI/tree/main/Akiri%20Lib">Akiri Lib</a>; implemented independently with Roblox Instances, without importing its code, assets or Drawing API. Run <a href="#s-fullexample">Full Example</a> to inspect all controls in the new theme. Runtime visual verification in Roblox remains pending.</p>
@@ -878,6 +879,21 @@ button(Conditional, &quot;Reset all values&quot;, function()
 end)
 Conditional:CreateLabel(&quot;Bind Select a key to F or Minus for a warning.&quot;)
 -- For automatic startup restore, call Hub:LoadDefaultProfile() HERE after creation.
+local LayoutTests = Hub:CreateTab(&quot;Layout&quot;)
+local Flow = LayoutTests:CreateSection(&quot;Dropdown followed by button&quot;, &quot;left&quot;)
+local LongOptions = {}
+for i = 1, 20 do LongOptions[i] = &quot;Option &quot; .. i end
+local FlowDropdown = Flow:CreateDropdown({Title=&quot;Scrollable single&quot;, Options=LongOptions, MaxVisibleItems=4})
+button(Flow, &quot;Button below single list&quot;, function() report(&quot;Flow&quot;, &quot;Single button clicked&quot;) end)
+local FlowMulti = Flow:CreateMultiDropdown({Title=&quot;Scrollable multi&quot;, Options=LongOptions, MaxVisibleItems=4})
+button(Flow, &quot;Button below multi list&quot;, function() report(&quot;Flow&quot;, &quot;Multi button clicked&quot;) end)
+local LayoutActions = LayoutTests:CreateSection(&quot;Animation checks&quot;, &quot;right&quot;)
+button(LayoutActions, &quot;Collapse left section&quot;, function() Flow:Collapse() end)
+button(LayoutActions, &quot;Expand left section&quot;, function() Flow:Expand() end)
+button(LayoutActions, &quot;Shorten open list&quot;, function() FlowDropdown:Refresh({&quot;One&quot;, &quot;Two&quot;}) end)
+button(LayoutActions, &quot;Restore 20 options&quot;, function() FlowDropdown:Refresh(LongOptions) end)
+-- Open both lists: buttons must move DOWN, and every item must be scrollable.
+-- Close lists: section shrinks. Rapidly alternate Collapse/Expand: last click wins.
 -- RightControl or Minus (-) hides/shows the entire window; F toggles the checkbox.
 -- Type a minus in the textbox: the UI must stay visible while typing.
 -- Hover a control for 0.4 seconds to inspect its tooltip.
@@ -1131,6 +1147,7 @@ Conditional:CreateLabel(&quot;Bind Select a key to F or Minus for a warning.&quo
   <table class="params-table">
     <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
     <tbody>
+<tr><td><span class="p-name">MaxVisibleItems</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">6</span></td><td class="p-desc">Visible list rows before internal scrolling (1–20). The dropdown reserves its full header + visible list height, moving following controls down.</td></tr>
       <tr><td><span class="p-name">Title</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"Dropdown"</span></td><td class="p-desc">Left-side label.</td></tr>
       <tr><td><span class="p-name">Options</span></td><td><span class="type type-tbl">table</span></td><td><span class="p-default">{}</span></td><td class="p-desc">Array of option strings: <code>{"Head","Torso","HRP"}</code>.</td></tr>
       <tr><td><span class="p-name">Default</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">Options[1]</span></td><td class="p-desc">Initially selected option.</td></tr>
@@ -1156,6 +1173,7 @@ Conditional:CreateLabel(&quot;Bind Select a key to F or Minus for a warning.&quo
   <table class="params-table">
     <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
     <tbody>
+<tr><td><span class="p-name">MaxVisibleItems</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">6</span></td><td class="p-desc">Visible list rows before internal scrolling (1–20). The dropdown reserves its full header + visible list height, moving following controls down.</td></tr>
       <tr><td><span class="p-name">Title</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"MultiDropdown"</span></td><td class="p-desc">Left-side label.</td></tr>
       <tr><td><span class="p-name">Options</span></td><td><span class="type type-tbl">table</span></td><td><span class="p-default">{}</span></td><td class="p-desc">Array of option strings.</td></tr>
       <tr><td><span class="p-name">Default</span></td><td><span class="type type-tbl">table</span></td><td><span class="p-default">{}</span></td><td class="p-desc">Array of pre-selected values: <code>{"Head"}</code>.</td></tr>

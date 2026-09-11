@@ -177,6 +177,21 @@ button(Conditional, "Reset all values", function()
 end)
 Conditional:CreateLabel("Bind Select a key to F or Minus for a warning.")
 -- For automatic startup restore, call Hub:LoadDefaultProfile() HERE after creation.
+local LayoutTests = Hub:CreateTab("Layout")
+local Flow = LayoutTests:CreateSection("Dropdown followed by button", "left")
+local LongOptions = {}
+for i = 1, 20 do LongOptions[i] = "Option " .. i end
+local FlowDropdown = Flow:CreateDropdown({Title="Scrollable single", Options=LongOptions, MaxVisibleItems=4})
+button(Flow, "Button below single list", function() report("Flow", "Single button clicked") end)
+local FlowMulti = Flow:CreateMultiDropdown({Title="Scrollable multi", Options=LongOptions, MaxVisibleItems=4})
+button(Flow, "Button below multi list", function() report("Flow", "Multi button clicked") end)
+local LayoutActions = LayoutTests:CreateSection("Animation checks", "right")
+button(LayoutActions, "Collapse left section", function() Flow:Collapse() end)
+button(LayoutActions, "Expand left section", function() Flow:Expand() end)
+button(LayoutActions, "Shorten open list", function() FlowDropdown:Refresh({"One", "Two"}) end)
+button(LayoutActions, "Restore 20 options", function() FlowDropdown:Refresh(LongOptions) end)
+-- Open both lists: buttons must move DOWN, and every item must be scrollable.
+-- Close lists: section shrinks. Rapidly alternate Collapse/Expand: last click wins.
 -- RightControl or Minus (-) hides/shows the entire window; F toggles the checkbox.
 -- Type a minus in the textbox: the UI must stay visible while typing.
 -- Hover a control for 0.4 seconds to inspect its tooltip.
