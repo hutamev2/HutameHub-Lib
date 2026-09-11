@@ -173,6 +173,82 @@ function Library.new(config)
 
         mf.Visible = false   -- hide main window until splash done
 
+        -- ── Snow effect ── (defined inline so it can access TweenService/RunService upvalues)
+        local function createSnowEffect(snowParent, accentColor)
+            local flakes      = {}
+            local connections = {}
+            local active      = true
+            local CHARS       = {"•", "·", "✦", "∗", "❄", "·"}
+            local MAX_FLAKES  = 55
+
+            local function spawnFlake(startY)
+                if not active or #flakes >= MAX_FLAKES then return end
+                local size     = math.random(5, 11)
+                local duration = math.random(35, 70) / 10
+                local flake    = Instance.new("TextLabel", snowParent)
+                flake.BackgroundTransparency = 1
+                flake.Font       = Enum.Font.Gotham
+                flake.TextSize   = size
+                flake.Text       = CHARS[math.random(#CHARS)]
+                flake.ZIndex     = 50
+                flake.TextColor3 = math.random() > 0.7
+                    and Color3.fromRGB(
+                        math.floor(accentColor.R*255),
+                        math.floor(accentColor.G*255),
+                        math.floor(accentColor.B*255))
+                    or Color3.fromRGB(200, 210, 230)
+                flake.TextTransparency = math.random(2, 6) / 10
+                local sx = math.random(2, 96) / 100
+                local sy = startY or -0.05
+                flake.Size     = UDim2.fromOffset(size, size)
+                flake.Position = UDim2.new(sx, 0, sy, 0)
+                table.insert(flakes, flake)
+                local driftX   = (math.random() - 0.5) * 0.08
+                local fallDur  = startY and ((1 - startY) * math.random(35,65)/10) or duration
+                local tInfo    = TweenInfo.new(fallDur, Enum.EasingStyle.Linear)
+                local t = TweenService:Create(flake, tInfo, {
+                    Position         = UDim2.new(sx + driftX, 0, 1.05, 0),
+                    TextTransparency = 0.85,
+                })
+                t:Play()
+                t.Completed:Connect(function()
+                    if flake and flake.Parent then flake:Destroy() end
+                    for i, f in ipairs(flakes) do
+                        if f == flake then table.remove(flakes, i) break end
+                    end
+                end)
+            end
+
+            -- Pre-populate
+            for i = 1, 18 do
+                task.delay(i * 0.05, function()
+                    if active then spawnFlake(math.random(0, 90) / 100) end
+                end)
+            end
+
+            -- Continuous spawn loop
+            local conn = RunService.Heartbeat:Connect(function()
+                if active and math.random() < 0.08 then spawnFlake(nil) end
+            end)
+            table.insert(connections, conn)
+
+            return function()  -- stop()
+                active = false
+                for _, c in ipairs(connections) do c:Disconnect() end
+                connections = {}
+                for _, f in ipairs(flakes) do
+                    if f and f.Parent then
+                        TweenService:Create(f, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
+                        game:GetService("Debris"):AddItem(f, 0.45)
+                    end
+                end
+                flakes = {}
+            end
+        end
+
+        -- ── Snow effect on splash background ─────
+        local stopSnow = createSnowEffect(splash, self.Accent)
+
         local steps = {
             {pct=0.30, label="Initializing...",    t=loadDur*0.25},
             {pct=0.60, label="Loading elements...",t=loadDur*0.25},
@@ -187,6 +263,8 @@ function Library.new(config)
                 tw(lsFill, step.t + 0.05, {Size = UDim2.new(step.pct,0,1,0)})
             end
             task.wait(0.25)
+            -- stop snow before fade out
+            stopSnow()
             -- fade out
             for _, d in ipairs(splash:GetDescendants()) do
                 if d:IsA("TextLabel") then tw(d, 0.35, {TextTransparency=1}) end
@@ -1023,6 +1101,7 @@ function Library:_createSection(title, parent)
         local ph    = config.Placeholder or "..."
         local def   = config.Default     or ""
         local cb    = config.Callback    or function() end
+        local tip   = config.Tooltip     or nil
         local Tb    = {Text = def}
 
         local row = Instance.new("Frame", card)
@@ -1071,6 +1150,8 @@ function Library:_createSection(title, parent)
 
         function Tb:Set(txt) input.Text=txt; Tb.Text=txt end
 
+        if tip then self._lib:_attachTooltip(row, tip) end
+
         return Tb
     end
 
@@ -1079,6 +1160,7 @@ function Library:_createSection(title, parent)
         local ttl   = config.Title    or "Keybind"
         local defK  = config.Default  or Enum.KeyCode.None
         local cb    = config.Callback or function() end
+        local tip   = config.Tooltip  or nil
         local Kb    = {Key=defK, Listening=false}
 
         local row = Instance.new("Frame", card)
@@ -1132,6 +1214,8 @@ function Library:_createSection(title, parent)
 
         function Kb:Set(k) Kb.Key=k; kBtn.Text="["..k.Name.."]" end
 
+        if tip then self._lib:_attachTooltip(row, tip) end
+
         return Kb
     end
 
@@ -1140,6 +1224,7 @@ function Library:_createSection(title, parent)
         local ttl   = config.Title    or "Color"
         local defC  = config.Default  or Color3.fromRGB(255,255,255)
         local cb    = config.Callback or function() end
+        local tip   = config.Tooltip  or nil
         local CP    = {Color=defC, Opened=false}
         local r,g,b = math.floor(defC.R*255), math.floor(defC.G*255), math.floor(defC.B*255)
 
@@ -1293,6 +1378,8 @@ function Library:_createSection(title, parent)
 
         header.MouseButton1Click:Connect(function() CP:Toggle() end)
 
+        if tip then self._lib:_attachTooltip(header, tip) end
+
         return CP
     end
 
@@ -1301,6 +1388,7 @@ function Library:_createSection(title, parent)
         local ttl   = config.Title    or "Button"
         local cb    = config.Callback or function() end
         local desc  = config.Desc     or ""
+        local tip   = config.Tooltip  or nil
 
         local btn = Instance.new("TextButton", card)
         btn.Name              = "Btn_"..ttl
@@ -1330,6 +1418,8 @@ function Library:_createSection(title, parent)
         end)
         btn.MouseButton1Click:Connect(function() pcall(cb) end)
 
+        if tip then self._lib:_attachTooltip(btn, tip) end
+
         return btn
     end
 
@@ -1358,6 +1448,125 @@ function Library:_createSection(title, parent)
     end
 
     return Section
+end
+
+-- ─────────────────────────────────────────────
+-- Tooltip helper
+-- ─────────────────────────────────────────────
+-- Usage: Library:_attachTooltip(guiObject, "Tooltip text")
+-- Creates a floating tooltip that fades in after a short hover delay.
+-- The tooltip is parented to ScreenGui so it floats above everything.
+function Library:_attachTooltip(target, text)
+    if not text or text == "" then return end
+    local sg = self.ScreenGui
+
+    -- Shared tooltip frame (one per Hub, reused across all elements)
+    if not self._tooltipFrame then
+        local ttFrame = Instance.new("Frame")
+        ttFrame.Name              = "TooltipFrame"
+        ttFrame.Size              = UDim2.fromOffset(0, 24)
+        ttFrame.AutomaticSize     = Enum.AutomaticSize.X
+        ttFrame.BackgroundColor3  = Color3.fromRGB(10, 10, 10)
+        ttFrame.BackgroundTransparency = 1  -- starts invisible
+        ttFrame.BorderSizePixel   = 0
+        ttFrame.ZIndex            = 9999
+        ttFrame.Visible           = false
+        ttFrame.Parent            = sg
+        Instance.new("UICorner", ttFrame).CornerRadius = UDim.new(0, 4)
+        local ttStroke = Instance.new("UIStroke", ttFrame)
+        ttStroke.Color     = T.BorderLight
+        ttStroke.Thickness = 1
+        ttStroke.ZIndex    = 9999
+        local ttPad = Instance.new("UIPadding", ttFrame)
+        ttPad.PaddingLeft   = UDim.new(0, 8)
+        ttPad.PaddingRight  = UDim.new(0, 8)
+        ttPad.PaddingTop    = UDim.new(0, 0)
+        ttPad.PaddingBottom = UDim.new(0, 0)
+        -- accent top bar (1px)
+        local ttAccent = Instance.new("Frame", ttFrame)
+        ttAccent.Name             = "AccentBar"
+        ttAccent.Size             = UDim2.new(1, 0, 0, 1)
+        ttAccent.BackgroundColor3 = self.Accent
+        ttAccent.BorderSizePixel  = 0
+        ttAccent.ZIndex           = 10000
+        Instance.new("UICorner", ttAccent).CornerRadius = UDim.new(0, 4)
+        self:_onAccent(function(c) ttAccent.BackgroundColor3 = c end)
+
+        local ttLabel = Instance.new("TextLabel", ttFrame)
+        ttLabel.Name                 = "Label"
+        ttLabel.Size                 = UDim2.new(1, 0, 1, 0)
+        ttLabel.BackgroundTransparency = 1
+        ttLabel.Font                 = Enum.Font.Gotham
+        ttLabel.TextSize             = 11
+        ttLabel.TextColor3           = T.TextDim
+        ttLabel.TextTransparency     = 1  -- starts invisible
+        ttLabel.TextXAlignment       = Enum.TextXAlignment.Left
+        ttLabel.ZIndex               = 10000
+        ttLabel.AutomaticSize        = Enum.AutomaticSize.X
+        ttLabel.Text                 = ""
+
+        self._tooltipFrame  = ttFrame
+        self._tooltipLabel  = ttLabel
+        self._tooltipAccent = ttAccent
+        self._tooltipActive = false
+    end
+
+    local ttFrame  = self._tooltipFrame
+    local ttLabel  = self._tooltipLabel
+    local ttAccent = self._tooltipAccent
+
+    local hoverThread = nil
+
+    -- Follow mouse
+    local moveConn
+
+    local function showTooltip()
+        ttLabel.Text    = text
+        ttFrame.Visible = true
+        -- Fade in
+        tw(ttFrame, 0.18, {BackgroundTransparency = 0.12})
+        tw(ttLabel, 0.18, {TextTransparency = 0})
+        tw(ttAccent, 0.18, {BackgroundTransparency = 0})
+        -- Start following mouse
+        moveConn = UserInputService.InputChanged:Connect(function(i)
+            if i.UserInputType == Enum.UserInputType.MouseMovement then
+                local mx = i.Position.X
+                local my = i.Position.Y
+                -- Keep tooltip on screen
+                local sw = sg.AbsoluteSize.X
+                local tw2 = ttFrame.AbsoluteSize.X
+                local ox = mx + 14
+                if ox + tw2 > sw then ox = mx - tw2 - 8 end
+                ttFrame.Position = UDim2.fromOffset(ox, my - 30)
+            end
+        end)
+    end
+
+    local function hideTooltip()
+        if hoverThread then
+            task.cancel(hoverThread)
+            hoverThread = nil
+        end
+        if moveConn then
+            moveConn:Disconnect()
+            moveConn = nil
+        end
+        -- Fade out
+        tw(ttFrame, 0.12, {BackgroundTransparency = 1})
+        tw(ttLabel, 0.12, {TextTransparency = 1})
+        tw(ttAccent, 0.12, {BackgroundTransparency = 1})
+        task.delay(0.15, function()
+            if ttFrame.BackgroundTransparency >= 0.99 then
+                ttFrame.Visible = false
+            end
+        end)
+    end
+
+    target.MouseEnter:Connect(function()
+        hoverThread = task.delay(0.4, showTooltip)
+    end)
+
+    target.MouseLeave:Connect(hideTooltip)
 end
 
 -- ─────────────────────────────────────────────
@@ -1725,7 +1934,7 @@ function Library:_createSection(title, parent)
     local sec = _origCreateSection(self, title, parent)
     local hub = self
 
-    -- patch CreateToggle to auto-register
+    -- patch CreateToggle to auto-register + Tooltip
     local _origToggle = sec.CreateToggle
     sec.CreateToggle = function(s, config)
         local t = _origToggle(s, config)
@@ -1734,10 +1943,15 @@ function Library:_createSection(title, parent)
                 function() return tostring(t.State) end,
                 function(v) t:Set(v=="true") end)
         end
+        -- Tooltip support: attach to the row frame (parent of the checkbox)
+        if config.Tooltip then
+            local row = sec._card:FindFirstChild("Toggle_"..(config.Title or "Toggle"))
+            if row then hub:_attachTooltip(row, config.Tooltip) end
+        end
         return t
     end
 
-    -- patch CreateSlider
+    -- patch CreateSlider + Tooltip
     local _origSlider = sec.CreateSlider
     sec.CreateSlider = function(s, config)
         local sl = _origSlider(s, config)
@@ -1746,10 +1960,14 @@ function Library:_createSection(title, parent)
                 function() return tostring(sl.Value) end,
                 function(v) sl:Set(tonumber(v) or sl.Value) end)
         end
+        if config.Tooltip then
+            local cont = sec._card:FindFirstChild("Slider_"..(config.Title or "Slider"))
+            if cont then hub:_attachTooltip(cont, config.Tooltip) end
+        end
         return sl
     end
 
-    -- patch CreateDropdown
+    -- patch CreateDropdown + Tooltip
     local _origDD = sec.CreateDropdown
     sec.CreateDropdown = function(s, config)
         local dd = _origDD(s, config)
@@ -1757,6 +1975,10 @@ function Library:_createSection(title, parent)
             hub:_regElement(config.ConfigKey,
                 function() return tostring(dd.Selected) end,
                 function(v) dd:Set(v) end)
+        end
+        if config.Tooltip then
+            local cont = sec._card:FindFirstChild("DD_"..(config.Title or "Dropdown"))
+            if cont then hub:_attachTooltip(cont, config.Tooltip) end
         end
         return dd
     end
@@ -1769,7 +1991,7 @@ function Library:_createSection(title, parent)
         end, config)
     end
 
-    -- patch CreateMultiDropdown config key
+    -- patch CreateMultiDropdown config key + Tooltip
     local _origMDD = sec.CreateMultiDropdown
     sec.CreateMultiDropdown = function(s, config)
         local mdd = _origMDD(s, config)
@@ -1786,6 +2008,10 @@ function Library:_createSection(title, parent)
                     end
                     mdd:Set(tbl)
                 end)
+        end
+        if config.Tooltip then
+            local cont = sec._card:FindFirstChild("MDD_"..(config.Title or "MultiDropdown"))
+            if cont then hub:_attachTooltip(cont, config.Tooltip) end
         end
         return mdd
     end

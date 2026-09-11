@@ -157,6 +157,11 @@ a{color:inherit;text-decoration:none}
   background:var(--bg4);border:1px solid var(--border);
   color:var(--text3);flex-shrink:0;
 }
+.sb-badge.new-badge{
+  background:rgba(var(--acc-rgb),.15);
+  border-color:rgba(var(--acc-rgb),.3);
+  color:var(--acc);
+}
 
 /* ── Main Content ─────────────────────────────────── */
 .content{
@@ -468,7 +473,7 @@ p code, li code, td code{
   <div class="logo">
     <div class="logo-icon">H</div>
     <span class="logo-name">Hutame<span>Hub</span></span>
-    <span class="logo-ver">v2.0</span>
+    <span class="logo-ver">v2.1</span>
   </div>
   <div class="topbar-right">
     <a class="gh-link" href="https://github.com/hutamev2/HutameHub-Lib" target="_blank">
@@ -521,6 +526,14 @@ p code, li code, td code{
   </div>
 
   <div class="sb-group">
+    <div class="sb-group-title">Visual FX</div>
+    <ul class="sb-links">
+      <li><a href="#s-tooltip">Tooltip <span class="sb-badge new-badge">New</span></a></li>
+      <li><a href="#s-snow">Snow Effect <span class="sb-badge new-badge">New</span></a></li>
+    </ul>
+  </div>
+
+  <div class="sb-group">
     <div class="sb-group-title">Hub Features</div>
     <ul class="sb-links">
       <li><a href="#s-notify">Notify <span class="sb-badge">Toast</span></a></li>
@@ -547,7 +560,7 @@ p code, li code, td code{
 <section class="page-hero" id="intro">
   <div class="page-hero-eyebrow">⚡ Private Hub Style · Luau</div>
   <h1>HutameHub Library</h1>
-  <p>A compact, two-column Roblox Luau UI framework inspired by the best private hubs. Horizontal tab bar, checkbox toggles, thin sliders — built entirely with Roblox's native API.</p>
+  <p>A compact, two-column Roblox Luau UI framework inspired by the best private hubs. Horizontal tab bar, checkbox toggles, thin sliders — built entirely with Roblox's native API. Now featuring a <strong>hover Tooltip system</strong> and a <strong>Snow Effect</strong> on the loading screen.</p>
 
   <div class="feat-grid">
     <div class="feat-chip"><span class="dot"></span>Horizontal Tab Bar</div>
@@ -562,6 +575,8 @@ p code, li code, td code{
     <div class="feat-chip"><span class="dot"></span>Tab Badge Counter</div>
     <div class="feat-chip"><span class="dot"></span>Keybind Toggle Bind</div>
     <div class="feat-chip"><span class="dot"></span>Mobile Layout</div>
+    <div class="feat-chip"><span class="dot"></span>Tooltip System</div>
+    <div class="feat-chip"><span class="dot"></span>Snow Effect</div>
   </div>
 
   <div class="callout blue">
@@ -800,6 +815,7 @@ p code, li code, td code{
       <tr><td><span class="p-name">ConfigKey</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Unique key for <a href="#s-config" style="color:var(--acc)">Config Save/Load</a>.</td></tr>
       <tr><td><span class="p-name">Keybind</span></td><td><span class="type type-kc">KeyCode</span></td><td><span class="p-default">nil</span></td><td class="p-desc">When set, pressing this key anywhere toggles the state automatically. The bound key is shown dimmed on the right side of the row.</td></tr>
       <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function(bool)</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Called every time the state changes. Receives the new boolean value.</td></tr>
+      <tr><td><span class="p-name">Tooltip</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Short description shown in a floating tooltip on hover (0.4 s delay, fade-in animation).</td></tr>
     </tbody>
   </table>
   <div class="code-block">
@@ -845,6 +861,7 @@ p code, li code, td code{
       <tr><td><span class="p-name">Suffix</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">""</span></td><td class="p-desc">Appended to the value label, e.g. <code>" px"</code>, <code>" ms"</code>, <code>"%"</code>.</td></tr>
       <tr><td><span class="p-name">ConfigKey</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Key for Config Save/Load.</td></tr>
       <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function(number)</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Fires continuously as the slider moves.</td></tr>
+      <tr><td><span class="p-name">Tooltip</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Floating tooltip text shown on hover.</td></tr>
     </tbody>
   </table>
   <div class="code-block">
@@ -889,6 +906,7 @@ p code, li code, td code{
       <tr><td><span class="p-name">Default</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">Options[1]</span></td><td class="p-desc">Initially selected option.</td></tr>
       <tr><td><span class="p-name">ConfigKey</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Key for Config Save/Load.</td></tr>
       <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function(string)</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Fires when the user picks a new option.</td></tr>
+      <tr><td><span class="p-name">Tooltip</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Floating tooltip text shown on hover.</td></tr>
     </tbody>
   </table>
 </section>
@@ -914,6 +932,7 @@ p code, li code, td code{
       <tr><td><span class="p-name">MaxShow</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">2</span></td><td class="p-desc">Max labels to show inline before collapsing to <code>+N</code>.</td></tr>
       <tr><td><span class="p-name">ConfigKey</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Key for Config Save/Load.</td></tr>
       <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function(table)</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Fires on every change. Receives a sorted array of selected strings.</td></tr>
+      <tr><td><span class="p-name">Tooltip</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Floating tooltip text shown on hover.</td></tr>
     </tbody>
   </table>
   <div class="code-block">
@@ -955,6 +974,7 @@ p code, li code, td code{
       <tr><td><span class="p-name">Placeholder</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"..."</span></td><td class="p-desc">Greyed hint text when empty.</td></tr>
       <tr><td><span class="p-name">Default</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">""</span></td><td class="p-desc">Pre-filled value.</td></tr>
       <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function(text, enterPressed)</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Fires when focus is lost. <code>enterPressed</code> is true if the user pressed Enter.</td></tr>
+      <tr><td><span class="p-name">Tooltip</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Floating tooltip text shown on hover.</td></tr>
     </tbody>
   </table>
 </section>
@@ -977,6 +997,7 @@ p code, li code, td code{
       <tr><td><span class="p-name">Title</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"Keybind"</span></td><td class="p-desc">Label on the left.</td></tr>
       <tr><td><span class="p-name">Default</span></td><td><span class="type type-kc">KeyCode</span></td><td><span class="p-default">KeyCode.None</span></td><td class="p-desc">The initial bound key.</td></tr>
       <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function(KeyCode)</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Fires when a new key is assigned.</td></tr>
+      <tr><td><span class="p-name">Tooltip</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Floating tooltip text shown on hover.</td></tr>
     </tbody>
   </table>
 </section>
@@ -999,6 +1020,7 @@ p code, li code, td code{
       <tr><td><span class="p-name">Title</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"Color"</span></td><td class="p-desc">Label on the left.</td></tr>
       <tr><td><span class="p-name">Default</span></td><td><span class="type type-c3">Color3</span></td><td><span class="p-default">RGB(255,255,255)</span></td><td class="p-desc">Starting color.</td></tr>
       <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function(Color3)</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Fires continuously as any RGB channel changes.</td></tr>
+      <tr><td><span class="p-name">Tooltip</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Floating tooltip text shown on hover.</td></tr>
     </tbody>
   </table>
 </section>
@@ -1020,6 +1042,7 @@ p code, li code, td code{
     <tbody>
       <tr><td><span class="p-name">Title<span class="p-req">required</span></span></td><td><span class="type type-str">string</span></td><td>—</td><td class="p-desc">Button label text.</td></tr>
       <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function()</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Fires on click.</td></tr>
+      <tr><td><span class="p-name">Tooltip</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Floating tooltip text shown on hover.</td></tr>
     </tbody>
   </table>
 </section>
@@ -1282,6 +1305,110 @@ p code, li code, td code{
       <tr><td class="p-desc">Viewport <code>width ≥ 600px</code></td><td class="p-desc">Normal two-column layout. Divider visible.</td></tr>
     </tbody>
   </table>
+</section>
+
+<!-- ════ TOOLTIP ════ -->
+<section class="doc-section" id="s-tooltip">
+  <div class="method-header">
+    <div class="method-label">Visual FX · New in v2.1</div>
+    <div class="method-title"><code>Tooltip</code> parameter</div>
+    <p class="method-desc">Pass a <code>Tooltip</code> string inside any element's config table. When the user hovers over the element for 0.4 seconds, a small floating label fades in near the cursor. Moving away fades it out instantly. The tooltip follows the mouse and automatically repositions itself if it would overflow the screen edge.</p>
+  </div>
+
+  <div class="callout green">
+    <span class="callout-icon">✓</span>
+    <span>Works on all eight element types: <strong>Toggle</strong>, <strong>Slider</strong>, <strong>Dropdown</strong>, <strong>MultiDropdown</strong>, <strong>Textbox</strong>, <strong>Keybind</strong>, <strong>ColorPicker</strong>, and <strong>Button</strong>.</span>
+  </div>
+
+  <div class="params-title">Tooltip behaviour</div>
+  <table class="params-table">
+    <thead><tr><th>Detail</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td class="p-desc">Hover delay before appearing</td><td class="p-desc"><code>0.4 s</code></td></tr>
+      <tr><td class="p-desc">Fade-in duration</td><td class="p-desc"><code>0.18 s</code> — TweenService Sine Out</td></tr>
+      <tr><td class="p-desc">Fade-out duration</td><td class="p-desc"><code>0.12 s</code></td></tr>
+      <tr><td class="p-desc">Frame reuse</td><td class="p-desc">One shared tooltip frame per Hub instance — no memory bloat.</td></tr>
+      <tr><td class="p-desc">Screen overflow guard</td><td class="p-desc">Tooltip flips to the left of the cursor when it would clip the right edge.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-tooltip')">Copy</button></div>
+    <pre id="ex-tooltip"><code><span class="cmt">-- Add Tooltip = "..." to any element config</span>
+<span class="vr">Section</span>:<span class="fn">CreateToggle</span>({
+    <span class="vr">Title</span>    = <span class="str">"Silent Aim"</span>,
+    <span class="vr">Default</span>  = <span class="kw">false</span>,
+    <span class="vr">Tooltip</span>  = <span class="str">"Snaps your bullet to the closest hitbox."</span>,
+    <span class="vr">Callback</span> = <span class="kw">function</span>(<span class="vr">v</span>) <span class="fn">print</span>(<span class="vr">v</span>) <span class="kw">end</span>
+})
+
+<span class="vr">Section</span>:<span class="fn">CreateSlider</span>({
+    <span class="vr">Title</span>    = <span class="str">"FOV Radius"</span>,
+    <span class="vr">Min</span>      = <span class="num">10</span>, <span class="vr">Max</span> = <span class="num">500</span>, <span class="vr">Default</span> = <span class="num">150</span>,
+    <span class="vr">Tooltip</span>  = <span class="str">"Visual FOV circle radius in pixels."</span>,
+    <span class="vr">Callback</span> = <span class="kw">function</span>(<span class="vr">v</span>) <span class="fn">print</span>(<span class="vr">v</span>) <span class="kw">end</span>
+})
+
+<span class="vr">Section</span>:<span class="fn">CreateButton</span>({
+    <span class="vr">Title</span>    = <span class="str">"Reset Settings"</span>,
+    <span class="vr">Tooltip</span>  = <span class="str">"Restores all values to their defaults."</span>,
+    <span class="vr">Callback</span> = <span class="kw">function</span>() <span class="fn">print</span>(<span class="str">"reset"</span>) <span class="kw">end</span>
+})
+
+<span class="vr">Section</span>:<span class="fn">CreateKeybind</span>({
+    <span class="vr">Title</span>    = <span class="str">"Trigger Key"</span>,
+    <span class="vr">Default</span>  = Enum.KeyCode.F,
+    <span class="vr">Tooltip</span>  = <span class="str">"Hold this key to activate while in-game."</span>
+})</code></pre>
+  </div>
+</section>
+
+<!-- ════ SNOW EFFECT ════ -->
+<section class="doc-section" id="s-snow">
+  <div class="method-header">
+    <div class="method-label">Visual FX · New in v2.1</div>
+    <div class="method-title">Snow Effect</div>
+    <p class="method-desc">While the loading screen is visible, animated snowflakes fall across the background. Flakes are lightweight <code>TextLabel</code> instances using unicode characters (<code>• · ✦ ∗ ❄</code>), moved entirely via <strong>TweenService</strong>. A burst of 18 pre-positioned flakes starts immediately, followed by a continuous spawn loop. When the progress bar completes, <code>stopSnow()</code> fades every remaining flake out and destroys them.</p>
+  </div>
+
+  <div class="callout blue">
+    <span class="callout-icon">❄</span>
+    <span>The effect is <strong>automatic</strong> — it runs whenever <code>LoadingScreen</code> is enabled (the default). No extra configuration needed.</span>
+  </div>
+
+  <div class="params-title">Implementation details</div>
+  <table class="params-table">
+    <thead><tr><th>Detail</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td class="p-desc">Max active flakes</td><td class="p-desc"><code>55</code></td></tr>
+      <tr><td class="p-desc">Spawn rate</td><td class="p-desc">~5 per second (Heartbeat, probability-based)</td></tr>
+      <tr><td class="p-desc">Fall duration per flake</td><td class="p-desc"><code>3.5 – 7 s</code> (randomised)</td></tr>
+      <tr><td class="p-desc">Horizontal drift</td><td class="p-desc">±4 % width (randomised per flake)</td></tr>
+      <tr><td class="p-desc">Flake size</td><td class="p-desc"><code>5 – 11 px</code> TextSize</td></tr>
+      <tr><td class="p-desc">Accent colour mix</td><td class="p-desc">30 % of flakes tint to the hub's Accent color.</td></tr>
+      <tr><td class="p-desc">Cleanup</td><td class="p-desc">Completed tweens self-destroy; <code>stopSnow()</code> fades survivors in 0.4 s and calls <code>Debris:AddItem</code>.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout orange">
+    <span class="callout-icon">⚠</span>
+    <span>To disable <strong>both</strong> the loading screen and the snow effect, pass <code>LoadingScreen = false</code> in <code>Library.new()</code>.</span>
+  </div>
+
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-snow')">Copy</button></div>
+    <pre id="ex-snow"><code><span class="cmt">-- Snow effect runs automatically with the loading screen.</span>
+<span class="cmt">-- Slower duration = more time to enjoy the snow!</span>
+<span class="kw">local</span> <span class="vr">Hub</span> = <span class="vr">Library</span>.<span class="fn">new</span>({
+    <span class="vr">Title</span>           = <span class="str">"MyHub"</span>,
+    <span class="vr">Version</span>         = <span class="str">"v2.1"</span>,
+    <span class="vr">Accent</span>          = Color3.<span class="fn">fromRGB</span>(<span class="num">80</span>, <span class="num">180</span>, <span class="num">240</span>),   <span class="cmt">-- ice-blue accent</span>
+    <span class="vr">LoadingDuration</span> = <span class="num">3.0</span>,                           <span class="cmt">-- longer = more snow time</span>
+})
+
+<span class="cmt">-- To disable entirely:</span>
+<span class="kw">local</span> <span class="vr">Hub</span> = <span class="vr">Library</span>.<span class="fn">new</span>({ <span class="vr">LoadingScreen</span> = <span class="kw">false</span> })</code></pre>
+  </div>
 </section>
 </div>
 
