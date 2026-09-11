@@ -169,10 +169,18 @@ function Library:_build()
         )
     end)
 
-    -- user info (right side)
+    -- right side: controls holder (fixed width, right-anchored)
+    local ctrlHolder = Instance.new("Frame", topbar)
+    ctrlHolder.Name                = "CtrlHolder"
+    ctrlHolder.Size                = UDim2.fromOffset(62, 36)
+    ctrlHolder.Position            = UDim2.new(1, -62, 0, 0)
+    ctrlHolder.BackgroundTransparency = 1
+    ctrlHolder.BorderSizePixel     = 0
+
+    -- user info sits just left of ctrlHolder
     local userLbl = Instance.new("TextLabel", topbar)
-    userLbl.Size                 = UDim2.new(0,200,1,0)
-    userLbl.Position             = UDim2.new(1,-210,0,0)
+    userLbl.Size                 = UDim2.new(1, -280, 1, 0)
+    userLbl.Position             = UDim2.new(0, 210, 0, 0)
     userLbl.BackgroundTransparency = 1
     userLbl.Font                 = Enum.Font.Gotham
     userLbl.TextSize             = 11
@@ -180,11 +188,11 @@ function Library:_build()
     userLbl.TextXAlignment       = Enum.TextXAlignment.Right
     userLbl.Text                 = LocalPlayer.Name
 
-    -- close & minimize
-    local function mkCtrl(char, xOff, hoverCol, onClick)
-        local btn = Instance.new("TextButton", topbar)
-        btn.Size               = UDim2.fromOffset(24,24)
-        btn.Position           = UDim2.new(1,xOff, 0.5,-12)
+    -- close & minimize (parented to ctrlHolder, positioned from left)
+    local function mkCtrl(char, xPos, hoverCol, onClick)
+        local btn = Instance.new("TextButton", ctrlHolder)
+        btn.Size               = UDim2.fromOffset(24, 24)
+        btn.Position           = UDim2.new(0, xPos, 0.5, -12)
         btn.BackgroundColor3   = T.Element
         btn.BorderSizePixel    = 0
         btn.Font               = Enum.Font.GothamBold
@@ -198,13 +206,9 @@ function Library:_build()
         btn.MouseButton1Click:Connect(onClick)
         return btn
     end
-    mkCtrl("✕", -8,  Color3.fromRGB(200,40,40),  function() self:Destroy() end)
-    mkCtrl("—", -36, T.ElementHov, function()
-        local body = self._body
-        if body then
-            body.Visible = not body.Visible
-        end
-    end)
+    -- minimize at x=4, close at x=32  (4 + 24 + 4 + 24 + 6 = 62px total)
+    mkCtrl("—", 4,  T.ElementHov,              function() if self._body then self._body.Visible = not self._body.Visible end end)
+    mkCtrl("✕", 32, Color3.fromRGB(200,40,40), function() self:Destroy() end)
 
     -- drag
     local dragging, dragStart, startPos = false, nil, nil
