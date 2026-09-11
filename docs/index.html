@@ -681,12 +681,12 @@ p code, li code, td code{
   <div class="method-header">
     <div class="method-label">Getting Started</div>
     <div class="method-title">Full Example</div>
-    <p class="method-desc">A complete script that exercises every feature in HutameHub v2.1 — paste it into your executor and run it to try everything at once.</p>
+    <p class="method-desc">Interactive UI test using the actual Source.lua API. Try every component, setters, dropdown refresh, notifications, section collapse, badges, watermark and config save/load. Callback values appear in Output / the client console.</p>
   </div>
 
   <div class="callout blue">
     <span class="callout-icon">💡</span>
-    <span>Press <strong>RightControl</strong> to toggle the window. All elements have <strong>Tooltips</strong> — hover over any row for 0.4 s to see them. Snow falls in the background automatically.</span>
+    <span>Press <strong>RightControl</strong> to hide/show the window and <strong>F</strong> to test the checkbox binding. Hover controls for 0.4 s for tooltips. Use the <strong>Features</strong> tab for feature tests; test Destroy last.</span>
   </div>
 
   <div class="code-block">
@@ -694,184 +694,154 @@ p code, li code, td code{
       <span class="code-block-lang">luau</span>
       <button class="copy-code" onclick="copyCode(this,'ex-full')">Copy</button>
     </div>
-    <pre id="ex-full"><code><span class="cmt">-- ─────────────────────────────────────────────────────────
--- HutameHub v2.1 — Full Feature Example
--- ─────────────────────────────────────────────────────────</span>
-<span class="kw">local</span> <span class="vr">Library</span> = <span class="fn">loadstring</span>(game:<span class="fn">HttpGet</span>(
-    <span class="str">"https://raw.githubusercontent.com/hutamev2/HutameHub-Lib/main/Source.lua"</span>
+    <p class="method-desc"><a href="examples/ui-test.lua" download>Download ui-test.lua</a> · The loader needs a compatible client environment; config tests also need <code>writefile</code>/<code>readfile</code>. Save, change the four ConfigKey controls, then load and inspect their values. Textbox, Keybind and ColorPicker are not persisted by the current library.</p>
+    <p class="method-desc">Manual checks: drag the title bar, minimize/restore, resize below and above 600 px, and inspect both columns. Compare startup effects in fresh sessions using <code>LoadingScreen</code> and <code>SnowEffect</code>; the latter controls main-window snow only. <code>CreateKeybind</code> reports binding changes, not key presses. This example was checked against source; it has not been run in Roblox.</p>
+    <pre id="ex-full"><code>-- HutameHub: manual UI feature test (Source.lua API)
+-- Run in a client environment that supports the loader below.
+-- Config tests additionally require writefile/readfile.
+local Library = loadstring(game:HttpGet(
+    &quot;https://raw.githubusercontent.com/hutamev2/HutameHub-Lib/main/Source.lua&quot;
 ))()
 
-<span class="cmt">-- ── 1. Create the window ─────────────────────────────────</span>
-<span class="kw">local</span> <span class="vr">Hub</span> = <span class="vr">Library</span>.<span class="fn">new</span>({
-    <span class="vr">Title</span>           = <span class="str">"HutameHub"</span>,
-    <span class="vr">Version</span>         = <span class="str">"v2.1"</span>,
-    <span class="vr">Accent</span>          = Color3.<span class="fn">fromRGB</span>(<span class="num">220</span>, <span class="num">50</span>, <span class="num">50</span>),
-    <span class="vr">ToggleKey</span>       = Enum.KeyCode.RightControl,
-    <span class="vr">SnowEffect</span>      = <span class="kw">true</span>,   <span class="cmt">-- ambient snow on the UI background</span>
-    <span class="vr">LoadingScreen</span>   = <span class="kw">true</span>,   <span class="cmt">-- splash + snow effect on startup</span>
-    <span class="vr">LoadingDuration</span> = <span class="num">2.0</span>,
+local Hub = Library.new({
+    Title = &quot;HutameHub UI Test&quot;,
+    Version = &quot;API test&quot;,
+    Accent = Color3.fromRGB(220, 50, 50),
+    ToggleKey = Enum.KeyCode.RightControl,
+    LoadingScreen = true,
+    LoadingDuration = 1.8,
+    SnowEffect = true,
 })
 
-<span class="cmt">-- ── 2. Watermark ─────────────────────────────────────────</span>
-<span class="vr">Hub</span>:<span class="fn">SetWatermark</span>({
-    <span class="vr">Format</span>   = <span class="str">"{player}  |  {fps} fps  |  {ping}ms"</span>,
-    <span class="vr">Position</span> = <span class="str">"TopRight"</span>,
-    <span class="vr">BgAlpha</span>  = <span class="num">0.45</span>,
+local function report(name, value)
+    print(&quot;[UI Test] &quot; .. name, value)
+end
+
+local Controls = Hub:CreateTab(&quot;Controls&quot;)
+local Features = Hub:CreateTab(&quot;Features&quot;)
+Features:SetBadge(3)
+local Inputs = Controls:CreateSection(&quot;Inputs&quot;, &quot;left&quot;)
+local Selection = Controls:CreateSection(&quot;Selection&quot;, &quot;right&quot;)
+local Actions = Features:CreateSection(&quot;Actions&quot;, &quot;left&quot;)
+local Preview = Features:CreateSection(&quot;Collapse target&quot;, &quot;right&quot;)
+Preview:CreateLabel(&quot;Collapse and expand this section.&quot;)
+Preview:CreateSeparator()
+Preview:CreateLabel(&quot;Drag the top bar; resize the viewport.&quot;)
+
+local Toggle = Inputs:CreateToggle({
+    Title = &quot;Test toggle&quot;, Default = false, Keybind = Enum.KeyCode.F,
+    ConfigKey = &quot;test_toggle&quot;, Tooltip = &quot;Click or press F outside a textbox.&quot;,
+    Callback = function(value) report(&quot;Toggle&quot;, value) end,
+})
+local Slider = Inputs:CreateSlider({
+    Title = &quot;Test slider&quot;, Min = 0, Max = 100, Default = 25,
+    Decimals = 1, Suffix = &quot;%&quot;, ConfigKey = &quot;test_slider&quot;,
+    Tooltip = &quot;Drag with mouse or touch; watch Output.&quot;,
+    Callback = function(value) report(&quot;Slider&quot;, value) end,
+})
+local Textbox = Inputs:CreateTextbox({
+    Title = &quot;Test text&quot;, Default = &quot;Hello&quot;, Placeholder = &quot;Type here&quot;,
+    Tooltip = &quot;Callback runs when focus is lost.&quot;,
+    Callback = function(text, enterPressed)
+        report(&quot;Text&quot;, text)
+        report(&quot;Enter pressed&quot;, enterPressed)
+    end,
+})
+local Keybind = Inputs:CreateKeybind({
+    Title = &quot;Select a key&quot;, Default = Enum.KeyCode.G,
+    Tooltip = &quot;Click then press a key; Backspace clears it.&quot;,
+    -- This callback reports a NEW binding, not each key press.
+    Callback = function(key) report(&quot;Selected key&quot;, key.Name) end,
+})
+local Color = Inputs:CreateColorPicker({
+    Title = &quot;Accent&quot;, Default = Color3.fromRGB(220, 50, 50),
+    Tooltip = &quot;Open the RGB sliders and change the accent.&quot;,
+    Callback = function(value) Hub:SetAccent(value) end,
+})
+local Dropdown = Selection:CreateDropdown({
+    Title = &quot;Single choice&quot;, Options = {&quot;Alpha&quot;, &quot;Beta&quot;, &quot;Gamma&quot;},
+    Default = &quot;Alpha&quot;, ConfigKey = &quot;test_dropdown&quot;,
+    Tooltip = &quot;Choose one item.&quot;,
+    Callback = function(value) report(&quot;Dropdown&quot;, value) end,
+})
+local Multi = Selection:CreateMultiDropdown({
+    Title = &quot;Multiple choices&quot;, Options = {&quot;Red&quot;, &quot;Green&quot;, &quot;Blue&quot;},
+    Default = {&quot;Red&quot;}, MaxShow = 2, ConfigKey = &quot;test_multi&quot;,
+    Tooltip = &quot;Select several items; selection stays open.&quot;,
+    Callback = function(values) report(&quot;Multi&quot;, table.concat(values, &quot;, &quot;)) end,
 })
 
-<span class="cmt">-- ── 3. Tabs ───────────────────────────────────────────────</span>
-<span class="kw">local</span> <span class="vr">CombatTab</span>   = <span class="vr">Hub</span>:<span class="fn">CreateTab</span>(<span class="str">"Combat"</span>)
-<span class="kw">local</span> <span class="vr">VisualTab</span>   = <span class="vr">Hub</span>:<span class="fn">CreateTab</span>(<span class="str">"Visual"</span>)
-<span class="kw">local</span> <span class="vr">SettingsTab</span> = <span class="vr">Hub</span>:<span class="fn">CreateTab</span>(<span class="str">"Settings"</span>)
+-- Helper belongs to this example, not the library.
+local function button(section, title, callback)
+    section:CreateButton({Title = title, Tooltip = title, Callback = function()
+        local ok, err = pcall(callback)
+        if not ok then warn(&quot;[UI Test] &quot; .. title .. &quot;: &quot; .. tostring(err)) end
+    end})
+end
 
-<span class="cmt">-- ── 4. Combat tab ────────────────────────────────────────</span>
-<span class="kw">local</span> <span class="vr">AimLeft</span>  = <span class="vr">CombatTab</span>:<span class="fn">CreateSection</span>(<span class="str">"Silent Aim"</span>)
-<span class="kw">local</span> <span class="vr">AimRight</span> = <span class="vr">CombatTab</span>:<span class="fn">CreateSection</span>(<span class="str">"Hitbox"</span>, <span class="str">"right"</span>)
+button(Inputs, &quot;Set values from code&quot;, function()
+    Toggle:Set(true)
+    Slider:Set(75.5)
+    Textbox:Set(&quot;Set() worked&quot;) -- Does not invoke the textbox callback.
+    Keybind:Set(Enum.KeyCode.H) -- Does not invoke the keybind callback.
+    Color:Set(Color3.fromRGB(80, 160, 255))
+    report(&quot;Textbox.Text&quot;, Textbox.Text)
+    report(&quot;Keybind.Key&quot;, Keybind.Key.Name)
+end)
+button(Inputs, &quot;Toggle RGB panel&quot;, function() Color:Toggle() end)
+button(Selection, &quot;Set selections&quot;, function()
+    Dropdown:Set(&quot;Beta&quot;)
+    Multi:Set({&quot;Green&quot;, &quot;Blue&quot;})
+    report(&quot;GetSelected&quot;, table.concat(Multi:GetSelected(), &quot;, &quot;))
+end)
+button(Selection, &quot;Refresh options&quot;, function()
+    Dropdown:Refresh({&quot;Alpha&quot;, &quot;Beta&quot;, &quot;Gamma&quot;, &quot;Delta&quot;})
+    Multi:Refresh({&quot;Red&quot;, &quot;Green&quot;, &quot;Blue&quot;, &quot;Yellow&quot;})
+end)
+button(Selection, &quot;Open single choice&quot;, function() Dropdown:Open() end)
+button(Selection, &quot;Close single choice&quot;, function() Dropdown:Close() end)
+button(Selection, &quot;Open multiple choices&quot;, function() Multi:Open() end)
+button(Selection, &quot;Close multiple choices&quot;, function() Multi:Close() end)
+button(Selection, &quot;Go to Features&quot;, function() Features:Activate() end)
 
-<span class="cmt">-- Toggle (with Tooltip + Keybind)</span>
-<span class="kw">local</span> <span class="vr">aimToggle</span> = <span class="vr">AimLeft</span>:<span class="fn">CreateToggle</span>({
-    <span class="vr">Title</span>     = <span class="str">"Enable Silent Aim"</span>,
-    <span class="vr">Default</span>   = <span class="kw">false</span>,
-    <span class="vr">Tooltip</span>   = <span class="str">"Snaps your bullet to the nearest hitbox."</span>,
-    <span class="vr">Keybind</span>   = Enum.KeyCode.F,
-    <span class="vr">ConfigKey</span> = <span class="str">"silent_aim"</span>,
-    <span class="vr">Callback</span>  = <span class="kw">function</span>(<span class="vr">on</span>)
-        <span class="vr">CombatTab</span>:<span class="fn">SetBadge</span>(<span class="vr">on</span> <span class="kw">and</span> <span class="num">1</span> <span class="kw">or</span> <span class="num">0</span>)   <span class="cmt">-- badge counter on tab</span>
-        <span class="vr">Hub</span>:<span class="fn">Notify</span>({ <span class="vr">Title</span>=<span class="str">"Silent Aim"</span>, <span class="vr">Text</span>=<span class="vr">on</span> <span class="kw">and</span> <span class="str">"Enabled"</span> <span class="kw">or</span> <span class="str">"Disabled"</span>,
-                     <span class="vr">Type</span>=<span class="vr">on</span> <span class="kw">and</span> <span class="str">"success"</span> <span class="kw">or</span> <span class="str">"info"</span>, <span class="vr">Duration</span>=<span class="num">2</span> })
-    <span class="kw">end</span>
-})
+for _, kind in ipairs({&quot;info&quot;, &quot;success&quot;, &quot;warning&quot;, &quot;error&quot;}) do
+    local notificationType = kind
+    button(Actions, &quot;Notify: &quot; .. notificationType, function()
+        Hub:Notify({Title = &quot;UI Test&quot;, Text = notificationType,
+            Type = notificationType, Duration = 3})
+    end)
+end
+button(Actions, &quot;Collapse target&quot;, function() Preview:Collapse() end)
+button(Actions, &quot;Expand target&quot;, function() Preview:Expand() end)
+button(Actions, &quot;Badge = 7&quot;, function() Features:SetBadge(7) end)
+button(Actions, &quot;Clear badge&quot;, function() Features:ClearBadge() end)
+button(Actions, &quot;Show watermark&quot;, function()
+    Hub:SetWatermark({Format = &quot;{player} | {fps} fps | {ping} ms | {time}&quot;,
+        Position = &quot;BottomRight&quot;, BgAlpha = 0.45})
+end)
+button(Actions, &quot;Update watermark&quot;, function()
+    Hub:UpdateWatermark(&quot;{game} | {fps} fps&quot;)
+end)
+button(Actions, &quot;Remove watermark&quot;, function() Hub:RemoveWatermark() end)
+button(Actions, &quot;Save test config&quot;, function() Hub:SaveConfig(&quot;ui_test&quot;) end)
+button(Actions, &quot;Load test config&quot;, function() Hub:LoadConfig(&quot;ui_test&quot;) end)
+button(Actions, &quot;Read current values&quot;, function()
+    report(&quot;Toggle.State&quot;, Toggle.State)
+    report(&quot;Slider.Value&quot;, Slider.Value)
+    report(&quot;Dropdown.Selected&quot;, Dropdown.Selected)
+    report(&quot;Multi:GetSelected()&quot;, table.concat(Multi:GetSelected(), &quot;, &quot;))
+    report(&quot;Color.Color&quot;, Color.Color)
+end)
+button(Actions, &quot;Back to Controls&quot;, function() Controls:Activate() end)
+button(Actions, &quot;Destroy UI (test last)&quot;, function() Hub:Destroy() end)
 
-<span class="cmt">-- Slider</span>
-<span class="kw">local</span> <span class="vr">fovSlider</span> = <span class="vr">AimLeft</span>:<span class="fn">CreateSlider</span>({
-    <span class="vr">Title</span>     = <span class="str">"FOV Radius"</span>,
-    <span class="vr">Min</span>       = <span class="num">10</span>, <span class="vr">Max</span> = <span class="num">500</span>, <span class="vr">Default</span> = <span class="num">150</span>, <span class="vr">Suffix</span> = <span class="str">" px"</span>,
-    <span class="vr">Tooltip</span>   = <span class="str">"Radius of the visual FOV circle."</span>,
-    <span class="vr">ConfigKey</span> = <span class="str">"fov"</span>,
-    <span class="vr">Callback</span>  = <span class="kw">function</span>(<span class="vr">v</span>) <span class="fn">print</span>(<span class="str">"FOV:"</span>, <span class="vr">v</span>) <span class="kw">end</span>
-})
-
-<span class="cmt">-- Dropdown</span>
-<span class="kw">local</span> <span class="vr">aimPartDD</span> = <span class="vr">AimLeft</span>:<span class="fn">CreateDropdown</span>({
-    <span class="vr">Title</span>     = <span class="str">"Aim Part"</span>,
-    <span class="vr">Options</span>   = {<span class="str">"Head"</span>, <span class="str">"Torso"</span>, <span class="str">"HumanoidRootPart"</span>},
-    <span class="vr">Default</span>   = <span class="str">"Head"</span>,
-    <span class="vr">Tooltip</span>   = <span class="str">"Which body part to aim at."</span>,
-    <span class="vr">ConfigKey</span> = <span class="str">"aim_part"</span>,
-    <span class="vr">Callback</span>  = <span class="kw">function</span>(<span class="vr">v</span>) <span class="fn">print</span>(<span class="str">"Part:"</span>, <span class="vr">v</span>) <span class="kw">end</span>
-})
-
-<span class="cmt">-- MultiDropdown (right column)</span>
-<span class="kw">local</span> <span class="vr">hitParts</span> = <span class="vr">AimRight</span>:<span class="fn">CreateMultiDropdown</span>({
-    <span class="vr">Title</span>     = <span class="str">"Hitbox Parts"</span>,
-    <span class="vr">Options</span>   = {<span class="str">"Head"</span>, <span class="str">"Torso"</span>, <span class="str">"LeftArm"</span>, <span class="str">"RightArm"</span>, <span class="str">"LeftLeg"</span>, <span class="str">"RightLeg"</span>},
-    <span class="vr">Default</span>   = {<span class="str">"Head"</span>, <span class="str">"Torso"</span>},
-    <span class="vr">MaxShow</span>   = <span class="num">2</span>,
-    <span class="vr">Tooltip</span>   = <span class="str">"Parts that get expanded hitboxes."</span>,
-    <span class="vr">ConfigKey</span> = <span class="str">"hitbox_parts"</span>,
-    <span class="vr">Callback</span>  = <span class="kw">function</span>(<span class="vr">sel</span>) <span class="fn">print</span>(<span class="fn">table.concat</span>(<span class="vr">sel</span>,<span class="str">", "</span>)) <span class="kw">end</span>
-})
-
-<span class="cmt">-- Keybind (right column)</span>
-<span class="kw">local</span> <span class="vr">triggerBind</span> = <span class="vr">AimRight</span>:<span class="fn">CreateKeybind</span>({
-    <span class="vr">Title</span>    = <span class="str">"Trigger Key"</span>,
-    <span class="vr">Default</span>  = Enum.KeyCode.MouseButton1,
-    <span class="vr">Tooltip</span>  = <span class="str">"Hold this to activate aim snapping."</span>,
-    <span class="vr">Callback</span> = <span class="kw">function</span>(<span class="vr">k</span>) <span class="fn">print</span>(<span class="str">"Bind:"</span>, <span class="vr">k</span>) <span class="kw">end</span>
-})
-
-<span class="cmt">-- ── 5. Visual tab ────────────────────────────────────────</span>
-<span class="kw">local</span> <span class="vr">EspLeft</span>  = <span class="vr">VisualTab</span>:<span class="fn">CreateSection</span>(<span class="str">"ESP"</span>)
-<span class="kw">local</span> <span class="vr">EspRight</span> = <span class="vr">VisualTab</span>:<span class="fn">CreateSection</span>(<span class="str">"Colors"</span>, <span class="str">"right"</span>)
-
-<span class="vr">EspLeft</span>:<span class="fn">CreateToggle</span>({
-    <span class="vr">Title</span>    = <span class="str">"Player ESP"</span>,
-    <span class="vr">Default</span>  = <span class="kw">false</span>,
-    <span class="vr">Tooltip</span>  = <span class="str">"Draws boxes around players through walls."</span>,
-    <span class="vr">Callback</span> = <span class="kw">function</span>(<span class="vr">v</span>) <span class="fn">print</span>(<span class="str">"ESP:"</span>,<span class="vr">v</span>) <span class="kw">end</span>
-})
-
-<span class="vr">EspLeft</span>:<span class="fn">CreateSlider</span>({
-    <span class="vr">Title</span>    = <span class="str">"ESP Distance"</span>,
-    <span class="vr">Min</span>      = <span class="num">50</span>, <span class="vr">Max</span> = <span class="num">2000</span>, <span class="vr">Default</span> = <span class="num">500</span>, <span class="vr">Suffix</span> = <span class="str">" m"</span>,
-    <span class="vr">Tooltip</span>  = <span class="str">"Max stud distance for ESP rendering."</span>,
-    <span class="vr">Callback</span> = <span class="kw">function</span>(<span class="vr">v</span>) <span class="fn">print</span>(<span class="str">"Dist:"</span>,<span class="vr">v</span>) <span class="kw">end</span>
-})
-
-<span class="vr">EspLeft</span>:<span class="fn">CreateTextbox</span>({
-    <span class="vr">Title</span>       = <span class="str">"Name Tag"</span>,
-    <span class="vr">Placeholder</span> = <span class="str">"Custom label..."</span>,
-    <span class="vr">Tooltip</span>     = <span class="str">"Text shown above each ESP box."</span>,
-    <span class="vr">Callback</span>    = <span class="kw">function</span>(<span class="vr">txt</span>) <span class="fn">print</span>(<span class="str">"Tag:"</span>, <span class="vr">txt</span>) <span class="kw">end</span>
-})
-
-<span class="vr">EspRight</span>:<span class="fn">CreateColorPicker</span>({
-    <span class="vr">Title</span>    = <span class="str">"Box Color"</span>,
-    <span class="vr">Default</span>  = Color3.<span class="fn">fromRGB</span>(<span class="num">255</span>, <span class="num">80</span>, <span class="num">80</span>),
-    <span class="vr">Tooltip</span>  = <span class="str">"Color used for ESP boxes."</span>,
-    <span class="vr">Callback</span> = <span class="kw">function</span>(<span class="vr">c</span>) <span class="fn">print</span>(<span class="str">"Color:"</span>, <span class="vr">c</span>) <span class="kw">end</span>
-})
-
-<span class="cmt">-- Change accent color live</span>
-<span class="vr">EspRight</span>:<span class="fn">CreateColorPicker</span>({
-    <span class="vr">Title</span>    = <span class="str">"UI Accent"</span>,
-    <span class="vr">Default</span>  = Color3.<span class="fn">fromRGB</span>(<span class="num">220</span>, <span class="num">50</span>, <span class="num">50</span>),
-    <span class="vr">Tooltip</span>  = <span class="str">"Changes the UI accent color in real-time."</span>,
-    <span class="vr">Callback</span> = <span class="kw">function</span>(<span class="vr">c</span>) <span class="vr">Hub</span>:<span class="fn">SetAccent</span>(<span class="vr">c</span>) <span class="kw">end</span>
-})
-
-<span class="cmt">-- ── 6. Settings tab ──────────────────────────────────────</span>
-<span class="kw">local</span> <span class="vr">CfgSection</span>  = <span class="vr">SettingsTab</span>:<span class="fn">CreateSection</span>(<span class="str">"Config"</span>)
-<span class="kw">local</span> <span class="vr">MiscSection</span> = <span class="vr">SettingsTab</span>:<span class="fn">CreateSection</span>(<span class="str">"Miscellaneous"</span>, <span class="str">"right"</span>)
-
-<span class="cmt">-- Save / Load config</span>
-<span class="vr">CfgSection</span>:<span class="fn">CreateButton</span>({
-    <span class="vr">Title</span>    = <span class="str">"Save Config"</span>,
-    <span class="vr">Tooltip</span>  = <span class="str">"Writes current settings to HutameHub_default.cfg"</span>,
-    <span class="vr">Callback</span> = <span class="kw">function</span>() <span class="vr">Hub</span>:<span class="fn">SaveConfig</span>(<span class="str">"default"</span>) <span class="kw">end</span>
-})
-
-<span class="vr">CfgSection</span>:<span class="fn">CreateButton</span>({
-    <span class="vr">Title</span>    = <span class="str">"Load Config"</span>,
-    <span class="vr">Tooltip</span>  = <span class="str">"Reads HutameHub_default.cfg and restores values"</span>,
-    <span class="vr">Callback</span> = <span class="kw">function</span>() <span class="vr">Hub</span>:<span class="fn">LoadConfig</span>(<span class="str">"default"</span>) <span class="kw">end</span>
-})
-
-<span class="cmt">-- Collapse a section programmatically</span>
-<span class="vr">CfgSection</span>:<span class="fn">Collapse</span>()
-
-<span class="cmt">-- Notifications showcase (right column)</span>
-<span class="vr">MiscSection</span>:<span class="fn">CreateButton</span>({
-    <span class="vr">Title</span>    = <span class="str">"Test Notify · Success"</span>,
-    <span class="vr">Tooltip</span>  = <span class="str">"Fires a green success toast"</span>,
-    <span class="vr">Callback</span> = <span class="kw">function</span>()
-        <span class="vr">Hub</span>:<span class="fn">Notify</span>({ <span class="vr">Title</span>=<span class="str">"Done!"</span>, <span class="vr">Text</span>=<span class="str">"Everything saved."</span>, <span class="vr">Type</span>=<span class="str">"success"</span> })
-    <span class="kw">end</span>
-})
-
-<span class="vr">MiscSection</span>:<span class="fn">CreateButton</span>({
-    <span class="vr">Title</span>    = <span class="str">"Test Notify · Error"</span>,
-    <span class="vr">Tooltip</span>  = <span class="str">"Fires a red error toast"</span>,
-    <span class="vr">Callback</span> = <span class="kw">function</span>()
-        <span class="vr">Hub</span>:<span class="fn">Notify</span>({ <span class="vr">Title</span>=<span class="str">"Error"</span>, <span class="vr">Text</span>=<span class="str">"Something went wrong."</span>, <span class="vr">Type</span>=<span class="str">"error"</span> })
-    <span class="kw">end</span>
-})
-
-<span class="vr">MiscSection</span>:<span class="fn">CreateButton</span>({
-    <span class="vr">Title</span>    = <span class="str">"Test Notify · Warning"</span>,
-    <span class="vr">Tooltip</span>  = <span class="str">"Fires an orange warning toast"</span>,
-    <span class="vr">Callback</span> = <span class="kw">function</span>()
-        <span class="vr">Hub</span>:<span class="fn">Notify</span>({ <span class="vr">Title</span>=<span class="str">"Heads up"</span>, <span class="vr">Text</span>=<span class="str">"Low FPS detected."</span>, <span class="vr">Type</span>=<span class="str">"warning"</span> })
-    <span class="kw">end</span>
-})
-
-<span class="vr">MiscSection</span>:<span class="fn">CreateButton</span>({
-    <span class="vr">Title</span>    = <span class="str">"Change Accent → Blue"</span>,
-    <span class="vr">Tooltip</span>  = <span class="str">"Switches UI accent to ice blue at runtime"</span>,
-    <span class="vr">Callback</span> = <span class="kw">function</span>()
-        <span class="vr">Hub</span>:<span class="fn">SetAccent</span>(Color3.<span class="fn">fromRGB</span>(<span class="num">80</span>, <span class="num">160</span>, <span class="num">255</span>))
-    <span class="kw">end</span>
-})</code></pre>
+-- Save -&gt; change the four ConfigKey controls -&gt; Load -&gt; inspect restored values.
+-- Textbox, Keybind and ColorPicker are not registered by Source.lua config save.
+-- RightControl hides/shows the window; F toggles the test checkbox.
+-- Hover a control for 0.4 seconds to inspect its tooltip.
+-- To compare startup effects, change LoadingScreen/SnowEffect above and run
+-- in a fresh session. SnowEffect controls main-window snow only.
+</code></pre>
   </div>
 </section>
 
