@@ -1,201 +1,605 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HutameHub Library | Private Hub Style Roblox UI</title>
-    <meta name="description" content="Private hub tarzı, iki kolonlu, kompakt Roblox Luau UI kütüphanesi.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg:#0d0d0d; --surface:#121212; --card:#161616; --el:#1c1c1c; --elh:#222;
-            --border:#262626; --borderhi:#343434;
-            --text:#dcdcdc; --dim:#828282; --mute:#464646;
-            --acc:#dc3232; --acc-g:rgba(220,50,50,.18); --acc-rgb:220,50,50;
-            --sidebar:252px; --header:50px;
-        }
-        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-        body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden;display:flex;flex-direction:column;min-height:100vh}
-        ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:3px}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HutameHub · Documentation</title>
+<meta name="description" content="HutameHub Library — Private Hub Style Roblox Luau UI Framework Documentation">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & Base ─────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  font-size:15px;
+  line-height:1.7;
+  background:#0f0f0f;
+  color:#e1e1e1;
+  display:flex;
+  flex-direction:column;
+  min-height:100vh;
+}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#2e2e2e;border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:#3e3e3e}
+a{color:inherit;text-decoration:none}
 
-        /* Header */
-        header{position:fixed;top:0;left:0;right:0;height:var(--header);background:rgba(18,18,18,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 22px;z-index:1000}
-        .brand{display:flex;align-items:center;gap:9px;text-decoration:none;color:inherit}
-        .brand-icon{width:28px;height:28px;background:var(--acc);border-radius:4px;display:grid;place-items:center;font-weight:800;font-size:.85rem;color:#000;box-shadow:0 0 10px var(--acc-g)}
-        .brand-name{font-size:.9rem;font-weight:700}.brand-name span{color:var(--acc)}
-        .brand-ver{font-size:.66rem;color:var(--dim);background:var(--el);padding:2px 6px;border-radius:3px;border:1px solid var(--border)}
-        .hright{display:flex;align-items:center;gap:9px}
-        .pal{display:flex;align-items:center;gap:5px;background:var(--el);border:1px solid var(--border);padding:3px 9px;border-radius:20px}
-        .pal span{font-size:.67rem;color:var(--dim)}
-        .dot{width:13px;height:13px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:.15s}.dot.active{border-color:#fff;transform:scale(1.2)}
-        .btn{display:inline-flex;align-items:center;gap:5px;padding:5px 13px;border-radius:4px;font-size:.76rem;font-weight:600;cursor:pointer;border:none;text-decoration:none;transition:.13s}
-        .btn-acc{background:var(--acc);color:#000}.btn-acc:hover{filter:brightness(1.12)}
-        .btn-ghost{background:var(--el);color:var(--text);border:1px solid var(--border)}.btn-ghost:hover{background:#222;border-color:var(--borderhi)}
+/* ── Tokens ───────────────────────────────────────── */
+:root{
+  --nav-w:     260px;
+  --toc-w:     220px;
+  --header-h:  54px;
+  --bg:        #0f0f0f;
+  --bg2:       #141414;
+  --bg3:       #191919;
+  --bg4:       #1f1f1f;
+  --border:    #282828;
+  --border2:   #323232;
+  --text:      #e1e1e1;
+  --text2:     #888;
+  --text3:     #555;
+  --acc:       #e03030;
+  --acc-dim:   rgba(224,48,48,.15);
+  --acc-rgb:   224,48,48;
+  --green:     #3fb950;
+  --blue:      #58a6ff;
+  --orange:    #f0883e;
+  --purple:    #bc8cff;
+  --yellow:    #e3b341;
+}
 
-        /* Layout */
-        .layout{display:flex;margin-top:var(--header);min-height:calc(100vh - var(--header))}
-        aside{width:var(--sidebar);position:fixed;top:var(--header);bottom:0;left:0;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:14px 10px;display:flex;flex-direction:column;gap:18px}
-        .srch{position:relative}
-        .srch input{width:100%;background:var(--el);border:1px solid var(--border);border-radius:4px;padding:5px 9px 5px 28px;color:var(--text);font-size:.77rem;outline:none;transition:.13s}
-        .srch input:focus{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc-g)}
-        .srch-ic{position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--mute);font-size:.75rem;pointer-events:none}
-        .ng h4{font-size:.63rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mute);margin-bottom:5px;padding-left:7px}
-        .nl{list-style:none;display:flex;flex-direction:column;gap:1px}
-        .nl a{display:flex;align-items:center;gap:7px;padding:4px 9px;border-radius:4px;color:var(--dim);font-size:.77rem;text-decoration:none;font-weight:500;transition:.11s}
-        .nl a:hover{color:var(--text);background:var(--el)}.nl a.active{color:var(--acc);background:rgba(var(--acc-rgb),.08);font-weight:600}
-        .tag{font-size:.58rem;padding:1px 5px;border-radius:3px;background:var(--el);border:1px solid var(--border);color:var(--mute);margin-left:auto}
+/* ── Header ───────────────────────────────────────── */
+.topbar{
+  position:fixed;top:0;left:0;right:0;
+  height:var(--header-h);
+  background:rgba(15,15,15,.9);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;
+  justify-content:space-between;
+  padding:0 24px;
+  z-index:200;
+}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-icon{
+  width:30px;height:30px;
+  background:var(--acc);
+  border-radius:6px;
+  display:grid;place-items:center;
+  font-weight:800;font-size:14px;color:#000;
+  box-shadow:0 0 18px rgba(var(--acc-rgb),.35);
+  flex-shrink:0;
+}
+.logo-name{font-weight:700;font-size:15px}
+.logo-name span{color:var(--acc)}
+.logo-ver{
+  font-size:11px;color:var(--text3);
+  background:var(--bg3);
+  padding:2px 7px;border-radius:4px;
+  border:1px solid var(--border);
+}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.gh-link{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:13px;font-weight:500;color:var(--text2);
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:6px;padding:5px 12px;
+  transition:.15s;
+}
+.gh-link:hover{border-color:var(--border2);color:var(--text)}
+.copy-ls-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:13px;font-weight:600;color:#000;
+  background:var(--acc);border:none;border-radius:6px;
+  padding:6px 14px;cursor:pointer;transition:.12s;
+}
+.copy-ls-btn:hover{filter:brightness(1.1)}
+.copy-ls-btn.ok{background:var(--green)}
 
-        /* Main */
-        main{margin-left:var(--sidebar);flex:1;padding:32px 52px 80px;max-width:1060px}
+/* ── Layout ───────────────────────────────────────── */
+.layout{
+  display:flex;
+  margin-top:var(--header-h);
+  min-height:calc(100vh - var(--header-h));
+}
 
-        /* Hero */
-        .hero{background:linear-gradient(135deg,var(--surface) 0%,var(--card) 100%);border:1px solid var(--border);border-radius:6px;padding:32px 36px;margin-bottom:36px;position:relative;overflow:hidden}
-        .hero::before{content:'';position:absolute;top:-30px;right:-30px;width:180px;height:180px;background:radial-gradient(circle,var(--acc-g) 0%,transparent 70%);pointer-events:none}
-        .htag{display:inline-flex;align-items:center;gap:5px;font-size:.7rem;font-weight:600;color:var(--acc);background:rgba(var(--acc-rgb),.1);padding:3px 10px;border-radius:20px;border:1px solid rgba(var(--acc-rgb),.25);margin-bottom:12px}
-        .hero h2{font-size:1.9rem;font-weight:800;letter-spacing:-.03em;margin-bottom:9px}
-        .hero p{color:var(--dim);font-size:.9rem;max-width:580px;margin-bottom:20px}
-        .feats{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
-        .feat{display:flex;align-items:center;gap:5px;background:var(--el);padding:3px 11px;border-radius:20px;font-size:.73rem;border:1px solid var(--border)}.feat span{color:var(--acc)}
+/* ── Left Sidebar ─────────────────────────────────── */
+.sidebar{
+  width:var(--nav-w);
+  position:fixed;
+  top:var(--header-h);bottom:0;left:0;
+  background:var(--bg2);
+  border-right:1px solid var(--border);
+  overflow-y:auto;
+  padding:20px 14px 40px;
+  display:flex;flex-direction:column;gap:24px;
+}
+.sb-search{position:relative;margin-bottom:4px}
+.sb-search input{
+  width:100%;
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:7px 10px 7px 32px;
+  color:var(--text);font-size:13px;outline:none;
+  transition:.15s;
+}
+.sb-search input::placeholder{color:var(--text3)}
+.sb-search input:focus{border-color:var(--acc);box-shadow:0 0 0 2px rgba(var(--acc-rgb),.12)}
+.sb-search-ic{
+  position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  color:var(--text3);font-size:13px;pointer-events:none;
+}
+.sb-group{}
+.sb-group-title{
+  font-size:11px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--text3);
+  padding:0 8px;margin-bottom:4px;
+}
+.sb-links{list-style:none;display:flex;flex-direction:column;gap:1px}
+.sb-links a{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:6px 10px;border-radius:6px;
+  font-size:13.5px;font-weight:500;color:var(--text2);
+  transition:.12s;
+}
+.sb-links a:hover{color:var(--text);background:var(--bg3)}
+.sb-links a.active{
+  color:var(--text);background:rgba(var(--acc-rgb),.1);
+  border-left:2px solid var(--acc);padding-left:8px;
+}
+.sb-badge{
+  font-size:10px;padding:1px 6px;border-radius:4px;
+  background:var(--bg4);border:1px solid var(--border);
+  color:var(--text3);flex-shrink:0;
+}
 
-        /* Code */
-        .cc{background:#0a0a0c;border:1px solid var(--border);border-radius:6px;margin:10px 0 22px;overflow:hidden}
-        .cc-hdr{background:#111115;border-bottom:1px solid var(--border);padding:6px 13px;display:flex;justify-content:space-between;align-items:center}
-        .cc-lang{font-size:.64rem;font-family:'Fira Code',monospace;color:var(--mute);text-transform:uppercase}
-        .cp{background:transparent;border:1px solid var(--border);border-radius:3px;padding:2px 8px;color:var(--dim);font-size:.67rem;cursor:pointer;transition:.12s}.cp:hover{color:var(--text);border-color:var(--borderhi)}.cp.ok{color:var(--acc);border-color:var(--acc)}
-        pre{padding:13px 16px;overflow-x:auto;font-family:'Fira Code',monospace;font-size:.78rem;line-height:1.65;color:#c9d1d9}
-        .kw{color:#ff7b72;font-weight:600}.fn{color:#d2a8ff}.str{color:#a5d6ff}.num{color:#79c0ff}.cmt{color:#5a6370;font-style:italic}.vr{color:#7ee787}
+/* ── Main Content ─────────────────────────────────── */
+.content{
+  margin-left:var(--nav-w);
+  flex:1;
+  padding:48px 64px 100px;
+  max-width:860px;
+}
 
-        /* Simulator */
-        .sim-wrap{background:#090909;border:1px solid var(--border);border-radius:6px;padding:20px;display:flex;justify-content:center;background-image:radial-gradient(#181818 1px,transparent 1px);background-size:16px 16px;margin-bottom:46px}
-        .sim{width:600px;max-width:100%;background:#0d0d0d;border-radius:5px;border:1px solid #252525;box-shadow:0 14px 44px rgba(0,0,0,.8);overflow:visible;display:flex;flex-direction:column}
-        .s-acc{height:2px;background:var(--acc);box-shadow:0 0 6px var(--acc-g)}
-        .s-top{height:32px;background:#121212;border-bottom:1px solid #1e1e1e;display:flex;align-items:center;justify-content:space-between;padding:0 10px;user-select:none}
-        .s-brand{font-size:.78rem;font-weight:700;color:#eee}.s-brand span{color:var(--acc)}
-        .s-user{font-size:.7rem;color:#555}
-        .s-ctrls{display:flex;gap:4px}
-        .s-ctrl{width:18px;height:18px;background:#1c1c1c;border:none;border-radius:3px;color:#555;font-size:.6rem;font-weight:bold;cursor:pointer;display:grid;place-items:center;transition:.1s}.s-ctrl:hover{background:#2a2a2a;color:#fff}.s-ctrl.x:hover{background:#b02020}
-        .s-tabs{height:26px;background:#121212;border-bottom:1px solid #1e1e1e;display:flex;align-items:stretch;padding:0 4px}
-        .s-tab{padding:0 11px;background:none;border:none;color:#555;font-size:.72rem;font-weight:600;cursor:pointer;position:relative;transition:.11s}.s-tab:hover{color:#bbb}.s-tab.on{color:#eee}.s-tab.on::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--acc)}
-        .s-body{display:flex;height:300px}
-        .s-col{flex:1;padding:8px;overflow-y:auto;display:flex;flex-direction:column;gap:6px}.s-col:first-child{border-right:1px solid #1a1a1a}
-        .s-sec{background:#161616;border:1px solid #242424;border-radius:4px;padding:5px 7px;display:flex;flex-direction:column;gap:3px}
-        .s-sec-t{font-size:.58rem;font-weight:700;color:#3e3e3e;text-transform:uppercase;letter-spacing:.06em;padding-bottom:3px;border-bottom:1px solid #1e1e1e;margin-bottom:1px}
-        .s-row{display:flex;align-items:center;gap:6px;padding:1px 0;cursor:pointer;user-select:none}
-        .s-cb{width:11px;height:11px;background:#1c1c1c;border:1px solid #303030;border-radius:2px;display:grid;place-items:center;font-size:.5rem;color:#fff;transition:.13s;flex-shrink:0}
-        .s-row.on .s-cb{background:var(--acc);border-color:var(--acc)}
-        .s-lbl{font-size:.73rem;color:#555;transition:.11s}.s-row.on .s-lbl{color:#ccc}
-        .s-val{margin-left:auto;font-size:.64rem;color:#3e3e3e}
-        .s-sl{padding:2px 0}
-        .s-sl-h{display:flex;justify-content:space-between;font-size:.68rem;color:#555;margin-bottom:3px}
-        .s-sl-v{color:#bbb;font-weight:600;font-family:'Fira Code',monospace;font-size:.64rem}
-        .s-tr{height:3px;background:#222;border-radius:2px;position:relative;cursor:pointer}
-        .s-fi{height:100%;background:var(--acc);border-radius:2px;position:relative}
-        .s-kn{width:7px;height:7px;background:#fff;border-radius:50%;position:absolute;right:-3px;top:-2px}
-        .s-dd{cursor:pointer;position:relative}
-        .s-dd-h{display:flex;align-items:center;justify-content:space-between;background:#1a1a1a;border:1px solid #242424;border-radius:3px;padding:3px 6px;font-size:.7rem}
-        .s-dd-l{color:#555}.s-dd-v{color:#bbb;font-size:.66rem}.s-dd-a{color:#3e3e3e;font-size:.55rem;transition:.13s}
-        .s-dd.op .s-dd-a{transform:rotate(180deg)}
-        .s-dd-list{display:none;background:#1a1a1a;border:1px solid #242424;border-top:none;border-radius:0 0 3px 3px;position:relative;z-index:20}
-        .s-dd.op .s-dd-list{display:block}
-        .s-dd-o{padding:3px 6px;font-size:.68rem;color:#777;cursor:pointer;transition:.1s}.s-dd-o:hover{background:#222;color:#ddd}.s-dd-o.on{color:var(--acc)}
-        .s-btn{background:#1a1a1a;border:1px solid #242424;border-radius:3px;padding:4px 8px;font-size:.7rem;color:#aaa;cursor:pointer;text-align:center;transition:.12s;margin-top:2px}
-        .s-btn:hover{background:var(--acc);color:#000;border-color:var(--acc)}
+/* ── Page Hero ────────────────────────────────────── */
+.page-hero{
+  padding-bottom:40px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:48px;
+}
+.page-hero-eyebrow{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:12px;font-weight:600;
+  color:var(--acc);
+  background:rgba(var(--acc-rgb),.1);
+  padding:3px 10px;border-radius:20px;
+  border:1px solid rgba(var(--acc-rgb),.2);
+  margin-bottom:14px;
+}
+.page-hero h1{
+  font-size:36px;font-weight:800;
+  letter-spacing:-.03em;line-height:1.15;
+  margin-bottom:14px;
+  color:#fff;
+}
+.page-hero p{
+  font-size:16px;color:var(--text2);
+  max-width:600px;line-height:1.8;
+  margin-bottom:28px;
+}
+.feat-grid{
+  display:flex;flex-wrap:wrap;gap:8px;
+  margin-bottom:32px;
+}
+.feat-chip{
+  display:flex;align-items:center;gap:6px;
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:5px 12px;font-size:13px;color:var(--text2);
+}
+.feat-chip .dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--acc);flex-shrink:0;
+}
 
-        /* Doc sections */
-        .ds{padding:24px 0;border-bottom:1px solid var(--border)}.ds:last-child{border-bottom:none}
-        .dt{font-size:1.1rem;font-weight:700;margin-bottom:5px;display:flex;align-items:center;gap:7px}
-        .dt code{font-family:'Fira Code',monospace;font-size:.9rem;color:var(--acc);background:rgba(var(--acc-rgb),.08);padding:2px 7px;border-radius:3px}
-        .dd{color:var(--dim);font-size:.85rem;margin-bottom:12px}
-        .ret{display:inline-flex;align-items:center;gap:4px;font-size:.75rem;background:rgba(var(--acc-rgb),.08);color:var(--acc);padding:3px 9px;border-radius:4px;border:1px solid rgba(var(--acc-rgb),.2);margin-bottom:11px;font-family:'Fira Code',monospace}
-        table.api{width:100%;border-collapse:collapse;font-size:.78rem;background:var(--card);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-bottom:14px}
-        table.api th{background:var(--el);color:var(--text);text-align:left;padding:7px 11px;font-weight:600;border-bottom:1px solid var(--border)}
-        table.api td{padding:6px 11px;border-bottom:1px solid var(--border);color:var(--dim)}
-        table.api tr:last-child td{border-bottom:none}
-        table.api code{font-family:'Fira Code',monospace;font-size:.72rem;color:#e2e8f0;background:#101014;padding:1px 4px;border-radius:3px;border:1px solid #1e1e26}
+/* ── Callout box ──────────────────────────────────── */
+.callout{
+  display:flex;align-items:flex-start;gap:12px;
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-left:3px solid var(--acc);
+  border-radius:8px;
+  padding:14px 16px;
+  margin:20px 0;
+  font-size:13.5px;color:var(--text2);
+}
+.callout.green{border-left-color:var(--green)}
+.callout.blue{border-left-color:var(--blue)}
+.callout.orange{border-left-color:var(--orange)}
+.callout-icon{font-size:16px;flex-shrink:0;margin-top:1px}
 
-        footer{border-top:1px solid var(--border);padding:18px;text-align:center;color:var(--mute);font-size:.72rem;background:var(--surface)}
-        @media(max-width:820px){aside{display:none}main{margin-left:0;padding:18px 14px 60px}}
-    </style>
+/* ── Section divider ──────────────────────────────── */
+.doc-section{
+  padding:48px 0 40px;
+  border-bottom:1px solid var(--border);
+}
+.doc-section:last-child{border-bottom:none}
+
+/* ── Method header ────────────────────────────────── */
+.method-header{margin-bottom:10px}
+.method-label{
+  font-size:11px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--text3);margin-bottom:8px;
+}
+.method-title{
+  font-size:22px;font-weight:700;
+  color:#fff;letter-spacing:-.02em;
+  display:flex;align-items:center;gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:8px;
+}
+.method-title code{
+  font-family:'Fira Code',monospace;
+  font-size:18px;
+  color:var(--acc);
+  background:rgba(var(--acc-rgb),.08);
+  padding:2px 10px;border-radius:5px;
+}
+.method-desc{
+  font-size:14.5px;color:var(--text2);
+  max-width:680px;line-height:1.75;
+  margin-bottom:20px;
+}
+
+/* ── Return badge ─────────────────────────────────── */
+.returns{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:6px 14px;
+  font-size:13px;
+  margin-bottom:20px;
+}
+.returns-label{color:var(--text3);font-weight:500}
+.returns-type{
+  font-family:'Fira Code',monospace;
+  font-size:12px;color:var(--green);
+}
+
+/* ── Params table ─────────────────────────────────── */
+.params-title{
+  font-size:12px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.07em;
+  color:var(--text3);margin-bottom:8px;
+}
+.params-table{
+  width:100%;border-collapse:collapse;
+  border:1px solid var(--border);
+  border-radius:8px;overflow:hidden;
+  margin-bottom:24px;font-size:13.5px;
+}
+.params-table th{
+  background:var(--bg3);
+  color:var(--text2);font-weight:600;
+  text-align:left;padding:9px 14px;
+  border-bottom:1px solid var(--border);
+  font-size:12px;text-transform:uppercase;letter-spacing:.05em;
+}
+.params-table td{
+  padding:9px 14px;
+  border-bottom:1px solid var(--border);
+  vertical-align:top;
+}
+.params-table tr:last-child td{border-bottom:none}
+.params-table tr:hover td{background:rgba(255,255,255,.02)}
+/* param name */
+.p-name{
+  font-family:'Fira Code',monospace;
+  font-size:13px;color:#e2e8f0;font-weight:500;
+}
+.p-req{
+  font-size:10px;color:var(--acc);
+  background:rgba(var(--acc-rgb),.1);
+  padding:1px 5px;border-radius:3px;
+  margin-left:4px;font-weight:600;
+  vertical-align:middle;
+}
+/* type badges */
+.type{
+  display:inline-block;
+  font-family:'Fira Code',monospace;
+  font-size:11.5px;font-weight:500;
+  padding:1px 7px;border-radius:4px;
+  white-space:nowrap;
+}
+.type-str   {background:rgba(88,166,255,.12);color:#58a6ff}
+.type-num   {background:rgba(63,185,80,.12);color:#3fb950}
+.type-bool  {background:rgba(224,48,48,.12);color:#ff7b72}
+.type-fn    {background:rgba(188,140,255,.12);color:#bc8cff}
+.type-tbl   {background:rgba(245,158,11,.12);color:#f0883e}
+.type-kc    {background:rgba(188,140,255,.12);color:#bc8cff}
+.type-c3    {background:rgba(63,185,80,.12);color:#3fb950}
+.type-any   {background:var(--bg4);color:var(--text3)}
+/* default */
+.p-default{
+  font-family:'Fira Code',monospace;
+  font-size:12px;color:var(--text3);
+}
+/* description */
+.p-desc{color:var(--text2);font-size:13.5px}
+.p-desc code{
+  font-family:'Fira Code',monospace;
+  font-size:12px;background:var(--bg4);
+  padding:1px 5px;border-radius:3px;
+  border:1px solid var(--border2);color:#e2e8f0;
+}
+
+/* ── Code block ───────────────────────────────────── */
+.code-block{
+  background:#0a0a0c;
+  border:1px solid var(--border);
+  border-radius:8px;
+  overflow:hidden;
+  margin:16px 0 8px;
+}
+.code-block-header{
+  display:flex;align-items:center;justify-content:space-between;
+  background:#101014;
+  border-bottom:1px solid var(--border);
+  padding:8px 16px;
+}
+.code-block-lang{
+  font-size:11px;font-family:'Fira Code',monospace;
+  color:var(--text3);text-transform:uppercase;
+  display:flex;align-items:center;gap:6px;
+}
+.code-block-lang::before{
+  content:'';width:8px;height:8px;border-radius:50%;
+  background:var(--acc);display:inline-block;
+}
+.copy-code{
+  background:transparent;border:1px solid var(--border);
+  border-radius:4px;padding:3px 10px;
+  color:var(--text3);font-size:12px;cursor:pointer;
+  display:flex;align-items:center;gap:5px;transition:.12s;
+}
+.copy-code:hover{color:var(--text);border-color:var(--border2)}
+.copy-code.ok{color:var(--green);border-color:var(--green)}
+pre{
+  padding:18px 20px;
+  overflow-x:auto;
+  font-family:'Fira Code',monospace;
+  font-size:13px;line-height:1.7;
+  color:#c9d1d9;
+}
+/* syntax */
+.kw {color:#ff7b72;font-weight:600}
+.fn {color:#d2a8ff}
+.str{color:#a5d6ff}
+.num{color:#79c0ff}
+.cmt{color:#484f58;font-style:italic}
+.vr {color:#7ee787}
+.op {color:#e2e8f0}
+.pn {color:#e2e8f0}
+
+/* ── Steps ────────────────────────────────────────── */
+.steps{display:flex;flex-direction:column;gap:0;margin:20px 0}
+.step{display:flex;gap:16px;position:relative;padding-bottom:24px}
+.step:last-child{padding-bottom:0}
+.step-num{
+  width:28px;height:28px;border-radius:50%;
+  background:rgba(var(--acc-rgb),.15);
+  border:1px solid rgba(var(--acc-rgb),.3);
+  color:var(--acc);font-weight:700;font-size:13px;
+  display:grid;place-items:center;flex-shrink:0;
+  position:relative;z-index:1;
+}
+.step-line{
+  position:absolute;left:13px;top:28px;bottom:0;
+  width:1px;background:var(--border);
+}
+.step:last-child .step-line{display:none}
+.step-body{flex:1;padding-top:3px}
+.step-title{font-weight:600;font-size:14px;color:#fff;margin-bottom:4px}
+.step-desc{font-size:13.5px;color:var(--text2)}
+
+/* ── Inline code ──────────────────────────────────── */
+p code, li code, td code{
+  font-family:'Fira Code',monospace;
+  font-size:12.5px;
+  background:var(--bg4);
+  padding:1px 5px;border-radius:3px;
+  border:1px solid var(--border2);
+  color:#e2e8f0;
+}
+
+/* ── Notification demo ────────────────────────────── */
+.notify-demo{
+  display:flex;flex-wrap:wrap;gap:8px;margin:16px 0;
+}
+.toast-chip{
+  display:flex;align-items:center;gap:8px;
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:6px;padding:7px 13px;
+  font-size:13px;
+}
+.toast-chip .ti{font-size:15px}
+.toast-chip.s{border-left:3px solid var(--green)}
+.toast-chip.e{border-left:3px solid var(--acc)}
+.toast-chip.w{border-left:3px solid var(--orange)}
+.toast-chip.i{border-left:3px solid var(--blue)}
+
+/* ── Watermark demo ───────────────────────────────── */
+.wm-preview{
+  background:#0a0a0c;border:1px solid var(--border);
+  border-radius:8px;padding:20px;
+  display:flex;justify-content:flex-end;
+  font-family:'Fira Code',monospace;
+  font-size:12px;margin:12px 0;
+}
+.wm-chip{
+  background:rgba(20,20,20,.85);
+  border:1px solid var(--border);
+  border-radius:5px;padding:4px 10px;
+  color:var(--text2);
+}
+.wm-chip .fps{color:var(--green)}
+
+/* ── Responsive ───────────────────────────────────── */
+@media(max-width:900px){
+  .sidebar{display:none}
+  .content{margin-left:0;padding:24px 18px 80px}
+  .page-hero h1{font-size:28px}
+}
+</style>
 </head>
 <body>
 
-<header>
-    <a href="#" class="brand">
-        <div class="brand-icon">H</div>
-        <span class="brand-name">Hutame<span>Hub</span></span>
-        <span class="brand-ver">v2.0</span>
+<!-- ── Topbar ──────────────────────────────────── -->
+<header class="topbar">
+  <div class="logo">
+    <div class="logo-icon">H</div>
+    <span class="logo-name">Hutame<span>Hub</span></span>
+    <span class="logo-ver">v2.0</span>
+  </div>
+  <div class="topbar-right">
+    <a class="gh-link" href="https://github.com/hutamev2/HutameHub-Lib" target="_blank">
+      ⭐ GitHub
     </a>
-    <div class="hright">
-        <div class="pal">
-            <span>Accent:</span>
-            <div class="dot active" style="background:#dc3232" data-c="#dc3232" data-r="220,50,50"></div>
-            <div class="dot" style="background:#3b82f6" data-c="#3b82f6" data-r="59,130,246"></div>
-            <div class="dot" style="background:#22c55e" data-c="#22c55e" data-r="34,197,94"></div>
-            <div class="dot" style="background:#f59e0b" data-c="#f59e0b" data-r="245,158,11"></div>
-            <div class="dot" style="background:#a855f7" data-c="#a855f7" data-r="168,85,247"></div>
-        </div>
-        <button class="btn btn-ghost" onclick="copyLoad()">📋 Loadstring Kopyala</button>
-        <a class="btn btn-acc" href="https://github.com/hutamev2/HutameHub-Lib" target="_blank">GitHub →</a>
-    </div>
+    <button class="copy-ls-btn" id="copyLsBtn" onclick="copyLoadstring()">
+      Copy Loadstring
+    </button>
+  </div>
 </header>
 
 <div class="layout">
-<aside>
-    <div class="srch"><span class="srch-ic">🔍</span><input type="text" id="srch" placeholder="Ara..." oninput="doFilter()"></div>
-    <div class="ng"><h4>Başlangıç</h4>
-        <ul class="nl">
-            <li><a href="#qs" class="active">Hızlı Başlangıç</a></li>
-            <li><a href="#sim">Canlı Simülatör</a></li>
-        </ul>
-    </div>
-    <div class="ng"><h4>API</h4>
-        <ul class="nl">
-            <li><a href="#s-window">Library.new <span class="tag">Window</span></a></li>
-            <li><a href="#s-tab">CreateTab <span class="tag">Tab</span></a></li>
-            <li><a href="#s-section">CreateSection <span class="tag">Section</span></a></li>
-            <li><a href="#s-toggle">CreateToggle <span class="tag">Checkbox</span></a></li>
-            <li><a href="#s-slider">CreateSlider <span class="tag">Bar</span></a></li>
-            <li><a href="#s-dropdown">CreateDropdown <span class="tag">List</span></a></li>
-            <li><a href="#s-textbox">CreateTextbox <span class="tag">Input</span></a></li>
-            <li><a href="#s-keybind">CreateKeybind <span class="tag">Key</span></a></li>
-            <li><a href="#s-color">CreateColorPicker <span class="tag">RGB</span></a></li>
-            <li><a href="#s-button">CreateButton <span class="tag">Btn</span></a></li>
-            <li><a href="#s-multidd">CreateMultiDropdown <span class="tag">Multi</span></a></li>
-        </ul>
-    </div>
-    <div class="ng"><h4>Hub Özellikleri</h4>
-        <ul class="nl">
-            <li><a href="#s-notify">Notify <span class="tag">Toast</span></a></li>
-            <li><a href="#s-watermark">SetWatermark <span class="tag">HUD</span></a></li>
-            <li><a href="#s-config">SaveConfig / LoadConfig <span class="tag">Save</span></a></li>
-        </ul>
-    </div>
-</aside>
 
-<main>
+<!-- ── Left Sidebar ───────────────────────────── -->
+<nav class="sidebar">
+  <div class="sb-search">
+    <span class="sb-search-ic">🔍</span>
+    <input type="text" id="sbSearch" placeholder="Search docs…" oninput="filterNav()">
+  </div>
 
-<!-- Hero -->
-<section class="hero" id="qs">
-    <div class="htag">⚡ Private Hub Style · Two-Column · Compact</div>
-    <h2>HutameHub Library</h2>
-    <p>Roblox'un en iyi private hublarından ilham alınan; yatay sekme çubuğu, iki kolonlu layout ve kompakt checkbox/slider tasarımlı Luau UI kütüphanesi.</p>
-    <div class="feats">
-        <div class="feat"><span>✓</span> Yatay Tab Bar</div>
-        <div class="feat"><span>✓</span> Sol / Sağ İki Kolon</div>
-        <div class="feat"><span>✓</span> Checkbox Toggle</div>
-        <div class="feat"><span>✓</span> İnce Slider</div>
-        <div class="feat"><span>✓</span> Ripple Button</div>
-        <div class="feat"><span>✓</span> SetAccent() Canlı</div>
-        <div class="feat"><span>✓</span> Notification Toast</div>
-        <div class="feat"><span>✓</span> Config Save / Load</div>
-        <div class="feat"><span>✓</span> Multi-Select Dropdown</div>
-        <div class="feat"><span>✓</span> FPS Watermark</div>
+  <div class="sb-group">
+    <div class="sb-group-title">Getting Started</div>
+    <ul class="sb-links">
+      <li><a href="#intro" class="active">Introduction</a></li>
+      <li><a href="#quickstart">Quick Start</a></li>
+    </ul>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-title">Window & Tabs</div>
+    <ul class="sb-links">
+      <li><a href="#s-window">Library.new <span class="sb-badge">Window</span></a></li>
+      <li><a href="#s-tab">CreateTab <span class="sb-badge">Tab</span></a></li>
+      <li><a href="#s-section">CreateSection <span class="sb-badge">Section</span></a></li>
+    </ul>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-title">Elements</div>
+    <ul class="sb-links">
+      <li><a href="#s-toggle">CreateToggle <span class="sb-badge">Bool</span></a></li>
+      <li><a href="#s-slider">CreateSlider <span class="sb-badge">Number</span></a></li>
+      <li><a href="#s-dropdown">CreateDropdown <span class="sb-badge">String</span></a></li>
+      <li><a href="#s-multidd">CreateMultiDropdown <span class="sb-badge">Table</span></a></li>
+      <li><a href="#s-textbox">CreateTextbox <span class="sb-badge">Input</span></a></li>
+      <li><a href="#s-keybind">CreateKeybind <span class="sb-badge">Key</span></a></li>
+      <li><a href="#s-color">CreateColorPicker <span class="sb-badge">Color</span></a></li>
+      <li><a href="#s-button">CreateButton <span class="sb-badge">Action</span></a></li>
+    </ul>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-title">Hub Features</div>
+    <ul class="sb-links">
+      <li><a href="#s-notify">Notify <span class="sb-badge">Toast</span></a></li>
+      <li><a href="#s-watermark">SetWatermark <span class="sb-badge">HUD</span></a></li>
+      <li><a href="#s-config">SaveConfig / LoadConfig <span class="sb-badge">Persist</span></a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ── Main Content ────────────────────────────── -->
+<main class="content">
+
+<!-- ════ INTRODUCTION ════ -->
+<section class="page-hero" id="intro">
+  <div class="page-hero-eyebrow">⚡ Private Hub Style · Luau</div>
+  <h1>HutameHub Library</h1>
+  <p>A compact, two-column Roblox Luau UI framework inspired by the best private hubs. Horizontal tab bar, checkbox toggles, thin sliders — built entirely with Roblox's native API.</p>
+
+  <div class="feat-grid">
+    <div class="feat-chip"><span class="dot"></span>Horizontal Tab Bar</div>
+    <div class="feat-chip"><span class="dot"></span>Two-Column Layout</div>
+    <div class="feat-chip"><span class="dot"></span>Checkbox Toggles</div>
+    <div class="feat-chip"><span class="dot"></span>Thin Slider Bars</div>
+    <div class="feat-chip"><span class="dot"></span>Toast Notifications</div>
+    <div class="feat-chip"><span class="dot"></span>Config Save / Load</div>
+    <div class="feat-chip"><span class="dot"></span>FPS Watermark</div>
+    <div class="feat-chip"><span class="dot"></span>Live Accent Color</div>
+  </div>
+
+  <div class="callout blue">
+    <span class="callout-icon">💡</span>
+    <span>Every parameter in every element is <strong>optional</strong> unless marked <code>required</code>. Defaults are listed in each table below.</span>
+  </div>
+</section>
+
+<!-- ════ QUICK START ════ -->
+<section class="doc-section" id="quickstart">
+  <div class="method-header">
+    <div class="method-label">Getting Started</div>
+    <div class="method-title">Quick Start</div>
+    <p class="method-desc">Load the library, create a window, add tabs and sections, then fill them with elements. That's the whole model.</p>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-line"></div>
+      <div class="step-body">
+        <div class="step-title">Load the library</div>
+        <div class="step-desc">Paste this at the top of your script. The <code>loadstring</code> call fetches and executes the latest version.</div>
+      </div>
     </div>
-    <div class="cc">
-        <div class="cc-hdr"><span class="cc-lang">Luau · Hızlı Kurulum</span><button class="cp" onclick="copySnippet(this,'qs-code')">Kopyala</button></div>
-        <pre id="qs-code"><code><span class="kw">local</span> <span class="vr">Library</span> = <span class="fn">loadstring</span>(game:<span class="fn">HttpGet</span>(<span class="str">"https://raw.githubusercontent.com/hutamev2/HutameHub-Lib/main/Source.lua"</span>))()
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-line"></div>
+      <div class="step-body">
+        <div class="step-title">Create a window</div>
+        <div class="step-desc">Call <code>Library.new()</code> with your title and accent color. This builds the full UI frame.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-line"></div>
+      <div class="step-body">
+        <div class="step-title">Add tabs → sections → elements</div>
+        <div class="step-desc">Tabs go on the horizontal bar. Each tab has a left and right column. Sections are cards inside columns.</div>
+      </div>
+    </div>
+  </div>
 
+  <div class="code-block">
+    <div class="code-block-header">
+      <span class="code-block-lang">luau</span>
+      <button class="copy-code" onclick="copyCode(this,'qs')">Copy</button>
+    </div>
+    <pre id="qs"><code><span class="kw">local</span> <span class="vr">Library</span> = <span class="fn">loadstring</span>(game:<span class="fn">HttpGet</span>(
+    <span class="str">"https://raw.githubusercontent.com/hutamev2/HutameHub-Lib/main/Source.lua"</span>
+))()
+
+<span class="cmt">-- 1. Create the window</span>
 <span class="kw">local</span> <span class="vr">Hub</span> = <span class="vr">Library</span>.<span class="fn">new</span>({
     <span class="vr">Title</span>     = <span class="str">"MyHub"</span>,
     <span class="vr">Version</span>   = <span class="str">"v1.0"</span>,
@@ -203,478 +607,598 @@
     <span class="vr">ToggleKey</span> = Enum.KeyCode.RightControl
 })
 
-<span class="kw">local</span> <span class="vr">Tab</span>   = <span class="vr">Hub</span>:<span class="fn">CreateTab</span>(<span class="str">"Combat"</span>)
-<span class="kw">local</span> <span class="vr">Left</span>  = <span class="vr">Tab</span>:<span class="fn">CreateSection</span>(<span class="str">"Silent Aim"</span>)
-<span class="kw">local</span> <span class="vr">Right</span> = <span class="vr">Tab</span>:<span class="fn">CreateSection</span>(<span class="str">"Extras"</span>, <span class="str">"right"</span>)
+<span class="cmt">-- 2. Add a tab</span>
+<span class="kw">local</span> <span class="vr">CombatTab</span> = <span class="vr">Hub</span>:<span class="fn">CreateTab</span>(<span class="str">"Combat"</span>)
 
-<span class="vr">Left</span>:<span class="fn">CreateToggle</span>({ <span class="vr">Title</span>=<span class="str">"Enable Silent Aim"</span>, <span class="vr">Default</span>=<span class="kw">false</span>, <span class="vr">Callback</span>=<span class="kw">function</span>(<span class="vr">s</span>) <span class="fn">print</span>(<span class="vr">s</span>) <span class="kw">end</span> })
-<span class="vr">Left</span>:<span class="fn">CreateSlider</span>({ <span class="vr">Title</span>=<span class="str">"FOV"</span>, <span class="vr">Min</span>=<span class="num">10</span>, <span class="vr">Max</span>=<span class="num">500</span>, <span class="vr">Default</span>=<span class="num">150</span>, <span class="vr">Suffix</span>=<span class="str">" px"</span> })
-<span class="vr">Right</span>:<span class="fn">CreateToggle</span>({ <span class="vr">Title</span>=<span class="str">"Show FOV Circle"</span>, <span class="vr">Default</span>=<span class="kw">true</span> })
-<span class="vr">Right</span>:<span class="fn">CreateDropdown</span>({ <span class="vr">Title</span>=<span class="str">"Aim Part"</span>, <span class="vr">Options</span>={<span class="str">"Head"</span>,<span class="str">"Torso"</span>,<span class="str">"HRP"</span>}, <span class="vr">Default</span>=<span class="str">"Head"</span> })</code></pre>
-    </div>
+<span class="cmt">-- 3. Create sections (left column by default, pass "right" for right column)</span>
+<span class="kw">local</span> <span class="vr">AimSection</span>    = <span class="vr">CombatTab</span>:<span class="fn">CreateSection</span>(<span class="str">"Silent Aim"</span>)
+<span class="kw">local</span> <span class="vr">ExtrasSection</span> = <span class="vr">CombatTab</span>:<span class="fn">CreateSection</span>(<span class="str">"Extras"</span>, <span class="str">"right"</span>)
+
+<span class="cmt">-- 4. Fill with elements</span>
+<span class="vr">AimSection</span>:<span class="fn">CreateToggle</span>({
+    <span class="vr">Title</span>    = <span class="str">"Enable Silent Aim"</span>,
+    <span class="vr">Default</span>  = <span class="kw">false</span>,
+    <span class="vr">Callback</span> = <span class="kw">function</span>(<span class="vr">enabled</span>)
+        <span class="fn">print</span>(<span class="str">"Silent Aim:"</span>, <span class="vr">enabled</span>)
+    <span class="kw">end</span>
+})
+
+<span class="vr">AimSection</span>:<span class="fn">CreateSlider</span>({
+    <span class="vr">Title</span>    = <span class="str">"FOV Radius"</span>,
+    <span class="vr">Min</span>      = <span class="num">10</span>,
+    <span class="vr">Max</span>      = <span class="num">500</span>,
+    <span class="vr">Default</span>  = <span class="num">150</span>,
+    <span class="vr">Suffix</span>   = <span class="str">" px"</span>,
+    <span class="vr">Callback</span> = <span class="kw">function</span>(<span class="vr">value</span>)
+        <span class="fn">print</span>(<span class="str">"FOV:"</span>, <span class="vr">value</span>)
+    <span class="kw">end</span>
+})
+
+<span class="vr">ExtrasSection</span>:<span class="fn">CreateDropdown</span>({
+    <span class="vr">Title</span>    = <span class="str">"Aim Part"</span>,
+    <span class="vr">Options</span>  = {<span class="str">"Head"</span>, <span class="str">"Torso"</span>, <span class="str">"HumanoidRootPart"</span>},
+    <span class="vr">Default</span>  = <span class="str">"Head"</span>,
+    <span class="vr">Callback</span> = <span class="kw">function</span>(<span class="vr">selected</span>)
+        <span class="fn">print</span>(<span class="str">"Aim part:"</span>, <span class="vr">selected</span>)
+    <span class="kw">end</span>
+})</code></pre>
+  </div>
 </section>
 
-<!-- Simulator -->
-<section id="sim" style="margin-bottom:44px">
-    <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:4px">🎮 Canlı Simülatör</h2>
-    <p style="color:var(--dim);font-size:.85rem;margin-bottom:14px">Sekmelere tıkla, toggle'ları, slider'ları ve dropdown'ları test et.</p>
-    <div class="sim-wrap">
-        <div class="sim">
-            <div class="s-acc"></div>
-            <div class="s-top">
-                <span class="s-brand"><span>MyHub</span> <span style="color:#444;font-weight:400;font-size:.7rem">v1.0</span></span>
-                <span class="s-user">TigerDustyPixelated2</span>
-                <div class="s-ctrls">
-                    <button class="s-ctrl" onclick="simMini()">—</button>
-                    <button class="s-ctrl x" onclick="simClose()">✕</button>
-                </div>
-            </div>
-            <div class="s-tabs">
-                <button class="s-tab on" onclick="simSwitch('silent',this)">Silent</button>
-                <button class="s-tab" onclick="simSwitch('movement',this)">Movement</button>
-                <button class="s-tab" onclick="simSwitch('esp',this)">ESP</button>
-                <button class="s-tab" onclick="simSwitch('misc',this)">Misc</button>
-                <button class="s-tab" onclick="simSwitch('settings',this)">Settings</button>
-            </div>
-            <div class="s-body" id="sBody">
-                <!-- LEFT -->
-                <div class="s-col">
-                    <!-- silent left -->
-                    <div data-tab="silent" class="stv">
-                        <div class="s-sec">
-                            <div class="s-sec-t">Silent Aim Settings</div>
-                            <div class="s-row" onclick="st(this)"><div class="s-cb"></div><span class="s-lbl">Enable Silent Aim</span></div>
-                            <div class="s-row on" onclick="st(this)"><div class="s-cb">✓</div><span class="s-lbl">Team Check</span></div>
-                            <div class="s-row on" onclick="st(this)"><div class="s-cb">✓</div><span class="s-lbl">Wall Check</span></div>
-                            <div class="s-row" onclick="st(this)"><div class="s-cb"></div><span class="s-lbl">Death Check</span></div>
-                            <div class="s-row" onclick="st(this)"><div class="s-cb"></div><span class="s-lbl">Hostile Check</span></div>
-                        </div>
-                        <div class="s-sec">
-                            <div class="s-sec-t">Hit Chance</div>
-                            <div class="s-sl"><div class="s-sl-h"><span>Hit Chance</span><span class="s-sl-v" id="v1">100/100</span></div><div class="s-tr" onclick="ss(event,this,'v1',100)"><div class="s-fi" style="width:100%"><div class="s-kn"></div></div></div></div>
-                            <div class="s-sl"><div class="s-sl-h"><span>Miss Spread</span><span class="s-sl-v" id="v2">5/20</span></div><div class="s-tr" onclick="ss(event,this,'v2',20)"><div class="s-fi" style="width:25%"><div class="s-kn"></div></div></div></div>
-                        </div>
-                    </div>
-                    <!-- movement left -->
-                    <div data-tab="movement" class="stv" style="display:none">
-                        <div class="s-sec">
-                            <div class="s-sec-t">Speed</div>
-                            <div class="s-row on" onclick="st(this)"><div class="s-cb">✓</div><span class="s-lbl">Speed Hack</span></div>
-                            <div class="s-row" onclick="st(this)"><div class="s-cb"></div><span class="s-lbl">Infinite Jump</span></div>
-                            <div class="s-sl"><div class="s-sl-h"><span>Walk Speed</span><span class="s-sl-v" id="v3">16/200</span></div><div class="s-tr" onclick="ss(event,this,'v3',200)"><div class="s-fi" style="width:8%"><div class="s-kn"></div></div></div></div>
-                        </div>
-                    </div>
-                    <!-- esp left -->
-                    <div data-tab="esp" class="stv" style="display:none">
-                        <div class="s-sec">
-                            <div class="s-sec-t">Player ESP</div>
-                            <div class="s-row on" onclick="st(this)"><div class="s-cb">✓</div><span class="s-lbl">Enabled</span></div>
-                            <div class="s-row on" onclick="st(this)"><div class="s-cb">✓</div><span class="s-lbl">Box</span></div>
-                            <div class="s-row on" onclick="st(this)"><div class="s-cb">✓</div><span class="s-lbl">Name</span></div>
-                            <div class="s-row" onclick="st(this)"><div class="s-cb"></div><span class="s-lbl">Distance</span></div>
-                            <div class="s-sl"><div class="s-sl-h"><span>Max Distance</span><span class="s-sl-v" id="v4">2000/5000</span></div><div class="s-tr" onclick="ss(event,this,'v4',5000)"><div class="s-fi" style="width:40%"><div class="s-kn"></div></div></div></div>
-                        </div>
-                    </div>
-                    <!-- misc left -->
-                    <div data-tab="misc" class="stv" style="display:none">
-                        <div class="s-sec">
-                            <div class="s-sec-t">Misc</div>
-                            <div class="s-row" onclick="st(this)"><div class="s-cb"></div><span class="s-lbl">Anti-AFK</span></div>
-                            <div class="s-row" onclick="st(this)"><div class="s-cb"></div><span class="s-lbl">Auto Rejoin</span></div>
-                            <div class="s-row on" onclick="st(this)"><div class="s-cb">✓</div><span class="s-lbl">Performance Saver</span></div>
-                        </div>
-                    </div>
-                    <!-- settings left -->
-                    <div data-tab="settings" class="stv" style="display:none">
-                        <div class="s-sec">
-                            <div class="s-sec-t">Configuration</div>
-                            <div class="s-row on" onclick="st(this)"><div class="s-cb">✓</div><span class="s-lbl">Auto-Load</span></div>
-                            <div class="s-row" onclick="st(this)"><div class="s-cb"></div><span class="s-lbl">Save on Exit</span></div>
-                        </div>
-                    </div>
-                </div>
-                <!-- RIGHT -->
-                <div class="s-col">
-                    <!-- silent right -->
-                    <div data-tab="silent" class="stv">
-                        <div class="s-sec">
-                            <div class="s-sec-t">Silent Aim Extras</div>
-                            <div class="s-row on" onclick="st(this)"><div class="s-cb">✓</div><span class="s-lbl">Damage Notification</span></div>
-                            <div class="s-row" onclick="st(this)"><div class="s-cb"></div><span class="s-lbl">Show FOV</span></div>
-                            <div class="s-sl"><div class="s-sl-h"><span>FOV Radius</span><span class="s-sl-v" id="v5">150/500</span></div><div class="s-tr" onclick="ss(event,this,'v5',500)"><div class="s-fi" style="width:30%"><div class="s-kn"></div></div></div></div>
-                        </div>
-                        <div class="s-sec">
-                            <div class="s-sec-t">Aim Part</div>
-                            <div class="s-dd" onclick="sdrop(this)">
-                                <div class="s-dd-h"><span class="s-dd-l">Aim Part</span><span class="s-dd-v" id="ddv">Head</span><span class="s-dd-a">▼</span></div>
-                                <div class="s-dd-list">
-                                    <div class="s-dd-o on" onclick="sdsel(event,'Head')">Head</div>
-                                    <div class="s-dd-o" onclick="sdsel(event,'Torso')">Torso</div>
-                                    <div class="s-dd-o" onclick="sdsel(event,'HumanoidRootPart')">HumanoidRootPart</div>
-                                    <div class="s-dd-o" onclick="sdsel(event,'Random')">Random</div>
-                                </div>
-                            </div>
-                            <div class="s-row" onclick="st(this)" style="margin-top:4px"><div class="s-cb"></div><span class="s-lbl">Random Parts</span></div>
-                            <div class="s-row on" onclick="st(this)"><div class="s-cb">✓</div><span class="s-lbl">Shield Breaker</span></div>
-                        </div>
-                    </div>
-                    <!-- movement right -->
-                    <div data-tab="movement" class="stv" style="display:none">
-                        <div class="s-sec">
-                            <div class="s-sec-t">Fly</div>
-                            <div class="s-row" onclick="st(this)"><div class="s-cb"></div><span class="s-lbl">Enable Fly</span></div>
-                            <div class="s-sl"><div class="s-sl-h"><span>Fly Speed</span><span class="s-sl-v" id="v6">50/200</span></div><div class="s-tr" onclick="ss(event,this,'v6',200)"><div class="s-fi" style="width:25%"><div class="s-kn"></div></div></div></div>
-                        </div>
-                    </div>
-                    <!-- esp right -->
-                    <div data-tab="esp" class="stv" style="display:none">
-                        <div class="s-sec">
-                            <div class="s-sec-t">Chams</div>
-                            <div class="s-row" onclick="st(this)"><div class="s-cb"></div><span class="s-lbl">Chams</span></div>
-                            <div class="s-row on" onclick="st(this)"><div class="s-cb">✓</div><span class="s-lbl">Tracers</span></div>
-                        </div>
-                    </div>
-                    <!-- misc right -->
-                    <div data-tab="misc" class="stv" style="display:none">
-                        <div class="s-sec">
-                            <div class="s-sec-t">Notifications</div>
-                            <div class="s-row on" onclick="st(this)"><div class="s-cb">✓</div><span class="s-lbl">Kill Notifications</span></div>
-                        </div>
-                    </div>
-                    <!-- settings right -->
-                    <div data-tab="settings" class="stv" style="display:none">
-                        <div class="s-sec">
-                            <div class="s-sec-t">Webhook</div>
-                            <div class="s-row" onclick="st(this)"><div class="s-cb"></div><span class="s-lbl">Enable Webhooks</span></div>
-                            <div class="s-btn" onclick="alert('Webhook gönderildi!')">Send Test Webhook</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<!-- ════ LIBRARY.NEW ════ -->
+<section class="doc-section" id="s-window">
+  <div class="method-header">
+    <div class="method-label">Window</div>
+    <div class="method-title"><code>Library.new(config)</code></div>
+    <p class="method-desc">Creates the hub window. Returns a <strong>Hub</strong> object that all tabs, sections and features attach to. Call this once at the top of your script.</p>
+  </div>
+
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">Hub</span>
+  </div>
+
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="p-name">Title</span></td>
+        <td><span class="type type-str">string</span></td>
+        <td><span class="p-default">"HutameHub"</span></td>
+        <td class="p-desc">Name shown in the topbar next to the version tag.</td>
+      </tr>
+      <tr>
+        <td><span class="p-name">Version</span></td>
+        <td><span class="type type-str">string</span></td>
+        <td><span class="p-default">"v1.0"</span></td>
+        <td class="p-desc">Version string shown dimmed beside the title.</td>
+      </tr>
+      <tr>
+        <td><span class="p-name">Accent</span></td>
+        <td><span class="type type-c3">Color3</span></td>
+        <td><span class="p-default">RGB(220,50,50)</span></td>
+        <td class="p-desc">Accent color applied to tab underlines, slider fills, active checkboxes, and button ripples.</td>
+      </tr>
+      <tr>
+        <td><span class="p-name">ToggleKey</span></td>
+        <td><span class="type type-kc">KeyCode</span></td>
+        <td><span class="p-default">RightControl</span></td>
+        <td class="p-desc">Keyboard key to show/hide the window.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="params-title">Methods</div>
+  <table class="params-table">
+    <thead><tr><th>Method</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="p-name">Hub:SetAccent(Color3)</span></td>
+        <td class="p-desc">Changes the accent color at runtime. All subscribed elements update instantly.</td>
+      </tr>
+      <tr>
+        <td><span class="p-name">Hub:Destroy()</span></td>
+        <td class="p-desc">Removes the UI and cleans up all connections.</td>
+      </tr>
+    </tbody>
+  </table>
 </section>
 
-<!-- API Docs -->
-<section class="ds" id="s-window">
-    <div class="dt"><code>Library.new(config)</code></div>
-    <p class="dd">Hub penceresini oluşturur. Tüm tab/section/element bu nesne üzerinden yönetilir.</p>
-    <div class="ret">→ Returns: Hub Object</div>
-    <table class="api">
-        <thead><tr><th>Parametre</th><th>Tip</th><th>Varsayılan</th><th>Açıklama</th></tr></thead>
-        <tbody>
-            <tr><td><code>Title</code></td><td>string</td><td>"HutameHub"</td><td>Topbar'da gösterilen hub adı</td></tr>
-            <tr><td><code>Version</code></td><td>string</td><td>"v1.0"</td><td>Hub adının yanında gösterilen sürüm</td></tr>
-            <tr><td><code>Accent</code></td><td>Color3</td><td>RGB(220,50,50)</td><td>Tab underline, slider fill ve aktif checkbox rengi</td></tr>
-            <tr><td><code>ToggleKey</code></td><td>Enum.KeyCode</td><td>RightControl</td><td>Pencereyi gizle/göster tuşu</td></tr>
-        </tbody>
-    </table>
-    <div class="cc"><div class="cc-hdr"><span class="cc-lang">Örnek</span><button class="cp" onclick="copySnippet(this,'ex1')">Kopyala</button></div>
-    <pre id="ex1"><code><span class="kw">local</span> <span class="vr">Hub</span> = <span class="vr">Library</span>.<span class="fn">new</span>({ <span class="vr">Title</span>=<span class="str">"MyHub"</span>, <span class="vr">Version</span>=<span class="str">"v1.3"</span>, <span class="vr">Accent</span>=Color3.<span class="fn">fromRGB</span>(<span class="num">220</span>,<span class="num">50</span>,<span class="num">50</span>) })
-<span class="vr">Hub</span>:<span class="fn">SetAccent</span>(Color3.<span class="fn">fromRGB</span>(<span class="num">59</span>,<span class="num">130</span>,<span class="num">246</span>))  <span class="cmt">-- canlı accent değiştir</span>
-<span class="vr">Hub</span>:<span class="fn">Destroy</span>()                               <span class="cmt">-- pencereyi kapat</span></code></pre></div>
+<!-- ════ CREATETAB ════ -->
+<section class="doc-section" id="s-tab">
+  <div class="method-header">
+    <div class="method-label">Tab</div>
+    <div class="method-title"><code>Hub:CreateTab(name)</code></div>
+    <p class="method-desc">Adds a button to the horizontal tab bar. Each tab contains an independent left and right scroll column. The first tab created is automatically activated.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">Tab</span>
+  </div>
+  <div class="params-title">Parameters</div>
+  <table class="params-table">
+    <thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="p-name">name<span class="p-req">required</span></span></td>
+        <td><span class="type type-str">string</span></td>
+        <td class="p-desc">Text shown on the tab button (e.g. <code>"Combat"</code>, <code>"ESP"</code>, <code>"Settings"</code>).</td>
+      </tr>
+    </tbody>
+  </table>
 </section>
 
-<section class="ds" id="s-tab">
-    <div class="dt"><code>Hub:CreateTab(name)</code></div>
-    <p class="dd">Yatay tab bar'a yeni bir sekme ekler. Her tab kendi içinde sol ve sağ ScrollingFrame kolonlarına sahiptir.</p>
-    <div class="ret">→ Returns: Tab Object</div>
-    <table class="api">
-        <thead><tr><th>Parametre</th><th>Tip</th><th>Açıklama</th></tr></thead>
-        <tbody><tr><td><code>name</code></td><td>string</td><td>Tab butonunda gösterilecek isim (ör: "Combat", "ESP", "Settings")</td></tr></tbody>
-    </table>
+<!-- ════ CREATESECTION ════ -->
+<section class="doc-section" id="s-section">
+  <div class="method-header">
+    <div class="method-label">Section</div>
+    <div class="method-title"><code>Tab:CreateSection(title, col?)</code></div>
+    <p class="method-desc">Adds a card container to either the left or right scroll column of the tab. Sections group related elements under a header label.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">Section</span>
+  </div>
+  <div class="params-title">Parameters</div>
+  <table class="params-table">
+    <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="p-name">title<span class="p-req">required</span></span></td>
+        <td><span class="type type-str">string</span></td>
+        <td>—</td>
+        <td class="p-desc">Uppercase label shown at the top of the card.</td>
+      </tr>
+      <tr>
+        <td><span class="p-name">col</span></td>
+        <td><span class="type type-str">string</span></td>
+        <td><span class="p-default">"left"</span></td>
+        <td class="p-desc">Which column to place the section in. Pass <code>"right"</code> for the right column.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <span class="callout-icon">📐</span>
+    <span>Sections in the <strong>left</strong> and <strong>right</strong> columns scroll independently, so you can pack each side with as many elements as you need.</span>
+  </div>
 </section>
 
-<section class="ds" id="s-section">
-    <div class="dt"><code>Tab:CreateSection(title, col?)</code></div>
-    <p class="dd">Tab'ın sol veya sağ kolonuna yeni bir kart bölümü ekler.</p>
-    <div class="ret">→ Returns: Section Object</div>
-    <table class="api">
-        <thead><tr><th>Parametre</th><th>Tip</th><th>Açıklama</th></tr></thead>
-        <tbody>
-            <tr><td><code>title</code></td><td>string</td><td>Kartın üstünde BÜYÜK HARF ile gösterilen başlık</td></tr>
-            <tr><td><code>col</code></td><td>"left" | "right"</td><td>Hangi kolona ekleneceği. Varsayılan: <code>"left"</code></td></tr>
-        </tbody>
-    </table>
+<!-- ════ TOGGLE ════ -->
+<section class="doc-section" id="s-toggle">
+  <div class="method-header">
+    <div class="method-label">Element</div>
+    <div class="method-title"><code>Section:CreateToggle(config)</code></div>
+    <p class="method-desc">A compact checkbox-style toggle. The box fills with the accent color and shows a checkmark when active. Clicking the row anywhere toggles the state.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">{ State: bool,  Set(bool) }</span>
+  </div>
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="p-name">Title</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"Toggle"</span></td><td class="p-desc">Label shown next to the checkbox.</td></tr>
+      <tr><td><span class="p-name">Default</span></td><td><span class="type type-bool">boolean</span></td><td><span class="p-default">false</span></td><td class="p-desc">Initial on/off state.</td></tr>
+      <tr><td><span class="p-name">ConfigKey</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Unique key for <a href="#s-config" style="color:var(--acc)">Config Save/Load</a>.</td></tr>
+      <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function(bool)</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Called every time the state changes. Receives the new boolean value.</td></tr>
+    </tbody>
+  </table>
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-toggle')">Copy</button></div>
+    <pre id="ex-toggle"><code><span class="kw">local</span> <span class="vr">silentAim</span> = <span class="vr">Section</span>:<span class="fn">CreateToggle</span>({
+    <span class="vr">Title</span>     = <span class="str">"Enable Silent Aim"</span>,
+    <span class="vr">Default</span>   = <span class="kw">false</span>,
+    <span class="vr">ConfigKey</span> = <span class="str">"silent_aim"</span>,
+    <span class="vr">Callback</span>  = <span class="kw">function</span>(<span class="vr">enabled</span>)
+        <span class="fn">print</span>(<span class="str">"Silent Aim:"</span>, <span class="vr">enabled</span>)
+    <span class="kw">end</span>
+})
+
+<span class="cmt">-- Read current state</span>
+<span class="fn">print</span>(<span class="vr">silentAim</span>.State)
+
+<span class="cmt">-- Set programmatically</span>
+<span class="vr">silentAim</span>:<span class="fn">Set</span>(<span class="kw">true</span>)</code></pre>
+  </div>
 </section>
 
-<section class="ds" id="s-toggle">
-    <div class="dt"><code>Section:CreateToggle(config)</code></div>
-    <p class="dd">Kare checkbox görünümlü, tıklamada vurgu rengiyle dolup checkmark gösteren toggle.</p>
-    <div class="ret">→ Returns: { State: bool, Set(bool) }</div>
-    <table class="api">
-        <thead><tr><th>Parametre</th><th>Tip</th><th>Varsayılan</th><th>Açıklama</th></tr></thead>
-        <tbody>
-            <tr><td><code>Title</code></td><td>string</td><td>"Toggle"</td><td>Checkbox yanında gösterilen etiket</td></tr>
-            <tr><td><code>Default</code></td><td>boolean</td><td>false</td><td>Başlangıç durumu</td></tr>
-            <tr><td><code>Callback</code></td><td>function(bool)</td><td>nil</td><td>Durum değiştiğinde çağrılır</td></tr>
-        </tbody>
-    </table>
+<!-- ════ SLIDER ════ -->
+<section class="doc-section" id="s-slider">
+  <div class="method-header">
+    <div class="method-label">Element</div>
+    <div class="method-title"><code>Section:CreateSlider(config)</code></div>
+    <p class="method-desc">A thin draggable bar. The current value is shown as <code>value/max</code> on the right. Supports decimal precision and a custom suffix unit.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">{ Value: number,  Set(number) }</span>
+  </div>
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="p-name">Title</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"Slider"</span></td><td class="p-desc">Label shown above the track.</td></tr>
+      <tr><td><span class="p-name">Min</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">0</span></td><td class="p-desc">Minimum value.</td></tr>
+      <tr><td><span class="p-name">Max</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">100</span></td><td class="p-desc">Maximum value.</td></tr>
+      <tr><td><span class="p-name">Default</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">Min</span></td><td class="p-desc">Starting value.</td></tr>
+      <tr><td><span class="p-name">Decimals</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">0</span></td><td class="p-desc">Decimal places — <code>0</code> for integers, <code>1</code> or <code>2</code> for floats.</td></tr>
+      <tr><td><span class="p-name">Suffix</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">""</span></td><td class="p-desc">Appended to the value label, e.g. <code>" px"</code>, <code>" ms"</code>, <code>"%"</code>.</td></tr>
+      <tr><td><span class="p-name">ConfigKey</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Key for Config Save/Load.</td></tr>
+      <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function(number)</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Fires continuously as the slider moves.</td></tr>
+    </tbody>
+  </table>
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-slider')">Copy</button></div>
+    <pre id="ex-slider"><code><span class="kw">local</span> <span class="vr">fovSlider</span> = <span class="vr">Section</span>:<span class="fn">CreateSlider</span>({
+    <span class="vr">Title</span>     = <span class="str">"FOV Radius"</span>,
+    <span class="vr">Min</span>       = <span class="num">10</span>,
+    <span class="vr">Max</span>       = <span class="num">500</span>,
+    <span class="vr">Default</span>   = <span class="num">150</span>,
+    <span class="vr">Suffix</span>    = <span class="str">" px"</span>,
+    <span class="vr">ConfigKey</span> = <span class="str">"fov"</span>,
+    <span class="vr">Callback</span>  = <span class="kw">function</span>(<span class="vr">value</span>)
+        <span class="fn">print</span>(<span class="str">"FOV:"</span>, <span class="vr">value</span>)
+    <span class="kw">end</span>
+})
+
+<span class="cmt">-- Read current value</span>
+<span class="fn">print</span>(<span class="vr">fovSlider</span>.Value)
+
+<span class="cmt">-- Set programmatically</span>
+<span class="vr">fovSlider</span>:<span class="fn">Set</span>(<span class="num">200</span>)</code></pre>
+  </div>
 </section>
 
-<section class="ds" id="s-slider">
-    <div class="dt"><code>Section:CreateSlider(config)</code></div>
-    <p class="dd">İnce track bar üzerinde sürüklenebilir kaydırıcı. Sağ üstte <code>değer/max</code> + suffix gösterilir.</p>
-    <div class="ret">→ Returns: { Value: number, Set(number) }</div>
-    <table class="api">
-        <thead><tr><th>Parametre</th><th>Tip</th><th>Varsayılan</th><th>Açıklama</th></tr></thead>
-        <tbody>
-            <tr><td><code>Title</code></td><td>string</td><td>"Slider"</td><td>Başlık</td></tr>
-            <tr><td><code>Min</code></td><td>number</td><td>0</td><td>Minimum değer</td></tr>
-            <tr><td><code>Max</code></td><td>number</td><td>100</td><td>Maksimum değer</td></tr>
-            <tr><td><code>Default</code></td><td>number</td><td>Min</td><td>Başlangıç değeri</td></tr>
-            <tr><td><code>Decimals</code></td><td>number</td><td>0</td><td>Ondalık hane sayısı (0, 1, 2)</td></tr>
-            <tr><td><code>Suffix</code></td><td>string</td><td>""</td><td>Değer sonuna eklenen birim: <code>" px"</code>, <code>" ms"</code></td></tr>
-            <tr><td><code>Callback</code></td><td>function(number)</td><td>nil</td><td>Değer değiştikçe çağrılır</td></tr>
-        </tbody>
-    </table>
+<!-- ════ DROPDOWN ════ -->
+<section class="doc-section" id="s-dropdown">
+  <div class="method-header">
+    <div class="method-label">Element</div>
+    <div class="method-title"><code>Section:CreateDropdown(config)</code></div>
+    <p class="method-desc">A compact inline dropdown. Clicking opens a list of options; the selected value is shown on the right side of the header row.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">{ Selected: string,  Set(string),  Refresh(table) }</span>
+  </div>
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="p-name">Title</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"Dropdown"</span></td><td class="p-desc">Left-side label.</td></tr>
+      <tr><td><span class="p-name">Options</span></td><td><span class="type type-tbl">table</span></td><td><span class="p-default">{}</span></td><td class="p-desc">Array of option strings: <code>{"Head","Torso","HRP"}</code>.</td></tr>
+      <tr><td><span class="p-name">Default</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">Options[1]</span></td><td class="p-desc">Initially selected option.</td></tr>
+      <tr><td><span class="p-name">ConfigKey</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Key for Config Save/Load.</td></tr>
+      <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function(string)</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Fires when the user picks a new option.</td></tr>
+    </tbody>
+  </table>
 </section>
 
-<section class="ds" id="s-dropdown">
-    <div class="dt"><code>Section:CreateDropdown(config)</code></div>
-    <p class="dd">Tıklandığında seçenek listesi açılan kompakt inline menü.</p>
-    <div class="ret">→ Returns: { Selected, Set(opt), Refresh(opts) }</div>
-    <table class="api">
-        <thead><tr><th>Parametre</th><th>Tip</th><th>Açıklama</th></tr></thead>
-        <tbody>
-            <tr><td><code>Title</code></td><td>string</td><td>Sol taraftaki etiket</td></tr>
-            <tr><td><code>Options</code></td><td>table</td><td>Seçenekler dizisi: <code>{"Head","Torso","HRP"}</code></td></tr>
-            <tr><td><code>Default</code></td><td>string</td><td>Başlangıçta seçili değer</td></tr>
-            <tr><td><code>Callback</code></td><td>function(string)</td><td>Seçim değişince çağrılır</td></tr>
-        </tbody>
-    </table>
-</section>
-
-<section class="ds" id="s-textbox">
-    <div class="dt"><code>Section:CreateTextbox(config)</code></div>
-    <p class="dd">Satır içi metin giriş kutusu. Odaklanınca accent renkli border görünür.</p>
-    <div class="ret">→ Returns: { Text, Set(string) }</div>
-</section>
-
-<section class="ds" id="s-keybind">
-    <div class="dt"><code>Section:CreateKeybind(config)</code></div>
-    <p class="dd">Tıklandığında tuş dinlemeye geçer. <code>Backspace</code> ile sıfırlanır.</p>
-    <div class="ret">→ Returns: { Key: Enum.KeyCode, Set(KeyCode) }</div>
-</section>
-
-<section class="ds" id="s-color">
-    <div class="dt"><code>Section:CreateColorPicker(config)</code></div>
-    <p class="dd">Tıklandığında R/G/B kaydırıcılarını açan kompakt renk seçici. Renk önizlemesi inline gösterilir.</p>
-    <div class="ret">→ Returns: { Color: Color3, Set(Color3) }</div>
-</section>
-
-<section class="ds" id="s-button">
-    <div class="dt"><code>Section:CreateButton(config)</code></div>
-    <p class="dd">Tıklandığında accent rengi ripple efektiyle yanıp sönen buton.</p>
-    <div class="ret">→ Returns: TextButton Instance</div>
-    <div class="cc"><div class="cc-hdr"><span class="cc-lang">Tam Örnek</span><button class="cp" onclick="copySnippet(this,'full')">Kopyala</button></div>
-    <pre id="full"><code><span class="kw">local</span> <span class="vr">Library</span> = <span class="fn">loadstring</span>(game:<span class="fn">HttpGet</span>(<span class="str">"https://raw.githubusercontent.com/hutamev2/HutameHub-Lib/main/Source.lua"</span>))()
-<span class="kw">local</span> <span class="vr">Hub</span>     = <span class="vr">Library</span>.<span class="fn">new</span>({ <span class="vr">Title</span>=<span class="str">"MyHub"</span>, <span class="vr">Accent</span>=Color3.<span class="fn">fromRGB</span>(<span class="num">220</span>,<span class="num">50</span>,<span class="num">50</span>) })
-
-<span class="kw">local</span> <span class="vr">CombatTab</span>  = <span class="vr">Hub</span>:<span class="fn">CreateTab</span>(<span class="str">"Combat"</span>)
-<span class="kw">local</span> <span class="vr">AimL</span>       = <span class="vr">CombatTab</span>:<span class="fn">CreateSection</span>(<span class="str">"Silent Aim"</span>)
-<span class="kw">local</span> <span class="vr">AimR</span>       = <span class="vr">CombatTab</span>:<span class="fn">CreateSection</span>(<span class="str">"Aim Extras"</span>, <span class="str">"right"</span>)
-
-<span class="vr">AimL</span>:<span class="fn">CreateToggle</span>({ <span class="vr">Title</span>=<span class="str">"Silent Aim"</span>,  <span class="vr">Default</span>=<span class="kw">false</span>, <span class="vr">Callback</span>=<span class="kw">function</span>(<span class="vr">s</span>) <span class="fn">print</span>(s) <span class="kw">end</span> })
-<span class="vr">AimL</span>:<span class="fn">CreateToggle</span>({ <span class="vr">Title</span>=<span class="str">"Team Check"</span>, <span class="vr">Default</span>=<span class="kw">true</span> })
-<span class="vr">AimL</span>:<span class="fn">CreateSlider</span>({ <span class="vr">Title</span>=<span class="str">"Hit Chance"</span>, <span class="vr">Min</span>=<span class="num">0</span>, <span class="vr">Max</span>=<span class="num">100</span>, <span class="vr">Default</span>=<span class="num">100</span> })
-<span class="vr">AimL</span>:<span class="fn">CreateSlider</span>({ <span class="vr">Title</span>=<span class="str">"FOV Radius"</span>, <span class="vr">Min</span>=<span class="num">10</span>, <span class="vr">Max</span>=<span class="num">500</span>, <span class="vr">Default</span>=<span class="num">150</span>, <span class="vr">Suffix</span>=<span class="str">" px"</span> })
-
-<span class="vr">AimR</span>:<span class="fn">CreateToggle</span>({ <span class="vr">Title</span>=<span class="str">"Show FOV"</span>, <span class="vr">Default</span>=<span class="kw">false</span> })
-<span class="vr">AimR</span>:<span class="fn">CreateDropdown</span>({ <span class="vr">Title</span>=<span class="str">"Aim Part"</span>, <span class="vr">Options</span>={<span class="str">"Head"</span>,<span class="str">"Torso"</span>,<span class="str">"HumanoidRootPart"</span>}, <span class="vr">Default</span>=<span class="str">"Head"</span> })
-
-<span class="kw">local</span> <span class="vr">SettingsTab</span> = <span class="vr">Hub</span>:<span class="fn">CreateTab</span>(<span class="str">"Settings"</span>)
-<span class="kw">local</span> <span class="vr">CfgL</span>        = <span class="vr">SettingsTab</span>:<span class="fn">CreateSection</span>(<span class="str">"Configuration"</span>)
-<span class="kw">local</span> <span class="vr">CfgR</span>        = <span class="vr">SettingsTab</span>:<span class="fn">CreateSection</span>(<span class="str">"Webhook"</span>, <span class="str">"right"</span>)
-
-<span class="vr">CfgL</span>:<span class="fn">CreateKeybind</span>({ <span class="vr">Title</span>=<span class="str">"Toggle UI"</span>, <span class="vr">Default</span>=Enum.KeyCode.RightControl })
-<span class="vr">CfgL</span>:<span class="fn">CreateColorPicker</span>({ <span class="vr">Title</span>=<span class="str">"Accent Color"</span>, <span class="vr">Default</span>=Color3.<span class="fn">fromRGB</span>(<span class="num">220</span>,<span class="num">50</span>,<span class="num">50</span>), <span class="vr">Callback</span>=<span class="kw">function</span>(<span class="vr">c</span>) <span class="vr">Hub</span>:<span class="fn">SetAccent</span>(<span class="vr">c</span>) <span class="kw">end</span> })
-<span class="vr">CfgR</span>:<span class="fn">CreateTextbox</span>({ <span class="vr">Title</span>=<span class="str">"Webhook URL"</span>, <span class="vr">Placeholder</span>=<span class="str">"https://discord.com/..."</span> })
-<span class="vr">CfgR</span>:<span class="fn">CreateButton</span>({ <span class="vr">Title</span>=<span class="str">"Destroy UI"</span>, <span class="vr">Callback</span>=<span class="kw">function</span>() <span class="vr">Hub</span>:<span class="fn">Destroy</span>() <span class="kw">end</span> })</code></pre></div>
-</section>
-
-<!-- ── Multi-Select Dropdown ── -->
-<section class="ds" id="s-multidd">
-    <div class="dt"><code>Section:CreateMultiDropdown(config)</code></div>
-    <p class="dd">Aynı anda birden fazla seçim yapılabilen açılır liste. Seçili öğeler checkbox ile işaretlenir, inline özet gösterilir.</p>
-    <div class="ret">→ Returns: { Selected: table, Set(tbl), GetSelected(), Refresh(opts) }</div>
-    <table class="api">
-        <thead><tr><th>Parametre</th><th>Tip</th><th>Varsayılan</th><th>Açıklama</th></tr></thead>
-        <tbody>
-            <tr><td><code>Title</code></td><td>string</td><td>"MultiDropdown"</td><td>Sol taraftaki etiket</td></tr>
-            <tr><td><code>Options</code></td><td>table</td><td>{}</td><td>Seçenek listesi: <code>{"Head","Torso","HRP"}</code></td></tr>
-            <tr><td><code>Default</code></td><td>table</td><td>{}</td><td>Başlangıçta seçili değerler: <code>{"Head"}</code></td></tr>
-            <tr><td><code>MaxShow</code></td><td>number</td><td>2</td><td>İnline gösterilen max seçim sayısı (sonrası "+N" olur)</td></tr>
-            <tr><td><code>ConfigKey</code></td><td>string</td><td>nil</td><td>Config Save/Load için benzersiz anahtar</td></tr>
-            <tr><td><code>Callback</code></td><td>function(table)</td><td>nil</td><td>Seçim değişince seçili değerlerin table'ını döndürür</td></tr>
-        </tbody>
-    </table>
-    <div class="cc"><div class="cc-hdr"><span class="cc-lang">Örnek</span><button class="cp" onclick="copySnippet(this,'ex-mdd')">Kopyala</button></div>
-    <pre id="ex-mdd"><code><span class="kw">local</span> <span class="vr">mdd</span> = <span class="vr">Left</span>:<span class="fn">CreateMultiDropdown</span>({
+<!-- ════ MULTIDROPDOWN ════ -->
+<section class="doc-section" id="s-multidd">
+  <div class="method-header">
+    <div class="method-label">Element</div>
+    <div class="method-title"><code>Section:CreateMultiDropdown(config)</code></div>
+    <p class="method-desc">Like <code>CreateDropdown</code>, but allows selecting multiple options simultaneously. Each option shows a checkmark when selected. The header summarises the selection inline (e.g. <code>Head, +2</code>).</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">{ Selected: table,  Set(table),  GetSelected(),  Refresh(table) }</span>
+  </div>
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="p-name">Title</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"MultiDropdown"</span></td><td class="p-desc">Left-side label.</td></tr>
+      <tr><td><span class="p-name">Options</span></td><td><span class="type type-tbl">table</span></td><td><span class="p-default">{}</span></td><td class="p-desc">Array of option strings.</td></tr>
+      <tr><td><span class="p-name">Default</span></td><td><span class="type type-tbl">table</span></td><td><span class="p-default">{}</span></td><td class="p-desc">Array of pre-selected values: <code>{"Head"}</code>.</td></tr>
+      <tr><td><span class="p-name">MaxShow</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">2</span></td><td class="p-desc">Max labels to show inline before collapsing to <code>+N</code>.</td></tr>
+      <tr><td><span class="p-name">ConfigKey</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Key for Config Save/Load.</td></tr>
+      <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function(table)</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Fires on every change. Receives a sorted array of selected strings.</td></tr>
+    </tbody>
+  </table>
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-mdd')">Copy</button></div>
+    <pre id="ex-mdd"><code><span class="kw">local</span> <span class="vr">parts</span> = <span class="vr">Section</span>:<span class="fn">CreateMultiDropdown</span>({
     <span class="vr">Title</span>     = <span class="str">"Hitbox Parts"</span>,
     <span class="vr">Options</span>   = {<span class="str">"Head"</span>, <span class="str">"Torso"</span>, <span class="str">"HumanoidRootPart"</span>, <span class="str">"LeftArm"</span>, <span class="str">"RightArm"</span>},
     <span class="vr">Default</span>   = {<span class="str">"Head"</span>},
     <span class="vr">MaxShow</span>   = <span class="num">2</span>,
     <span class="vr">ConfigKey</span> = <span class="str">"hitbox_parts"</span>,
     <span class="vr">Callback</span>  = <span class="kw">function</span>(<span class="vr">selected</span>)
-        <span class="cmt">-- selected = {"Head", "Torso"} gibi sıralı table</span>
+        <span class="cmt">-- selected is a sorted table, e.g. {"Head", "Torso"}</span>
         <span class="fn">print</span>(<span class="fn">table.concat</span>(<span class="vr">selected</span>, <span class="str">", "</span>))
     <span class="kw">end</span>
 })
 
-<span class="vr">mdd</span>:<span class="fn">Set</span>({<span class="str">"Head"</span>, <span class="str">"Torso"</span>})  <span class="cmt">-- programatik set</span>
-<span class="vr">mdd</span>:<span class="fn">GetSelected</span>()           <span class="cmt">-- mevcut seçimleri döndürür</span>
-<span class="vr">mdd</span>:<span class="fn">Refresh</span>({<span class="str">"A"</span>,<span class="str">"B"</span>,<span class="str">"C"</span>})  <span class="cmt">-- seçenekleri güncelle</span></code></pre></div>
+<span class="vr">parts</span>:<span class="fn">Set</span>({<span class="str">"Head"</span>, <span class="str">"Torso"</span>})       <span class="cmt">-- override selection</span>
+<span class="vr">parts</span>:<span class="fn">GetSelected</span>()                <span class="cmt">-- returns current selection table</span>
+<span class="vr">parts</span>:<span class="fn">Refresh</span>({<span class="str">"A"</span>, <span class="str">"B"</span>, <span class="str">"C"</span>})    <span class="cmt">-- swap options list at runtime</span></code></pre>
+  </div>
 </section>
 
-<!-- ── Notification ── -->
-<section class="ds" id="s-notify">
-    <div class="dt"><code>Hub:Notify(config)</code></div>
-    <p class="dd">Sağ alt köşeden kayan toast bildirimleri. Otomatik kaybolur, progress bar ve kapatma butonu içerir.</p>
-    <div class="ret">→ Returns: nil (fire-and-forget)</div>
-    <table class="api">
-        <thead><tr><th>Parametre</th><th>Tip</th><th>Varsayılan</th><th>Açıklama</th></tr></thead>
-        <tbody>
-            <tr><td><code>Title</code></td><td>string</td><td>"Notification"</td><td>Kalın başlık metni</td></tr>
-            <tr><td><code>Text</code></td><td>string</td><td>""</td><td>Açıklama satırı (boş bırakılırsa tek satır)</td></tr>
-            <tr><td><code>Type</code></td><td>string</td><td>"info"</td><td><code>"info"</code> · <code>"success"</code> · <code>"error"</code> · <code>"warning"</code></td></tr>
-            <tr><td><code>Duration</code></td><td>number</td><td>3</td><td>Saniye cinsinden ekranda kalma süresi</td></tr>
-        </tbody>
-    </table>
-    <div class="cc"><div class="cc-hdr"><span class="cc-lang">Örnek</span><button class="cp" onclick="copySnippet(this,'ex-notify')">Kopyala</button></div>
-    <pre id="ex-notify"><code><span class="vr">Hub</span>:<span class="fn">Notify</span>({ <span class="vr">Title</span>=<span class="str">"Silent Aim"</span>, <span class="vr">Text</span>=<span class="str">"Enabled"</span>,        <span class="vr">Type</span>=<span class="str">"success"</span>, <span class="vr">Duration</span>=<span class="num">3</span> })
+<!-- ════ TEXTBOX ════ -->
+<section class="doc-section" id="s-textbox">
+  <div class="method-header">
+    <div class="method-label">Element</div>
+    <div class="method-title"><code>Section:CreateTextbox(config)</code></div>
+    <p class="method-desc">An inline text input. The border highlights with the accent color on focus. Callback fires on focus-lost or when Enter is pressed.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">{ Text: string,  Set(string) }</span>
+  </div>
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="p-name">Title</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"Textbox"</span></td><td class="p-desc">Label on the left.</td></tr>
+      <tr><td><span class="p-name">Placeholder</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"..."</span></td><td class="p-desc">Greyed hint text when empty.</td></tr>
+      <tr><td><span class="p-name">Default</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">""</span></td><td class="p-desc">Pre-filled value.</td></tr>
+      <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function(text, enterPressed)</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Fires when focus is lost. <code>enterPressed</code> is true if the user pressed Enter.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════ KEYBIND ════ -->
+<section class="doc-section" id="s-keybind">
+  <div class="method-header">
+    <div class="method-label">Element</div>
+    <div class="method-title"><code>Section:CreateKeybind(config)</code></div>
+    <p class="method-desc">A key-capture button. Clicking puts it into listening mode (<code>[...]</code>); the next key pressed is saved as the binding. Press <kbd>Backspace</kbd> while listening to clear it.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">{ Key: KeyCode,  Set(KeyCode) }</span>
+  </div>
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="p-name">Title</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"Keybind"</span></td><td class="p-desc">Label on the left.</td></tr>
+      <tr><td><span class="p-name">Default</span></td><td><span class="type type-kc">KeyCode</span></td><td><span class="p-default">KeyCode.None</span></td><td class="p-desc">The initial bound key.</td></tr>
+      <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function(KeyCode)</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Fires when a new key is assigned.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════ COLORPICKER ════ -->
+<section class="doc-section" id="s-color">
+  <div class="method-header">
+    <div class="method-label">Element</div>
+    <div class="method-title"><code>Section:CreateColorPicker(config)</code></div>
+    <p class="method-desc">A compact color swatch that expands into three RGB sliders when clicked. The live preview square updates as you drag.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">{ Color: Color3,  Set(Color3) }</span>
+  </div>
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="p-name">Title</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"Color"</span></td><td class="p-desc">Label on the left.</td></tr>
+      <tr><td><span class="p-name">Default</span></td><td><span class="type type-c3">Color3</span></td><td><span class="p-default">RGB(255,255,255)</span></td><td class="p-desc">Starting color.</td></tr>
+      <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function(Color3)</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Fires continuously as any RGB channel changes.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════ BUTTON ════ -->
+<section class="doc-section" id="s-button">
+  <div class="method-header">
+    <div class="method-label">Element</div>
+    <div class="method-title"><code>Section:CreateButton(config)</code></div>
+    <p class="method-desc">A clickable button with a ripple effect on press. Background flashes to the accent color and returns.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">TextButton</span>
+  </div>
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="p-name">Title<span class="p-req">required</span></span></td><td><span class="type type-str">string</span></td><td>—</td><td class="p-desc">Button label text.</td></tr>
+      <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function()</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Fires on click.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════ NOTIFY ════ -->
+<section class="doc-section" id="s-notify">
+  <div class="method-header">
+    <div class="method-label">Hub Feature</div>
+    <div class="method-title"><code>Hub:Notify(config)</code></div>
+    <p class="method-desc">Displays a toast notification in the bottom-right corner. Toasts stack, animate in, drain a progress bar, then dismiss automatically. A close button is always visible.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">nil</span>
+  </div>
+
+  <div class="notify-demo">
+    <div class="toast-chip s"><span class="ti">✓</span><span><strong>Silent Aim</strong> — Enabled</span></div>
+    <div class="toast-chip e"><span class="ti">✕</span><span><strong>Error</strong> — API unreachable</span></div>
+    <div class="toast-chip w"><span class="ti">⚠</span><span><strong>Warning</strong> — Low FPS</span></div>
+    <div class="toast-chip i"><span class="ti">ℹ</span><span><strong>Update</strong> — v2.1 available</span></div>
+  </div>
+
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="p-name">Title</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"Notification"</span></td><td class="p-desc">Bold header line on the toast.</td></tr>
+      <tr><td><span class="p-name">Text</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">""</span></td><td class="p-desc">Dimmer body line. If empty, only the title row is shown.</td></tr>
+      <tr><td><span class="p-name">Type</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"info"</span></td><td class="p-desc"><code>"info"</code> · <code>"success"</code> · <code>"error"</code> · <code>"warning"</code> — controls left-bar color and icon.</td></tr>
+      <tr><td><span class="p-name">Duration</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">3</span></td><td class="p-desc">Seconds the toast stays visible before auto-dismissing.</td></tr>
+    </tbody>
+  </table>
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-notify')">Copy</button></div>
+    <pre id="ex-notify"><code><span class="vr">Hub</span>:<span class="fn">Notify</span>({ <span class="vr">Title</span>=<span class="str">"Silent Aim"</span>, <span class="vr">Text</span>=<span class="str">"Enabled"</span>,         <span class="vr">Type</span>=<span class="str">"success"</span>, <span class="vr">Duration</span>=<span class="num">3</span> })
 <span class="vr">Hub</span>:<span class="fn">Notify</span>({ <span class="vr">Title</span>=<span class="str">"Error"</span>,       <span class="vr">Text</span>=<span class="str">"API unreachable"</span>, <span class="vr">Type</span>=<span class="str">"error"</span>,   <span class="vr">Duration</span>=<span class="num">4</span> })
-<span class="vr">Hub</span>:<span class="fn">Notify</span>({ <span class="vr">Title</span>=<span class="str">"Warning"</span>,     <span class="vr">Text</span>=<span class="str">"Low FPS detected"</span>, <span class="vr">Type</span>=<span class="str">"warning"</span>, <span class="vr">Duration</span>=<span class="num">5</span> })
-<span class="vr">Hub</span>:<span class="fn">Notify</span>({ <span class="vr">Title</span>=<span class="str">"Update"</span>,      <span class="vr">Text</span>=<span class="str">"v2.1 available"</span>,  <span class="vr">Type</span>=<span class="str">"info"</span> })</code></pre></div>
+<span class="vr">Hub</span>:<span class="fn">Notify</span>({ <span class="vr">Title</span>=<span class="str">"Warning"</span>,     <span class="vr">Text</span>=<span class="str">"Low FPS"</span>,         <span class="vr">Type</span>=<span class="str">"warning"</span>, <span class="vr">Duration</span>=<span class="num">5</span> })
+<span class="vr">Hub</span>:<span class="fn">Notify</span>({ <span class="vr">Title</span>=<span class="str">"Update"</span>,      <span class="vr">Text</span>=<span class="str">"v2.1 available"</span>, <span class="vr">Type</span>=<span class="str">"info"</span> })</code></pre>
+  </div>
 </section>
 
-<!-- ── Watermark ── -->
-<section class="ds" id="s-watermark">
-    <div class="dt"><code>Hub:SetWatermark(config)</code></div>
-    <p class="dd">Ekran köşesinde sabit bir HUD overlay. FPS renk-kodlamalıdır: yeşil ≥50, sarı ≥30, kırmızı &lt;30.</p>
-    <div class="ret">→ Methods: SetWatermark · UpdateWatermark(fmt) · RemoveWatermark()</div>
-    <table class="api">
-        <thead><tr><th>Parametre</th><th>Tip</th><th>Varsayılan</th><th>Açıklama</th></tr></thead>
-        <tbody>
-            <tr><td><code>Format</code></td><td>string</td><td>"{player} | {fps} fps"</td><td>Desteklenen placeholder'lar: <code>{player}</code> <code>{fps}</code> <code>{ping}</code> <code>{time}</code> <code>{game}</code></td></tr>
-            <tr><td><code>Position</code></td><td>string</td><td>"TopRight"</td><td><code>"TopLeft"</code> · <code>"TopRight"</code> · <code>"BottomLeft"</code> · <code>"BottomRight"</code></td></tr>
-            <tr><td><code>BgAlpha</code></td><td>number</td><td>0.45</td><td>Arkaplan şeffaflığı (0 = opak, 1 = tamamen şeffaf)</td></tr>
-        </tbody>
-    </table>
-    <div class="cc"><div class="cc-hdr"><span class="cc-lang">Örnek</span><button class="cp" onclick="copySnippet(this,'ex-wm')">Kopyala</button></div>
+<!-- ════ WATERMARK ════ -->
+<section class="doc-section" id="s-watermark">
+  <div class="method-header">
+    <div class="method-label">Hub Feature</div>
+    <div class="method-title"><code>Hub:SetWatermark(config)</code></div>
+    <p class="method-desc">Pins a small HUD label to a corner of the screen. Supports live placeholders that update every frame. The FPS value is color-coded: green ≥ 50, yellow ≥ 30, red &lt; 30.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Methods</span>
+    <span class="returns-type">SetWatermark · UpdateWatermark(fmt) · RemoveWatermark()</span>
+  </div>
+
+  <div class="wm-preview">
+    <div class="wm-chip">TigerDusty  |  <span class="fps">144 fps</span>  |  23ms</div>
+  </div>
+
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="p-name">Format</span></td>
+        <td><span class="type type-str">string</span></td>
+        <td><span class="p-default">"{player} | {fps} fps"</span></td>
+        <td class="p-desc">
+          Template string. Available placeholders:<br>
+          <code>{player}</code> — local player name<br>
+          <code>{fps}</code> — current FPS (color-coded)<br>
+          <code>{ping}</code> — server ping in ms<br>
+          <code>{time}</code> — local clock <code>HH:MM:SS</code><br>
+          <code>{game}</code> — game name
+        </td>
+      </tr>
+      <tr><td><span class="p-name">Position</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"TopRight"</span></td><td class="p-desc"><code>"TopLeft"</code> · <code>"TopRight"</code> · <code>"BottomLeft"</code> · <code>"BottomRight"</code></td></tr>
+      <tr><td><span class="p-name">BgAlpha</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">0.45</span></td><td class="p-desc">Background transparency. <code>0</code> = fully opaque, <code>1</code> = invisible.</td></tr>
+    </tbody>
+  </table>
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-wm')">Copy</button></div>
     <pre id="ex-wm"><code><span class="vr">Hub</span>:<span class="fn">SetWatermark</span>({
     <span class="vr">Format</span>   = <span class="str">"{player}  |  {fps} fps  |  {ping}ms"</span>,
     <span class="vr">Position</span> = <span class="str">"TopRight"</span>,
     <span class="vr">BgAlpha</span>  = <span class="num">0.45</span>
 })
 
-<span class="vr">Hub</span>:<span class="fn">UpdateWatermark</span>(<span class="str">"{player}  |  {game}  |  {time}"</span>)  <span class="cmt">-- format değiştir</span>
-<span class="vr">Hub</span>:<span class="fn">RemoveWatermark</span>()                                    <span class="cmt">-- kaldır</span></code></pre></div>
+<span class="cmt">-- Change format without rebuilding the widget</span>
+<span class="vr">Hub</span>:<span class="fn">UpdateWatermark</span>(<span class="str">"{player}  |  {game}  |  {time}"</span>)
+
+<span class="cmt">-- Remove entirely</span>
+<span class="vr">Hub</span>:<span class="fn">RemoveWatermark</span>()</code></pre>
+  </div>
 </section>
 
-<!-- ── Config Save/Load ── -->
-<section class="ds" id="s-config">
-    <div class="dt"><code>Hub:SaveConfig(name) · Hub:LoadConfig(name)</code></div>
-    <p class="dd"><code>ConfigKey</code> parametresi olan her element otomatik olarak kayıt sistemine dahil olur. Veriler <code>HutameHub_name.cfg</code> dosyasına yazılır (executor'da <code>writefile</code>/<code>readfile</code> gerektirir).</p>
-    <div class="ret">→ Başarı/hata sonucu Notify ile bildirilir</div>
-    <table class="api">
-        <thead><tr><th>Method</th><th>Parametre</th><th>Açıklama</th></tr></thead>
-        <tbody>
-            <tr><td><code>Hub:SaveConfig(name)</code></td><td>string</td><td>Tüm kayıtlı elementleri dosyaya yazar</td></tr>
-            <tr><td><code>Hub:LoadConfig(name)</code></td><td>string</td><td>Dosyadan okur ve elementleri geri yükler</td></tr>
-            <tr><td><code>Hub:_regElement(key, getter, setter)</code></td><td>—</td><td>Manuel element kaydı (genellikle gerekmez)</td></tr>
-        </tbody>
-    </table>
-    <div class="cc"><div class="cc-hdr"><span class="cc-lang">Örnek</span><button class="cp" onclick="copySnippet(this,'ex-cfg')">Kopyala</button></div>
-    <pre id="ex-cfg"><code><span class="cmt">-- ConfigKey olan her element otomatik kaydedilir:</span>
+<!-- ════ CONFIG ════ -->
+<section class="doc-section" id="s-config">
+  <div class="method-header">
+    <div class="method-label">Hub Feature</div>
+    <div class="method-title"><code>Hub:SaveConfig / Hub:LoadConfig</code></div>
+    <p class="method-desc">Persist element values to disk between sessions. Any element that has a <code>ConfigKey</code> is automatically registered. Saved to <code>HutameHub_name.cfg</code> using the executor's <code>writefile</code> / <code>readfile</code>. A Notify toast confirms success or failure.</p>
+  </div>
+
+  <div class="callout orange">
+    <span class="callout-icon">⚠</span>
+    <span><strong>Executor required.</strong> <code>writefile</code> and <code>readfile</code> are executor globals. They are not available in a normal Roblox game. The library shows an error notification if they are missing.</span>
+  </div>
+
+  <div class="params-title">Methods</div>
+  <table class="params-table">
+    <thead><tr><th>Method</th><th>Parameter</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="p-name">Hub:SaveConfig(name)</span></td><td><span class="type type-str">string</span></td><td class="p-desc">Writes all registered element values to <code>HutameHub_name.cfg</code>.</td></tr>
+      <tr><td><span class="p-name">Hub:LoadConfig(name)</span></td><td><span class="type type-str">string</span></td><td class="p-desc">Reads the file and restores each element. Shows a toast with the count of restored values.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout green">
+    <span class="callout-icon">✓</span>
+    <span>Add <code>ConfigKey = "my_key"</code> to any <strong>Toggle</strong>, <strong>Slider</strong>, <strong>Dropdown</strong>, or <strong>MultiDropdown</strong> to opt it into the save system — no extra code needed.</span>
+  </div>
+
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-cfg')">Copy</button></div>
+    <pre id="ex-cfg"><code><span class="cmt">-- Register elements by adding ConfigKey</span>
 <span class="vr">Left</span>:<span class="fn">CreateToggle</span>({ <span class="vr">Title</span>=<span class="str">"Silent Aim"</span>, <span class="vr">Default</span>=<span class="kw">false</span>, <span class="vr">ConfigKey</span>=<span class="str">"silent_aim"</span> })
 <span class="vr">Left</span>:<span class="fn">CreateSlider</span>({ <span class="vr">Title</span>=<span class="str">"FOV"</span>, <span class="vr">Min</span>=<span class="num">10</span>, <span class="vr">Max</span>=<span class="num">500</span>, <span class="vr">Default</span>=<span class="num">150</span>, <span class="vr">ConfigKey</span>=<span class="str">"fov"</span> })
 <span class="vr">Right</span>:<span class="fn">CreateDropdown</span>({ <span class="vr">Title</span>=<span class="str">"Aim Part"</span>, <span class="vr">Options</span>={<span class="str">"Head"</span>,<span class="str">"Torso"</span>}, <span class="vr">ConfigKey</span>=<span class="str">"aim_part"</span> })
 <span class="vr">Right</span>:<span class="fn">CreateMultiDropdown</span>({ <span class="vr">Title</span>=<span class="str">"Parts"</span>, <span class="vr">Options</span>={<span class="str">"Head"</span>,<span class="str">"Torso"</span>}, <span class="vr">ConfigKey</span>=<span class="str">"parts"</span> })
 
-<span class="cmt">-- Kaydet / Yükle:</span>
-<span class="vr">Hub</span>:<span class="fn">SaveConfig</span>(<span class="str">"default"</span>)  <span class="cmt">-- → HutameHub_default.cfg</span>
-<span class="vr">Hub</span>:<span class="fn">LoadConfig</span>(<span class="str">"default"</span>)  <span class="cmt">-- geri yükler + başarı bildirimi gösterir</span></code></pre></div>
+<span class="cmt">-- Save / Load (e.g. from a Settings tab button)</span>
+<span class="vr">CfgSection</span>:<span class="fn">CreateButton</span>({
+    <span class="vr">Title</span>    = <span class="str">"Save Config"</span>,
+    <span class="vr">Callback</span> = <span class="kw">function</span>() <span class="vr">Hub</span>:<span class="fn">SaveConfig</span>(<span class="str">"default"</span>) <span class="kw">end</span>
+})
+
+<span class="vr">CfgSection</span>:<span class="fn">CreateButton</span>({
+    <span class="vr">Title</span>    = <span class="str">"Load Config"</span>,
+    <span class="vr">Callback</span> = <span class="kw">function</span>() <span class="vr">Hub</span>:<span class="fn">LoadConfig</span>(<span class="str">"default"</span>) <span class="kw">end</span>
+})</code></pre>
+  </div>
 </section>
 
 </main>
 </div>
 
-<footer>© 2026 HutameHub Library · Private Hub Style Roblox Luau UI · by <a href="https://github.com/hutamev2" style="color:var(--acc);text-decoration:none">HutameV2</a></footer>
-
 <script>
-// Accent switcher
-document.querySelectorAll('.dot').forEach(d=>{
-    d.addEventListener('click',()=>{
-        document.querySelectorAll('.dot').forEach(x=>x.classList.remove('active'));
-        d.classList.add('active');
-        const c=d.dataset.c, r=d.dataset.r;
-        document.documentElement.style.setProperty('--acc',c);
-        document.documentElement.style.setProperty('--acc-g',`rgba(${r},.18)`);
-        document.documentElement.style.setProperty('--acc-rgb',r);
-    });
-});
+// ── Active nav link on scroll ──────────────────────
+const sections = document.querySelectorAll('[id]');
+const navLinks  = document.querySelectorAll('.sb-links a');
 
-// Copy loadstring
-function copyLoad(){
-    navigator.clipboard.writeText('local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/hutamev2/HutameHub-Lib/main/Source.lua"))()');
-    const b=document.querySelector('.btn-ghost');
-    const old=b.textContent; b.textContent='✓ Kopyalandı!';
-    setTimeout(()=>b.textContent=old,2000);
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navLinks.forEach(l => l.classList.remove('active'));
+      const match = document.querySelector(`.sb-links a[href="#${e.target.id}"]`);
+      if (match) match.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+
+sections.forEach(s => observer.observe(s));
+
+// ── Copy Loadstring ────────────────────────────────
+function copyLoadstring() {
+  navigator.clipboard.writeText(
+    'local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/hutamev2/HutameHub-Lib/main/Source.lua"))()'
+  ).then(() => {
+    const btn = document.getElementById('copyLsBtn');
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = 'Copy Loadstring'; btn.classList.remove('ok'); }, 2200);
+  });
 }
 
-function copySnippet(btn,id){
-    const el=document.getElementById(id);
-    navigator.clipboard.writeText(el.innerText).then(()=>{
-        const old=btn.textContent; btn.textContent='✓'; btn.classList.add('ok');
-        setTimeout(()=>{btn.textContent=old;btn.classList.remove('ok')},2000);
-    });
+// ── Copy code block ────────────────────────────────
+function copyCode(btn, id) {
+  const el = document.getElementById(id);
+  navigator.clipboard.writeText(el.innerText).then(() => {
+    btn.textContent = '✓ Copied';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('ok'); }, 2000);
+  });
 }
 
-// Search filter
-function doFilter(){
-    const q=document.getElementById('srch').value.toLowerCase();
-    document.querySelectorAll('.ds').forEach(s=>{
-        s.style.display=s.innerText.toLowerCase().includes(q)?'':'none';
-    });
+// ── Sidebar search ─────────────────────────────────
+function filterNav() {
+  const q = document.getElementById('sbSearch').value.toLowerCase();
+  document.querySelectorAll('.sb-links li').forEach(li => {
+    li.style.display = li.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+  document.querySelectorAll('.sb-group').forEach(g => {
+    const vis = [...g.querySelectorAll('li')].some(li => li.style.display !== 'none');
+    g.style.display = vis ? '' : 'none';
+  });
 }
-
-// Simulator tab switch
-function simSwitch(name,btn){
-    document.querySelectorAll('.s-tab').forEach(t=>t.classList.remove('on'));
-    btn.classList.add('on');
-    document.querySelectorAll('.stv').forEach(v=>v.style.display='none');
-    document.querySelectorAll(`.stv[data-tab="${name}"]`).forEach(v=>v.style.display='block');
-}
-
-// Toggle
-function st(row){
-    const on=row.classList.toggle('on');
-    const cb=row.querySelector('.s-cb');
-    cb.textContent=on?'✓':'';
-}
-
-// Slider click
-function ss(e,track,vid,max){
-    const rect=track.getBoundingClientRect();
-    const pct=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
-    track.querySelector('.s-fi').style.width=(pct*100)+'%';
-    document.getElementById(vid).textContent=Math.round(pct*max)+'/'+max;
-}
-
-// Dropdown
-function sdrop(el){ el.classList.toggle('op'); }
-function sdsel(e,val){
-    e.stopPropagation();
-    document.getElementById('ddv').textContent=val;
-    document.querySelectorAll('.s-dd-o').forEach(o=>o.classList.remove('on'));
-    e.target.classList.add('on');
-    e.target.closest('.s-dd').classList.remove('op');
-}
-
-// Sim mini/close
-function simMini(){ const b=document.getElementById('sBody'); b.style.display=b.style.display==='none'?'flex':'none'; }
-function simClose(){ const s=document.querySelector('.sim'); s.style.opacity='0.2'; s.style.pointerEvents='none'; setTimeout(()=>{s.style.opacity='1';s.style.pointerEvents='auto';},700); }
 </script>
 </body>
 </html>
