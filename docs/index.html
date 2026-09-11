@@ -525,6 +525,16 @@ p code, li code, td code{
       <li><a href="#s-notify">Notify <span class="sb-badge">Toast</span></a></li>
       <li><a href="#s-watermark">SetWatermark <span class="sb-badge">HUD</span></a></li>
       <li><a href="#s-config">SaveConfig / LoadConfig <span class="sb-badge">Persist</span></a></li>
+      <li><a href="#s-loading">Loading Screen <span class="sb-badge">Splash</span></a></li>
+    </ul>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-title">UI Behaviour</div>
+    <ul class="sb-links">
+      <li><a href="#s-collapse">Section Collapse <span class="sb-badge">Toggle</span></a></li>
+      <li><a href="#s-badge">Tab Badge <span class="sb-badge">Counter</span></a></li>
+      <li><a href="#s-mobile">Mobile Layout <span class="sb-badge">Responsive</span></a></li>
     </ul>
   </div>
 </nav>
@@ -546,7 +556,11 @@ p code, li code, td code{
     <div class="feat-chip"><span class="dot"></span>Toast Notifications</div>
     <div class="feat-chip"><span class="dot"></span>Config Save / Load</div>
     <div class="feat-chip"><span class="dot"></span>FPS Watermark</div>
-    <div class="feat-chip"><span class="dot"></span>Live Accent Color</div>
+    <div class="feat-chip"><span class="dot"></span>Loading Screen</div>
+    <div class="feat-chip"><span class="dot"></span>Section Collapse</div>
+    <div class="feat-chip"><span class="dot"></span>Tab Badge Counter</div>
+    <div class="feat-chip"><span class="dot"></span>Keybind Toggle Bind</div>
+    <div class="feat-chip"><span class="dot"></span>Mobile Layout</div>
   </div>
 
   <div class="callout blue">
@@ -783,6 +797,7 @@ p code, li code, td code{
       <tr><td><span class="p-name">Title</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"Toggle"</span></td><td class="p-desc">Label shown next to the checkbox.</td></tr>
       <tr><td><span class="p-name">Default</span></td><td><span class="type type-bool">boolean</span></td><td><span class="p-default">false</span></td><td class="p-desc">Initial on/off state.</td></tr>
       <tr><td><span class="p-name">ConfigKey</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Unique key for <a href="#s-config" style="color:var(--acc)">Config Save/Load</a>.</td></tr>
+      <tr><td><span class="p-name">Keybind</span></td><td><span class="type type-kc">KeyCode</span></td><td><span class="p-default">nil</span></td><td class="p-desc">When set, pressing this key anywhere toggles the state automatically. The bound key is shown dimmed on the right side of the row.</td></tr>
       <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function(bool)</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Called every time the state changes. Receives the new boolean value.</td></tr>
     </tbody>
   </table>
@@ -792,6 +807,7 @@ p code, li code, td code{
     <span class="vr">Title</span>     = <span class="str">"Enable Silent Aim"</span>,
     <span class="vr">Default</span>   = <span class="kw">false</span>,
     <span class="vr">ConfigKey</span> = <span class="str">"silent_aim"</span>,
+    <span class="vr">Keybind</span>   = Enum.KeyCode.F,  <span class="cmt">-- press F anywhere to toggle</span>
     <span class="vr">Callback</span>  = <span class="kw">function</span>(<span class="vr">enabled</span>)
         <span class="fn">print</span>(<span class="str">"Silent Aim:"</span>, <span class="vr">enabled</span>)
     <span class="kw">end</span>
@@ -1146,7 +1162,126 @@ p code, li code, td code{
   </div>
 </section>
 
-</main>
+<!-- ════ LOADING SCREEN ════ -->
+<section class="doc-section" id="s-loading">
+  <div class="method-header">
+    <div class="method-label">Hub Feature</div>
+    <div class="method-title"><code>Library.new({ LoadingScreen: true })</code></div>
+    <p class="method-desc">A full-screen animated splash is shown automatically when the hub loads. It displays a logo, title, version, a status message and a filling progress bar, then fades out and reveals the main window.</p>
+  </div>
+
+  <div class="callout green">
+    <span class="callout-icon">✓</span>
+    <span>Enabled by default. Pass <code>LoadingScreen = false</code> to skip it entirely.</span>
+  </div>
+
+  <div class="params-title">Properties (inside Library.new config)</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="p-name">LoadingScreen</span></td><td><span class="type type-bool">boolean</span></td><td><span class="p-default">true</span></td><td class="p-desc">Set to <code>false</code> to disable the splash entirely.</td></tr>
+      <tr><td><span class="p-name">LoadingDuration</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">1.8</span></td><td class="p-desc">Total seconds the progress bar takes to fill before fading out.</td></tr>
+    </tbody>
+  </table>
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-ls')">Copy</button></div>
+    <pre id="ex-ls"><code><span class="cmt">-- Default: splash shows automatically</span>
+<span class="kw">local</span> <span class="vr">Hub</span> = <span class="vr">Library</span>.<span class="fn">new</span>({
+    <span class="vr">Title</span>           = <span class="str">"MyHub"</span>,
+    <span class="vr">Version</span>         = <span class="str">"v2.0"</span>,
+    <span class="vr">LoadingDuration</span> = <span class="num">2.5</span>,   <span class="cmt">-- slower for more dramatic feel</span>
+})
+
+<span class="cmt">-- Opt out</span>
+<span class="kw">local</span> <span class="vr">Hub</span> = <span class="vr">Library</span>.<span class="fn">new</span>({
+    <span class="vr">Title</span>         = <span class="str">"MyHub"</span>,
+    <span class="vr">LoadingScreen</span> = <span class="kw">false</span>,
+})</code></pre>
+  </div>
+</section>
+
+<!-- ════ SECTION COLLAPSE ════ -->
+<section class="doc-section" id="s-collapse">
+  <div class="method-header">
+    <div class="method-label">UI Behaviour</div>
+    <div class="method-title">Section Collapse</div>
+    <p class="method-desc">Every section header has a collapse arrow (▲/▼). Clicking it folds the section down to just the header row, animating the card height. Clicking again expands it. Useful for tabs with many sections.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Methods on Section</span>
+    <span class="returns-type">Section:Collapse()  ·  Section:Expand()</span>
+  </div>
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-col')">Copy</button></div>
+    <pre id="ex-col"><code><span class="kw">local</span> <span class="vr">Section</span> = <span class="vr">Tab</span>:<span class="fn">CreateSection</span>(<span class="str">"Advanced"</span>)
+
+<span class="cmt">-- Collapse programmatically (e.g. start collapsed)</span>
+<span class="vr">Section</span>:<span class="fn">Collapse</span>()
+
+<span class="cmt">-- Expand again</span>
+<span class="vr">Section</span>:<span class="fn">Expand</span>()
+
+<span class="cmt">-- The user can also click the ▲ arrow in the section header at any time</span></code></pre>
+  </div>
+</section>
+
+<!-- ════ TAB BADGE ════ -->
+<section class="doc-section" id="s-badge">
+  <div class="method-header">
+    <div class="method-label">UI Behaviour</div>
+    <div class="method-title"><code>Tab:SetBadge(n)</code></div>
+    <p class="method-desc">Displays a small red counter dot on the tab button — like a notification badge. Pass a number to set it, or call <code>ClearBadge()</code> to remove it. Numbers above 99 show as <code>99+</code>.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Methods</span>
+    <span class="returns-type">Tab:SetBadge(n)  ·  Tab:ClearBadge()</span>
+  </div>
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-badge')">Copy</button></div>
+    <pre id="ex-badge"><code><span class="kw">local</span> <span class="vr">CombatTab</span> = <span class="vr">Hub</span>:<span class="fn">CreateTab</span>(<span class="str">"Combat"</span>)
+
+<span class="cmt">-- Show a badge with count (e.g. "3 features active")</span>
+<span class="vr">CombatTab</span>:<span class="fn">SetBadge</span>(<span class="num">3</span>)
+
+<span class="cmt">-- Update count</span>
+<span class="vr">CombatTab</span>:<span class="fn">SetBadge</span>(<span class="num">1</span>)
+
+<span class="cmt">-- Remove badge</span>
+<span class="vr">CombatTab</span>:<span class="fn">ClearBadge</span>()
+
+<span class="cmt">-- Typical pattern: increment when a toggle turns on</span>
+<span class="kw">local</span> <span class="vr">active</span> = <span class="num">0</span>
+<span class="vr">Section</span>:<span class="fn">CreateToggle</span>({
+    <span class="vr">Title</span>    = <span class="str">"Silent Aim"</span>,
+    <span class="vr">Callback</span> = <span class="kw">function</span>(<span class="vr">on</span>)
+        <span class="vr">active</span> = <span class="vr">active</span> + (<span class="vr">on</span> <span class="kw">and</span> <span class="num">1</span> <span class="kw">or</span> -<span class="num">1</span>)
+        <span class="vr">CombatTab</span>:<span class="fn">SetBadge</span>(<span class="vr">active</span>)
+    <span class="kw">end</span>
+})</code></pre>
+  </div>
+</section>
+
+<!-- ════ MOBILE LAYOUT ════ -->
+<section class="doc-section" id="s-mobile">
+  <div class="method-header">
+    <div class="method-label">UI Behaviour</div>
+    <div class="method-title">Mobile Layout</div>
+    <p class="method-desc">When the viewport width drops below <strong>600 px</strong> (phone / tablet), the library automatically switches each tab from a two-column layout to a single full-width scrolling column. Right-column sections are appended below the left ones. The layout re-checks every time the viewport is resized or a tab is switched.</p>
+  </div>
+
+  <div class="callout blue">
+    <span class="callout-icon">📱</span>
+    <span>This is <strong>automatic</strong> — no configuration needed. It activates on phones and small screens, and reverts on larger viewports.</span>
+  </div>
+
+  <table class="params-table">
+    <thead><tr><th>Condition</th><th>Behaviour</th></tr></thead>
+    <tbody>
+      <tr><td class="p-desc">Viewport <code>width &lt; 600px</code></td><td class="p-desc">Single full-width column. Right sections stacked below left sections. Divider hidden.</td></tr>
+      <tr><td class="p-desc">Viewport <code>width ≥ 600px</code></td><td class="p-desc">Normal two-column layout. Divider visible.</td></tr>
+    </tbody>
+  </table>
+</section>
 </div>
 
 <script>
