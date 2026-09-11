@@ -7,12 +7,12 @@ local Library = loadstring(game:HttpGet(
 
 local Hub = Library.new({
     Title = "HutameHub UI Test",
-    Version = "API test",
-    Accent = Color3.fromRGB(220, 50, 50),
+    Version = "v2.2",
+    Accent = Color3.fromRGB(192, 139, 230),
     ToggleKey = Enum.KeyCode.RightControl,
     LoadingScreen = true,
     LoadingDuration = 1.8,
-    SnowEffect = true,
+    SnowEffect = false,
 })
 
 local function report(name, value)
@@ -56,7 +56,7 @@ local Keybind = Inputs:CreateKeybind({
     Callback = function(key) report("Selected key", key.Name) end,
 })
 local Color = Inputs:CreateColorPicker({
-    Title = "Accent", Default = Color3.fromRGB(220, 50, 50),
+    Title = "Accent", Default = Color3.fromRGB(192, 139, 230),
     Tooltip = "Open the RGB sliders and change the accent.",
     Callback = function(value) Hub:SetAccent(value) end,
 })

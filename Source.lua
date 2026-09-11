@@ -1,7 +1,7 @@
 --[[
     ╔══════════════════════════════════════════════════════════════╗
     ║                    HUTAME HUB LIBRARY                        ║
-    ║         Private Hub Style · Two-Column · Compact             ║
+    ║         Violet Studio · Two-Column · Precision             ║
     ╚══════════════════════════════════════════════════════════════╝
 
     loadstring(game:HttpGet("https://raw.githubusercontent.com/hutamev2/HutameHub-Lib/main/Source.lua"))()
@@ -45,21 +45,29 @@ end
 -- Theme
 -- ─────────────────────────────────────────────
 local T = {
-    BG          = Color3.fromRGB(13, 13, 13),    -- #0D0D0D  window bg
-    Surface     = Color3.fromRGB(18, 18, 18),    -- #121212  topbar / tab bar
-    Card        = Color3.fromRGB(22, 22, 22),    -- #161616  section card
-    Element     = Color3.fromRGB(28, 28, 28),    -- #1C1C1C  element bg
-    ElementHov  = Color3.fromRGB(34, 34, 34),    -- #222222  hover
-    Border      = Color3.fromRGB(38, 38, 38),    -- #262626
-    BorderLight = Color3.fromRGB(52, 52, 52),    -- #343434  active tab underline
-    Text        = Color3.fromRGB(220, 220, 220), -- primary text
-    TextDim     = Color3.fromRGB(130, 130, 130), -- secondary text
-    TextMute    = Color3.fromRGB(70, 70, 70),    -- muted
-    Accent      = Color3.fromRGB(220, 50, 50),   -- red accent (changeable)
-    AccentDim   = Color3.fromRGB(140, 30, 30),   -- darker accent
-    White       = Color3.new(1,1,1),
-    Black       = Color3.new(0,0,0),
+    BG          = Color3.fromRGB(20, 17, 32),
+    Surface     = Color3.fromRGB(28, 23, 43),
+    Card        = Color3.fromRGB(32, 26, 48),
+    Element     = Color3.fromRGB(42, 34, 61),
+    ElementHov  = Color3.fromRGB(55, 44, 76),
+    Border      = Color3.fromRGB(65, 54, 83),
+    BorderLight = Color3.fromRGB(99, 81, 123),
+    Text        = Color3.fromRGB(225, 218, 244),
+    TextDim     = Color3.fromRGB(176, 164, 198),
+    TextMute    = Color3.fromRGB(137, 124, 158),
+    Accent      = Color3.fromRGB(192, 139, 230),
+    AccentDim   = Color3.fromRGB(115, 83, 138),
+    White       = Color3.fromRGB(245, 239, 255),
+    Black       = Color3.fromRGB(10, 8, 16),
 }
+
+-- Original Instance-based treatment: crisp frames with a subtle vertical bevel.
+local function shade(surface)
+    local gradient = Instance.new("UIGradient")
+    gradient.Rotation = 90
+    gradient.Color = ColorSequence.new(Color3.new(1, 1, 1), Color3.fromRGB(195, 190, 205))
+    gradient.Parent = surface
+end
 
 -- ─────────────────────────────────────────────
 -- Library
@@ -72,7 +80,7 @@ function Library.new(config)
     local self = setmetatable({}, Library)
 
     self.Title       = config.Title    or "HutameHub"
-    self.Version     = config.Version  or "v1.0"
+    self.Version     = config.Version  or "v2.2"
     self.Accent      = config.Accent   or T.Accent
     self.ToggleKey   = config.ToggleKey or Enum.KeyCode.RightControl
     self.Tabs        = {}
@@ -90,9 +98,9 @@ function Library.new(config)
     self:_build()
 
     -- ── Persistent Snow Effect on main UI ────────────────────────────────
-    -- Enabled by default. Opt out: SnowEffect = false in config.
+    -- Optional atmosphere. Enable with SnowEffect = true.
     self._stopUISnow = nil
-    if config.SnowEffect ~= false then
+    if config.SnowEffect == true then
         -- Snow canvas sits behind everything inside MainFrame (ZIndex 1)
         local snowCanvas = Instance.new("Frame", self.MainFrame)
         snowCanvas.Name              = "SnowCanvas"
@@ -114,7 +122,7 @@ function Library.new(config)
             local dur    = math.random(50, 90) / 10   -- 5–9 s (slow, ambient)
             local flake  = Instance.new("TextLabel", snowCanvas)
             flake.BackgroundTransparency = 1
-            flake.Font       = Enum.Font.Gotham
+            flake.Font       = Enum.Font.Code
             flake.TextSize   = size
             flake.Text       = CHARS[math.random(#CHARS)]
             flake.ZIndex     = 1
@@ -204,16 +212,16 @@ function Library.new(config)
         lsCard.BackgroundColor3  = T.Surface
         lsCard.BorderSizePixel   = 0
         lsCard.ZIndex            = 101
-        Instance.new("UICorner", lsCard).CornerRadius = UDim.new(0,8)
+        Instance.new("UICorner", lsCard).CornerRadius = UDim.new(0,0)
         local lsStroke = Instance.new("UIStroke", lsCard)
-        lsStroke.Color = T.Border; lsStroke.Thickness = 1; lsStroke.ZIndex = 101
+        lsStroke.Color = T.Border; lsStroke.Thickness = 1; -- UIStroke inherits its parent stacking order
 
         -- accent top bar
         local lsAccent = Instance.new("Frame", lsCard)
         lsAccent.Size             = UDim2.new(1,0,0,2)
         lsAccent.BackgroundColor3 = self.Accent
         lsAccent.BorderSizePixel  = 0; lsAccent.ZIndex = 102
-        Instance.new("UICorner", lsAccent).CornerRadius = UDim.new(0,8)
+        Instance.new("UICorner", lsAccent).CornerRadius = UDim.new(0,0)
         self:_onAccent(function(c) lsAccent.BackgroundColor3 = c end)
 
         -- logo box
@@ -222,24 +230,24 @@ function Library.new(config)
         lsLogo.Position         = UDim2.new(0.5,-18,0,22)
         lsLogo.BackgroundColor3 = self.Accent
         lsLogo.BorderSizePixel  = 0; lsLogo.ZIndex = 102
-        Instance.new("UICorner", lsLogo).CornerRadius = UDim.new(0,8)
+        Instance.new("UICorner", lsLogo).CornerRadius = UDim.new(0,0)
         self:_onAccent(function(c) lsLogo.BackgroundColor3 = c end)
         local lsLogoLbl = Instance.new("TextLabel", lsLogo)
         lsLogoLbl.Size=UDim2.new(1,0,1,0); lsLogoLbl.BackgroundTransparency=1
-        lsLogoLbl.Font=Enum.Font.GothamBold; lsLogoLbl.TextSize=18
+        lsLogoLbl.Font=Enum.Font.Code; lsLogoLbl.TextSize=18
         lsLogoLbl.TextColor3=T.Black; lsLogoLbl.Text=string.sub(splashTitle,1,1)
         lsLogoLbl.ZIndex=103
 
         -- title / subtitle
         local lsTitleLbl = Instance.new("TextLabel", lsCard)
         lsTitleLbl.Size=UDim2.new(1,0,0,20); lsTitleLbl.Position=UDim2.fromOffset(0,66)
-        lsTitleLbl.BackgroundTransparency=1; lsTitleLbl.Font=Enum.Font.GothamBold
+        lsTitleLbl.BackgroundTransparency=1; lsTitleLbl.Font=Enum.Font.Code
         lsTitleLbl.TextSize=15; lsTitleLbl.TextColor3=T.White
         lsTitleLbl.Text=splashTitle; lsTitleLbl.ZIndex=102
 
         local lsSubLbl = Instance.new("TextLabel", lsCard)
         lsSubLbl.Size=UDim2.new(1,0,0,16); lsSubLbl.Position=UDim2.fromOffset(0,88)
-        lsSubLbl.BackgroundTransparency=1; lsSubLbl.Font=Enum.Font.Gotham
+        lsSubLbl.BackgroundTransparency=1; lsSubLbl.Font=Enum.Font.Code
         lsSubLbl.TextSize=11; lsSubLbl.TextColor3=T.TextDim
         lsSubLbl.Text=splashSubtitle; lsSubLbl.ZIndex=102
 
@@ -258,7 +266,7 @@ function Library.new(config)
         -- status label
         local lsStatus = Instance.new("TextLabel", lsCard)
         lsStatus.Size=UDim2.new(1,0,0,12); lsStatus.Position=UDim2.new(0,0,1,-34)
-        lsStatus.BackgroundTransparency=1; lsStatus.Font=Enum.Font.Gotham
+        lsStatus.BackgroundTransparency=1; lsStatus.Font=Enum.Font.Code
         lsStatus.TextSize=10; lsStatus.TextColor3=T.TextMute
         lsStatus.Text="Loading..."; lsStatus.ZIndex=102
 
@@ -278,7 +286,7 @@ function Library.new(config)
                 local duration = math.random(35, 70) / 10
                 local flake    = Instance.new("TextLabel", snowParent)
                 flake.BackgroundTransparency = 1
-                flake.Font       = Enum.Font.Gotham
+                flake.Font       = Enum.Font.Code
                 flake.TextSize   = size
                 flake.Text       = CHARS[math.random(#CHARS)]
                 flake.ZIndex     = 50
@@ -408,37 +416,47 @@ function Library:_build()
     mf.BorderSizePixel   = 0
     mf.ClipsDescendants  = false
     mf.Parent            = sg
-    Instance.new("UICorner", mf).CornerRadius = UDim.new(0,6)
+    Instance.new("UICorner", mf).CornerRadius = UDim.new(0,0)
     local mfStroke = Instance.new("UIStroke", mf)
-    mfStroke.Color     = T.Border
-    mfStroke.Thickness = 1
+    mfStroke.Color     = T.Black
+    mfStroke.Thickness = 3
+    local innerBorder = Instance.new("Frame", mf)
+    innerBorder.Name = "InsetBorder"
+    innerBorder.Position = UDim2.fromOffset(4, 4)
+    innerBorder.Size = UDim2.new(1, -8, 1, -8)
+    innerBorder.BackgroundTransparency = 1
+    innerBorder.BorderSizePixel = 0
+    local innerStroke = Instance.new("UIStroke", innerBorder)
+    innerStroke.Color = T.BorderLight
+    innerStroke.Thickness = 1
     self.MainFrame = mf
 
     -- ── Top accent line ──────────────────────────
     local acLine = Instance.new("Frame", mf)
     acLine.Name             = "AccentLine"
-    acLine.Size             = UDim2.new(1,0,0,2)
+    acLine.Size             = UDim2.new(1,-10,0,2)
+    acLine.Position         = UDim2.fromOffset(5,5)
     acLine.BackgroundColor3 = self.Accent
     acLine.BorderSizePixel  = 0
     acLine.ZIndex           = 4
-    Instance.new("UICorner", acLine).CornerRadius = UDim.new(0,6)
+    Instance.new("UICorner", acLine).CornerRadius = UDim.new(0,0)
     self:_onAccent(function(c) acLine.BackgroundColor3 = c end)
 
     -- ── Topbar ──────────────────────────────────
     local topbar = Instance.new("Frame", mf)
     topbar.Name            = "Topbar"
-    topbar.Size            = UDim2.new(1,0,0,36)
-    topbar.Position        = UDim2.fromOffset(0,2)
+    topbar.Size            = UDim2.new(1,-12,0,32)
+    topbar.Position        = UDim2.fromOffset(6,8)
     topbar.BackgroundColor3= T.Surface
     topbar.BorderSizePixel = 0
     topbar.ZIndex          = 3
 
     -- brand
     local brand = Instance.new("TextLabel", topbar)
-    brand.Size               = UDim2.new(0,200,1,0)
+    brand.Size               = UDim2.new(1,-170,1,0)
     brand.Position           = UDim2.fromOffset(10,0)
     brand.BackgroundTransparency = 1
-    brand.Font               = Enum.Font.GothamBold
+    brand.Font               = Enum.Font.Code
     brand.TextSize           = 13
     brand.TextColor3         = T.White
     brand.TextXAlignment     = Enum.TextXAlignment.Left
@@ -465,10 +483,10 @@ function Library:_build()
 
     -- user info sits just left of ctrlHolder
     local userLbl = Instance.new("TextLabel", topbar)
-    userLbl.Size                 = UDim2.new(1, -280, 1, 0)
-    userLbl.Position             = UDim2.new(0, 210, 0, 0)
+    userLbl.Size                 = UDim2.new(0, 90, 1, 0)
+    userLbl.Position             = UDim2.new(1, -164, 0, 0)
     userLbl.BackgroundTransparency = 1
-    userLbl.Font                 = Enum.Font.Gotham
+    userLbl.Font                 = Enum.Font.Code
     userLbl.TextSize             = 11
     userLbl.TextColor3           = T.TextDim
     userLbl.TextXAlignment       = Enum.TextXAlignment.Right
@@ -481,12 +499,13 @@ function Library:_build()
         btn.Position           = UDim2.new(0, xPos, 0.5, -12)
         btn.BackgroundColor3   = T.Element
         btn.BorderSizePixel    = 0
-        btn.Font               = Enum.Font.GothamBold
+        btn.Font               = Enum.Font.Code
         btn.TextSize           = 12
         btn.TextColor3         = T.TextDim
         btn.Text               = char
         btn.AutoButtonColor    = false
-        Instance.new("UICorner", btn).CornerRadius = UDim.new(0,4)
+        Instance.new("UICorner", btn).CornerRadius = UDim.new(0,0)
+        shade(btn)
         btn.MouseEnter:Connect(function() tw(btn,0.15,{BackgroundColor3=hoverCol, TextColor3=T.White}) end)
         btn.MouseLeave:Connect(function() tw(btn,0.15,{BackgroundColor3=T.Element, TextColor3=T.TextDim}) end)
         btn.MouseButton1Click:Connect(onClick)
@@ -516,8 +535,8 @@ function Library:_build()
     -- ── Tab Bar (horizontal) ─────────────────────
     local tabBar = Instance.new("Frame", mf)
     tabBar.Name            = "TabBar"
-    tabBar.Size            = UDim2.new(1,0,0,30)
-    tabBar.Position        = UDim2.fromOffset(0,38)
+    tabBar.Size            = UDim2.new(1,-20,0,30)
+    tabBar.Position        = UDim2.fromOffset(10,44)
     tabBar.BackgroundColor3= T.Surface
     tabBar.BorderSizePixel = 0
     tabBar.ZIndex          = 3
@@ -533,15 +552,15 @@ function Library:_build()
     local tabLayout = Instance.new("UIListLayout", tabList)
     tabLayout.FillDirection    = Enum.FillDirection.Horizontal
     tabLayout.SortOrder        = Enum.SortOrder.LayoutOrder
-    tabLayout.Padding          = UDim.new(0,0)
+    tabLayout.Padding          = UDim.new(0,3)
     self.TabBar  = tabBar
     self.TabList = tabList
 
     -- ── Body (content area below tabbar) ─────────
     local body = Instance.new("Frame", mf)
     body.Name            = "Body"
-    body.Size            = UDim2.new(1,0,1,-68)
-    body.Position        = UDim2.fromOffset(0,68)
+    body.Size            = UDim2.new(1,-12,1,-84)
+    body.Position        = UDim2.fromOffset(6,78)
     body.BackgroundTransparency = 1
     body.ClipsDescendants = true
     self._body = body
@@ -565,9 +584,10 @@ function Library:CreateTab(name)
     btn.Name               = "Tab_"..name
     btn.Size               = UDim2.new(0,0,1,0)
     btn.AutomaticSize      = Enum.AutomaticSize.X
-    btn.BackgroundTransparency = 1
+    btn.BackgroundTransparency = 0
+    btn.BackgroundColor3 = T.Element
     btn.BorderSizePixel    = 0
-    btn.Font               = Enum.Font.GothamMedium
+    btn.Font               = Enum.Font.Code
     btn.TextSize           = 12
     btn.TextColor3         = T.TextDim
     btn.Text               = "  "..name.."  "
@@ -588,7 +608,7 @@ function Library:CreateTab(name)
     local badge = Instance.new("Frame", btn)
     badge.Name              = "Badge"
     badge.Size              = UDim2.fromOffset(16, 16)
-    badge.Position          = UDim2.new(1, -6, 0, -4)
+    badge.Position          = UDim2.new(1, -8, 0, 8)
     badge.AnchorPoint       = Vector2.new(0.5, 0.5)
     badge.BackgroundColor3  = T.Accent
     badge.BorderSizePixel   = 0
@@ -598,7 +618,7 @@ function Library:CreateTab(name)
     local badgeLbl = Instance.new("TextLabel", badge)
     badgeLbl.Size                 = UDim2.new(1,0,1,0)
     badgeLbl.BackgroundTransparency = 1
-    badgeLbl.Font                 = Enum.Font.GothamBold
+    badgeLbl.Font                 = Enum.Font.Code
     badgeLbl.TextSize             = 9
     badgeLbl.TextColor3           = Color3.new(1,1,1)
     badgeLbl.Text                 = ""
@@ -650,7 +670,7 @@ function Library:CreateTab(name)
     div.Name             = "ColDivider"
     div.Size             = UDim2.new(0,1,1,0)
     div.Position         = UDim2.new(0.5,0,0,0)
-    div.BackgroundColor3 = T.Border
+    div.BackgroundColor3 = T.BG
     div.BorderSizePixel  = 0
 
     -- right column scroll
@@ -711,7 +731,7 @@ function Library:CreateTab(name)
         for _, t in ipairs(self._lib.Tabs) do t:Deactivate() end
         Tab.Active     = true
         page.Visible   = true
-        tw(btn,   0.15, {TextColor3 = T.White})
+        tw(btn,   0.15, {TextColor3 = self._lib.Accent, BackgroundColor3 = T.Card})
         tw(uline, 0.15, {BackgroundTransparency = 0, BackgroundColor3 = self._lib.Accent})
         self._lib.ActiveTab = Tab
         Tab._checkMobile()
@@ -720,7 +740,7 @@ function Library:CreateTab(name)
     function Tab:Deactivate()
         Tab.Active   = false
         page.Visible = false
-        tw(btn,   0.15, {TextColor3 = T.TextDim})
+        tw(btn,   0.15, {TextColor3 = T.TextDim, BackgroundColor3 = T.Element})
         tw(uline, 0.15, {BackgroundTransparency = 1})
     end
 
@@ -752,7 +772,7 @@ function Library:_createSection(title, parent)
     card.AutomaticSize     = Enum.AutomaticSize.Y
     card.BackgroundColor3  = T.Card
     card.BorderSizePixel   = 0
-    Instance.new("UICorner", card).CornerRadius = UDim.new(0,4)
+    Instance.new("UICorner", card).CornerRadius = UDim.new(0,0)
     local cardStroke = Instance.new("UIStroke", card)
     cardStroke.Color     = T.Border
     cardStroke.Thickness = 1
@@ -763,7 +783,7 @@ function Library:_createSection(title, parent)
     pad.PaddingRight  = UDim.new(0,8)
     local layout = Instance.new("UIListLayout", card)
     layout.SortOrder = Enum.SortOrder.LayoutOrder
-    layout.Padding   = UDim.new(0,3)
+    layout.Padding   = UDim.new(0,5)
 
     -- section header (clickable for collapse)
     local hdrBtn = Instance.new("TextButton", card)
@@ -778,18 +798,18 @@ function Library:_createSection(title, parent)
     local hdr = Instance.new("TextLabel", hdrBtn)
     hdr.Size                  = UDim2.new(1,-20,1,0)
     hdr.BackgroundTransparency= 1
-    hdr.Font                  = Enum.Font.GothamBold
-    hdr.TextSize               = 10
-    hdr.TextColor3             = T.TextMute
+    hdr.Font                  = Enum.Font.Code
+    hdr.TextSize               = 12
+    hdr.TextColor3             = T.Text
     hdr.TextXAlignment         = Enum.TextXAlignment.Left
-    hdr.Text                   = string.upper(title)
+    hdr.Text                   = title
 
     -- collapse arrow
     local colArrow = Instance.new("TextLabel", hdrBtn)
     colArrow.Size                  = UDim2.fromOffset(14,18)
     colArrow.Position              = UDim2.new(1,-14,0,0)
     colArrow.BackgroundTransparency= 1
-    colArrow.Font                  = Enum.Font.GothamBold
+    colArrow.Font                  = Enum.Font.Code
     colArrow.TextSize              = 8
     colArrow.TextColor3            = T.TextMute
     colArrow.Text                  = "▲"
@@ -830,7 +850,7 @@ function Library:_createSection(title, parent)
 
     hdrBtn.MouseButton1Click:Connect(function() setCollapsed(not collapsed) end)
     hdrBtn.MouseEnter:Connect(function() tw(hdr,0.1,{TextColor3=T.TextDim}) end)
-    hdrBtn.MouseLeave:Connect(function() tw(hdr,0.1,{TextColor3=T.TextMute}) end)
+    hdrBtn.MouseLeave:Connect(function() tw(hdr,0.1,{TextColor3=T.Text}) end)
 
     function Section:Collapse() setCollapsed(true) end
     function Section:Expand()   setCollapsed(false) end
@@ -866,7 +886,8 @@ function Library:_createSection(title, parent)
         box.Position         = UDim2.new(0,0,0.5,-6)
         box.BackgroundColor3 = state and self._lib.Accent or T.Element
         box.BorderSizePixel  = 0
-        Instance.new("UICorner", box).CornerRadius = UDim.new(0,3)
+        Instance.new("UICorner", box).CornerRadius = UDim.new(0,0)
+        shade(box)
         local boxStroke = Instance.new("UIStroke", box)
         boxStroke.Color     = state and self._lib.Accent or T.BorderLight
         boxStroke.Thickness = 1
@@ -875,7 +896,7 @@ function Library:_createSection(title, parent)
         local tick = Instance.new("TextLabel", box)
         tick.Size                  = UDim2.new(1,0,1,0)
         tick.BackgroundTransparency= 1
-        tick.Font                  = Enum.Font.GothamBold
+        tick.Font                  = Enum.Font.Code
         tick.TextSize              = 9
         tick.TextColor3            = T.White
         tick.Text                  = "✓"
@@ -887,7 +908,7 @@ function Library:_createSection(title, parent)
         lbl.Size                  = UDim2.new(1,-24,1,0)
         lbl.Position              = UDim2.fromOffset(20,0)
         lbl.BackgroundTransparency= 1
-        lbl.Font                  = Enum.Font.Gotham
+        lbl.Font                  = Enum.Font.Code
         lbl.TextSize              = 12
         lbl.TextColor3            = state and T.Text or T.TextDim
         lbl.TextXAlignment        = Enum.TextXAlignment.Left
@@ -898,7 +919,7 @@ function Library:_createSection(title, parent)
         valLbl.Size                  = UDim2.new(0,50,1,0)
         valLbl.Position              = UDim2.new(1,-50,0,0)
         valLbl.BackgroundTransparency= 1
-        valLbl.Font                  = Enum.Font.Gotham
+        valLbl.Font                  = Enum.Font.Code
         valLbl.TextSize              = 10
         valLbl.TextColor3            = T.TextMute
         valLbl.TextXAlignment        = Enum.TextXAlignment.Right
@@ -966,7 +987,7 @@ function Library:_createSection(title, parent)
         local lbl = Instance.new("TextLabel", headerRow)
         lbl.Size                  = UDim2.new(1,-60,1,0)
         lbl.BackgroundTransparency= 1
-        lbl.Font                  = Enum.Font.Gotham
+        lbl.Font                  = Enum.Font.Code
         lbl.TextSize              = 12
         lbl.TextColor3            = T.TextDim
         lbl.TextXAlignment        = Enum.TextXAlignment.Left
@@ -976,7 +997,7 @@ function Library:_createSection(title, parent)
         valLbl.Size                  = UDim2.new(0,60,1,0)
         valLbl.Position              = UDim2.new(1,-60,0,0)
         valLbl.BackgroundTransparency= 1
-        valLbl.Font                  = Enum.Font.GothamBold
+        valLbl.Font                  = Enum.Font.Code
         valLbl.TextSize              = 11
         valLbl.TextColor3            = T.Text
         valLbl.TextXAlignment        = Enum.TextXAlignment.Right
@@ -984,26 +1005,26 @@ function Library:_createSection(title, parent)
 
         -- track
         local trackHolder = Instance.new("TextButton", container)
-        trackHolder.Size             = UDim2.new(1,0,0,6)
+        trackHolder.Size             = UDim2.new(1,0,0,8)
         trackHolder.Position         = UDim2.fromOffset(0,18)
         trackHolder.BackgroundColor3 = T.Element
         trackHolder.BorderSizePixel  = 0
         trackHolder.Text             = ""
         trackHolder.AutoButtonColor  = false
-        Instance.new("UICorner", trackHolder).CornerRadius = UDim.new(1,0)
+        shade(trackHolder)
 
         local fill = Instance.new("Frame", trackHolder)
         fill.Size             = UDim2.new((default-min)/(max-min),0,1,0)
         fill.BackgroundColor3 = self._lib.Accent
         fill.BorderSizePixel  = 0
-        Instance.new("UICorner", fill).CornerRadius = UDim.new(1,0)
+        shade(fill)
 
         local knob = Instance.new("Frame", fill)
         knob.Size             = UDim2.fromOffset(8,8)
         knob.Position         = UDim2.new(1,-4,0.5,-4)
         knob.BackgroundColor3 = T.White
         knob.BorderSizePixel  = 0
-        Instance.new("UICorner", knob).CornerRadius = UDim.new(1,0)
+        knob.Visible = false
 
         self._lib:_onAccent(function(c) fill.BackgroundColor3 = c end)
 
@@ -1066,7 +1087,8 @@ function Library:_createSection(title, parent)
         header.Text              = ""
         header.AutoButtonColor   = false
         header.ZIndex            = 3
-        Instance.new("UICorner", header).CornerRadius = UDim.new(0,3)
+        Instance.new("UICorner", header).CornerRadius = UDim.new(0,0)
+        shade(header)
         local hStroke = Instance.new("UIStroke", header)
         hStroke.Color     = T.Border
         hStroke.Thickness = 1
@@ -1075,7 +1097,7 @@ function Library:_createSection(title, parent)
         hLbl.Size                  = UDim2.new(0.55,0,1,0)
         hLbl.Position              = UDim2.fromOffset(7,0)
         hLbl.BackgroundTransparency= 1
-        hLbl.Font                  = Enum.Font.Gotham
+        hLbl.Font                  = Enum.Font.Code
         hLbl.TextSize              = 11
         hLbl.TextColor3            = T.TextDim
         hLbl.TextXAlignment        = Enum.TextXAlignment.Left
@@ -1085,7 +1107,7 @@ function Library:_createSection(title, parent)
         valLbl.Size                  = UDim2.new(0.4,-20,1,0)
         valLbl.Position              = UDim2.new(0.55,0,0,0)
         valLbl.BackgroundTransparency= 1
-        valLbl.Font                  = Enum.Font.GothamMedium
+        valLbl.Font                  = Enum.Font.Code
         valLbl.TextSize              = 11
         valLbl.TextColor3            = T.Text
         valLbl.TextXAlignment        = Enum.TextXAlignment.Right
@@ -1095,7 +1117,7 @@ function Library:_createSection(title, parent)
         arrow.Size                  = UDim2.fromOffset(14,22)
         arrow.Position              = UDim2.new(1,-16,0,0)
         arrow.BackgroundTransparency= 1
-        arrow.Font                  = Enum.Font.GothamBold
+        arrow.Font                  = Enum.Font.Code
         arrow.TextSize              = 8
         arrow.TextColor3            = T.TextMute
         arrow.Text                  = "▼"
@@ -1110,11 +1132,11 @@ function Library:_createSection(title, parent)
         listFrame.ClipsDescendants = true
         listFrame.ZIndex           = 10
         listFrame.Visible          = false
-        Instance.new("UICorner", listFrame).CornerRadius = UDim.new(0,3)
+        Instance.new("UICorner", listFrame).CornerRadius = UDim.new(0,0)
         local lStroke = Instance.new("UIStroke", listFrame)
         lStroke.Color     = T.BorderLight
         lStroke.Thickness = 1
-        lStroke.ZIndex    = 10
+        -- Stroke follows the list panel stacking order
         local listLayout = Instance.new("UIListLayout", listFrame)
         listLayout.SortOrder = Enum.SortOrder.LayoutOrder
         listLayout.Padding   = UDim.new(0,1)
@@ -1132,7 +1154,7 @@ function Library:_createSection(title, parent)
                 ob.BackgroundColor3  = opt==Dropdown.Selected and self._lib.Accent or T.Element
                 ob.BackgroundTransparency = opt==Dropdown.Selected and 0.3 or 0.95
                 ob.BorderSizePixel   = 0
-                ob.Font              = Enum.Font.Gotham
+                ob.Font              = Enum.Font.Code
                 ob.TextSize          = 11
                 ob.TextColor3        = opt==Dropdown.Selected and T.White or T.TextDim
                 ob.TextXAlignment    = Enum.TextXAlignment.Left
@@ -1140,7 +1162,7 @@ function Library:_createSection(title, parent)
                 ob.AutoButtonColor   = false
                 ob.ZIndex            = 11
                 local oc = Instance.new("UICorner", ob)
-                oc.CornerRadius = UDim.new(0,2)
+                oc.CornerRadius = UDim.new(0,0)
                 ob.MouseEnter:Connect(function() if opt~=Dropdown.Selected then tw(ob,0.1,{BackgroundTransparency=0.7, TextColor3=T.Text}) end end)
                 ob.MouseLeave:Connect(function() if opt~=Dropdown.Selected then tw(ob,0.1,{BackgroundTransparency=0.95, TextColor3=T.TextDim}) end end)
                 ob.MouseButton1Click:Connect(function()
@@ -1204,7 +1226,7 @@ function Library:_createSection(title, parent)
         local lbl = Instance.new("TextLabel", row)
         lbl.Size                  = UDim2.new(0.42,0,1,0)
         lbl.BackgroundTransparency= 1
-        lbl.Font                  = Enum.Font.Gotham
+        lbl.Font                  = Enum.Font.Code
         lbl.TextSize              = 12
         lbl.TextColor3            = T.TextDim
         lbl.TextXAlignment        = Enum.TextXAlignment.Left
@@ -1215,7 +1237,8 @@ function Library:_createSection(title, parent)
         inputFrame.Position        = UDim2.new(0.42,2,0,1)
         inputFrame.BackgroundColor3= T.Element
         inputFrame.BorderSizePixel = 0
-        Instance.new("UICorner", inputFrame).CornerRadius = UDim.new(0,3)
+        Instance.new("UICorner", inputFrame).CornerRadius = UDim.new(0,0)
+        shade(inputFrame)
         local ifStroke = Instance.new("UIStroke", inputFrame)
         ifStroke.Color     = T.Border
         ifStroke.Thickness = 1
@@ -1224,7 +1247,7 @@ function Library:_createSection(title, parent)
         input.Size                 = UDim2.new(1,-8,1,0)
         input.Position             = UDim2.fromOffset(4,0)
         input.BackgroundTransparency= 1
-        input.Font                 = Enum.Font.Gotham
+        input.Font                 = Enum.Font.Code
         input.TextSize             = 11
         input.TextColor3           = T.Text
         input.PlaceholderColor3    = T.TextMute
@@ -1263,7 +1286,7 @@ function Library:_createSection(title, parent)
         local lbl = Instance.new("TextLabel", row)
         lbl.Size                  = UDim2.new(1,-80,1,0)
         lbl.BackgroundTransparency= 1
-        lbl.Font                  = Enum.Font.Gotham
+        lbl.Font                  = Enum.Font.Code
         lbl.TextSize              = 12
         lbl.TextColor3            = T.TextDim
         lbl.TextXAlignment        = Enum.TextXAlignment.Left
@@ -1274,12 +1297,13 @@ function Library:_createSection(title, parent)
         kBtn.Position          = UDim2.new(1,-72,0.5,-9)
         kBtn.BackgroundColor3  = T.Element
         kBtn.BorderSizePixel   = 0
-        kBtn.Font              = Enum.Font.GothamBold
+        kBtn.Font              = Enum.Font.Code
         kBtn.TextSize          = 10
         kBtn.TextColor3        = T.TextDim
         kBtn.Text              = "["..defK.Name.."]"
         kBtn.AutoButtonColor   = false
-        Instance.new("UICorner", kBtn).CornerRadius = UDim.new(0,3)
+        Instance.new("UICorner", kBtn).CornerRadius = UDim.new(0,0)
+        shade(kBtn)
         local kbStroke = Instance.new("UIStroke", kBtn)
         kbStroke.Color     = T.Border
         kbStroke.Thickness = 1
@@ -1336,7 +1360,7 @@ function Library:_createSection(title, parent)
         local lbl = Instance.new("TextLabel", header)
         lbl.Size                  = UDim2.new(1,-36,1,0)
         lbl.BackgroundTransparency= 1
-        lbl.Font                  = Enum.Font.Gotham
+        lbl.Font                  = Enum.Font.Code
         lbl.TextSize              = 12
         lbl.TextColor3            = T.TextDim
         lbl.TextXAlignment        = Enum.TextXAlignment.Left
@@ -1347,7 +1371,7 @@ function Library:_createSection(title, parent)
         preview.Position         = UDim2.new(1,-26,0.5,-7)
         preview.BackgroundColor3 = defC
         preview.BorderSizePixel  = 0
-        Instance.new("UICorner", preview).CornerRadius = UDim.new(0,3)
+        Instance.new("UICorner", preview).CornerRadius = UDim.new(0,0)
         local prevStroke = Instance.new("UIStroke", preview)
         prevStroke.Color     = T.BorderLight
         prevStroke.Thickness = 1
@@ -1359,7 +1383,7 @@ function Library:_createSection(title, parent)
         panel.BackgroundColor3 = T.Element
         panel.BorderSizePixel  = 0
         panel.Visible          = false
-        Instance.new("UICorner", panel).CornerRadius = UDim.new(0,3)
+        Instance.new("UICorner", panel).CornerRadius = UDim.new(0,0)
         local panelStroke = Instance.new("UIStroke", panel)
         panelStroke.Color     = T.Border
         panelStroke.Thickness = 1
@@ -1386,7 +1410,7 @@ function Library:_createSection(title, parent)
             local chLbl = Instance.new("TextLabel", row2)
             chLbl.Size                  = UDim2.fromOffset(10,16)
             chLbl.BackgroundTransparency= 1
-            chLbl.Font                  = Enum.Font.GothamBold
+            chLbl.Font                  = Enum.Font.Code
             chLbl.TextSize              = 10
             chLbl.TextColor3            = ch.color
             chLbl.Text                  = ch.name
@@ -1410,7 +1434,7 @@ function Library:_createSection(title, parent)
             numLbl.Size                  = UDim2.fromOffset(26,16)
             numLbl.Position              = UDim2.new(1,-26,0,0)
             numLbl.BackgroundTransparency= 1
-            numLbl.Font                  = Enum.Font.Gotham
+            numLbl.Font                  = Enum.Font.Code
             numLbl.TextSize              = 10
             numLbl.TextColor3            = T.TextDim
             numLbl.TextXAlignment        = Enum.TextXAlignment.Right
@@ -1486,14 +1510,15 @@ function Library:_createSection(title, parent)
         btn.Size              = UDim2.new(1,0,0,22)
         btn.BackgroundColor3  = T.Element
         btn.BorderSizePixel   = 0
-        btn.Font              = Enum.Font.GothamMedium
+        btn.Font              = Enum.Font.Code
         btn.TextSize          = 12
         btn.TextColor3        = T.Text
         btn.Text              = ttl
         btn.AutoButtonColor   = false
         btn.ClipsDescendants  = true
         btn.LayoutOrder       = nextOrder()
-        Instance.new("UICorner", btn).CornerRadius = UDim.new(0,3)
+        Instance.new("UICorner", btn).CornerRadius = UDim.new(0,0)
+        shade(btn)
         local bStroke = Instance.new("UIStroke", btn)
         bStroke.Color     = T.Border
         bStroke.Thickness = 1
@@ -1519,7 +1544,7 @@ function Library:_createSection(title, parent)
         local lbl = Instance.new("TextLabel", card)
         lbl.Size                  = UDim2.new(1,0,0,16)
         lbl.BackgroundTransparency= 1
-        lbl.Font                  = Enum.Font.Gotham
+        lbl.Font                  = Enum.Font.Code
         lbl.TextSize              = 11
         lbl.TextColor3            = col or T.TextDim
         lbl.TextXAlignment        = Enum.TextXAlignment.Left
@@ -1563,11 +1588,10 @@ function Library:_attachTooltip(target, text)
         ttFrame.ZIndex            = 9999
         ttFrame.Visible           = false
         ttFrame.Parent            = sg
-        Instance.new("UICorner", ttFrame).CornerRadius = UDim.new(0, 4)
+        Instance.new("UICorner", ttFrame).CornerRadius = UDim.new(0,0)
         local ttStroke = Instance.new("UIStroke", ttFrame)
         ttStroke.Color     = T.BorderLight
         ttStroke.Thickness = 1
-        ttStroke.ZIndex    = 9999
         local ttPad = Instance.new("UIPadding", ttFrame)
         ttPad.PaddingLeft   = UDim.new(0, 8)
         ttPad.PaddingRight  = UDim.new(0, 8)
@@ -1580,14 +1604,14 @@ function Library:_attachTooltip(target, text)
         ttAccent.BackgroundColor3 = self.Accent
         ttAccent.BorderSizePixel  = 0
         ttAccent.ZIndex           = 10000
-        Instance.new("UICorner", ttAccent).CornerRadius = UDim.new(0, 4)
+        Instance.new("UICorner", ttAccent).CornerRadius = UDim.new(0,0)
         self:_onAccent(function(c) ttAccent.BackgroundColor3 = c end)
 
         local ttLabel = Instance.new("TextLabel", ttFrame)
         ttLabel.Name                 = "Label"
         ttLabel.Size                 = UDim2.new(1, 0, 1, 0)
         ttLabel.BackgroundTransparency = 1
-        ttLabel.Font                 = Enum.Font.Gotham
+        ttLabel.Font                 = Enum.Font.Code
         ttLabel.TextSize             = 11
         ttLabel.TextColor3           = T.TextDim
         ttLabel.TextTransparency     = 1  -- starts invisible
@@ -1719,19 +1743,20 @@ local function _buildMultiDropdown(Section, card, nextOrder, config)
     header.Text              = ""
     header.AutoButtonColor   = false
     header.ZIndex            = 3
-    Instance.new("UICorner", header).CornerRadius = UDim.new(0,3)
+    Instance.new("UICorner", header).CornerRadius = UDim.new(0,0)
+        shade(header)
     local hStroke = Instance.new("UIStroke", header)
     hStroke.Color = T.Border; hStroke.Thickness = 1
 
     local hLbl = Instance.new("TextLabel", header)
     hLbl.Size = UDim2.new(0.48,0,1,0); hLbl.Position = UDim2.fromOffset(7,0)
-    hLbl.BackgroundTransparency=1; hLbl.Font=Enum.Font.Gotham
+    hLbl.BackgroundTransparency=1; hLbl.Font=Enum.Font.Code
     hLbl.TextSize=11; hLbl.TextColor3=T.TextDim
     hLbl.TextXAlignment=Enum.TextXAlignment.Left; hLbl.Text=ttl
 
     local valLbl = Instance.new("TextLabel", header)
     valLbl.Size = UDim2.new(0.46,-20,1,0); valLbl.Position = UDim2.new(0.48,0,0,0)
-    valLbl.BackgroundTransparency=1; valLbl.Font=Enum.Font.GothamMedium
+    valLbl.BackgroundTransparency=1; valLbl.Font=Enum.Font.Code
     valLbl.TextSize=10; valLbl.TextColor3=T.Text
     valLbl.TextXAlignment=Enum.TextXAlignment.Right
     valLbl.TextTruncate=Enum.TextTruncate.AtEnd
@@ -1739,7 +1764,7 @@ local function _buildMultiDropdown(Section, card, nextOrder, config)
 
     local arrow = Instance.new("TextLabel", header)
     arrow.Size=UDim2.fromOffset(14,22); arrow.Position=UDim2.new(1,-16,0,0)
-    arrow.BackgroundTransparency=1; arrow.Font=Enum.Font.GothamBold
+    arrow.BackgroundTransparency=1; arrow.Font=Enum.Font.Code
     arrow.TextSize=8; arrow.TextColor3=T.TextMute; arrow.Text="▼"
 
     -- dropdown list
@@ -1750,7 +1775,7 @@ local function _buildMultiDropdown(Section, card, nextOrder, config)
     listFrame.ClipsDescendants=true; listFrame.ZIndex=10; listFrame.Visible=false
     Instance.new("UICorner", listFrame).CornerRadius=UDim.new(0,3)
     local lStroke=Instance.new("UIStroke",listFrame)
-    lStroke.Color=T.BorderLight; lStroke.Thickness=1; lStroke.ZIndex=10
+    lStroke.Color=T.BorderLight; lStroke.Thickness=1
     local listLayout=Instance.new("UIListLayout",listFrame)
     listLayout.SortOrder=Enum.SortOrder.LayoutOrder; listLayout.Padding=UDim.new(0,1)
     local lPad=Instance.new("UIPadding",listFrame)
@@ -1766,7 +1791,7 @@ local function _buildMultiDropdown(Section, card, nextOrder, config)
             ob.Size=UDim2.new(1,0,0,20); ob.BorderSizePixel=0
             ob.BackgroundColor3 = isSel and Window.Accent or T.Element
             ob.BackgroundTransparency = isSel and 0.3 or 0.95
-            ob.Font=Enum.Font.Gotham; ob.TextSize=11
+            ob.Font=Enum.Font.Code; ob.TextSize=11
             ob.TextColor3 = isSel and T.White or T.TextDim
             ob.TextXAlignment=Enum.TextXAlignment.Left
             ob.Text="  "..tostring(opt); ob.AutoButtonColor=false; ob.ZIndex=11
@@ -1775,7 +1800,7 @@ local function _buildMultiDropdown(Section, card, nextOrder, config)
             -- checkmark on right
             local ck=Instance.new("TextLabel",ob)
             ck.Size=UDim2.fromOffset(16,20); ck.Position=UDim2.new(1,-18,0,0)
-            ck.BackgroundTransparency=1; ck.Font=Enum.Font.GothamBold
+            ck.BackgroundTransparency=1; ck.Font=Enum.Font.Code
             ck.TextSize=10; ck.ZIndex=12
             ck.TextColor3=Window.Accent; ck.Text=isSel and "✓" or ""
 
@@ -1881,7 +1906,7 @@ function Library:Notify(config)
     toast.BorderSizePixel   = 0
     toast.ClipsDescendants  = true
     toast.LayoutOrder       = os.clock() * 1000
-    Instance.new("UICorner", toast).CornerRadius = UDim.new(0,5)
+    Instance.new("UICorner", toast).CornerRadius = UDim.new(0,0)
     local tStroke = Instance.new("UIStroke", toast)
     tStroke.Color = T.Border; tStroke.Thickness = 1
 
@@ -1894,13 +1919,13 @@ function Library:Notify(config)
     local icons = {info="ℹ", success="✓", error="✕", warning="⚠"}
     local iconLbl = Instance.new("TextLabel", toast)
     iconLbl.Size=UDim2.fromOffset(20,TOAST_H); iconLbl.Position=UDim2.fromOffset(10,0)
-    iconLbl.BackgroundTransparency=1; iconLbl.Font=Enum.Font.GothamBold
+    iconLbl.BackgroundTransparency=1; iconLbl.Font=Enum.Font.Code
     iconLbl.TextSize=13; iconLbl.TextColor3=accent; iconLbl.Text=icons[ntype] or "ℹ"
 
     -- title
     local titleLbl = Instance.new("TextLabel", toast)
     titleLbl.Size=UDim2.new(1,-50,0,TOAST_H); titleLbl.Position=UDim2.fromOffset(32,0)
-    titleLbl.BackgroundTransparency=1; titleLbl.Font=Enum.Font.GothamBold
+    titleLbl.BackgroundTransparency=1; titleLbl.Font=Enum.Font.Code
     titleLbl.TextSize=12; titleLbl.TextColor3=T.Text
     titleLbl.TextXAlignment=Enum.TextXAlignment.Left
     titleLbl.Text=title
@@ -1909,7 +1934,7 @@ function Library:Notify(config)
         titleLbl.Size=UDim2.new(1,-50,0,20)
         local bodyLbl = Instance.new("TextLabel", toast)
         bodyLbl.Size=UDim2.new(1,-50,0,16); bodyLbl.Position=UDim2.fromOffset(32,20)
-        bodyLbl.BackgroundTransparency=1; bodyLbl.Font=Enum.Font.Gotham
+        bodyLbl.BackgroundTransparency=1; bodyLbl.Font=Enum.Font.Code
         bodyLbl.TextSize=11; bodyLbl.TextColor3=T.TextDim
         bodyLbl.TextXAlignment=Enum.TextXAlignment.Left
         bodyLbl.TextTruncate=Enum.TextTruncate.AtEnd
@@ -1919,7 +1944,7 @@ function Library:Notify(config)
     -- close button
     local closeBtn = Instance.new("TextButton", toast)
     closeBtn.Size=UDim2.fromOffset(16,16); closeBtn.Position=UDim2.new(1,-20,0,9)
-    closeBtn.BackgroundTransparency=1; closeBtn.Font=Enum.Font.GothamBold
+    closeBtn.BackgroundTransparency=1; closeBtn.Font=Enum.Font.Code
     closeBtn.TextSize=10; closeBtn.TextColor3=T.TextMute; closeBtn.Text="✕"
     closeBtn.AutoButtonColor=false
     closeBtn.MouseEnter:Connect(function() closeBtn.TextColor3=T.Text end)
@@ -2131,7 +2156,7 @@ function Library:SetWatermark(config)
     wm.BackgroundColor3 = T.Surface
     wm.BackgroundTransparency = bgAlpha
     wm.BorderSizePixel  = 0
-    Instance.new("UICorner", wm).CornerRadius = UDim.new(0,4)
+    Instance.new("UICorner", wm).CornerRadius = UDim.new(0,0)
     local wmStroke = Instance.new("UIStroke", wm)
     wmStroke.Color = T.Border; wmStroke.Thickness = 1
     local wmPad = Instance.new("UIPadding", wm)
@@ -2152,7 +2177,7 @@ function Library:SetWatermark(config)
     local lbl = Instance.new("TextLabel", wm)
     lbl.Size                 = UDim2.new(1,0,1,0)
     lbl.BackgroundTransparency= 1
-    lbl.Font                 = Enum.Font.GothamBold
+    lbl.Font                 = Enum.Font.Code
     lbl.TextSize             = 11
     lbl.TextColor3           = T.Text
     lbl.RichText             = true

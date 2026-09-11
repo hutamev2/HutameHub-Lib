@@ -15,7 +15,7 @@ body{
   font-family:'Inter',system-ui,sans-serif;
   font-size:15px;
   line-height:1.7;
-  background:#0f0f0f;
+  background:#141120;
   color:#e1e1e1;
   display:flex;
   flex-direction:column;
@@ -32,18 +32,18 @@ a{color:inherit;text-decoration:none}
   --nav-w:     260px;
   --toc-w:     220px;
   --header-h:  54px;
-  --bg:        #0f0f0f;
-  --bg2:       #141414;
-  --bg3:       #191919;
-  --bg4:       #1f1f1f;
-  --border:    #282828;
-  --border2:   #323232;
+  --bg:        #141120;
+  --bg2:       #1c172b;
+  --bg3:       #201a30;
+  --bg4:       #2a223d;
+  --border:    #413653;
+  --border2:   #63517b;
   --text:      #e1e1e1;
   --text2:     #888;
   --text3:     #555;
-  --acc:       #e03030;
-  --acc-dim:   rgba(224,48,48,.15);
-  --acc-rgb:   224,48,48;
+  --acc:       #c08be6;
+  --acc-dim:   rgba(192,139,230,.15);
+  --acc-rgb:   192,139,230;
   --green:     #3fb950;
   --blue:      #58a6ff;
   --orange:    #f0883e;
@@ -55,7 +55,7 @@ a{color:inherit;text-decoration:none}
 .topbar{
   position:fixed;top:0;left:0;right:0;
   height:var(--header-h);
-  background:rgba(15,15,15,.9);
+  background:rgba(20,17,32,.95);
   backdrop-filter:blur(14px);
   border-bottom:1px solid var(--border);
   display:flex;align-items:center;
@@ -633,8 +633,8 @@ p code, li code, td code{
 <span class="cmt">-- 1. Create the window</span>
 <span class="kw">local</span> <span class="vr">Hub</span> = <span class="vr">Library</span>.<span class="fn">new</span>({
     <span class="vr">Title</span>     = <span class="str">"MyHub"</span>,
-    <span class="vr">Version</span>   = <span class="str">"v1.0"</span>,
-    <span class="vr">Accent</span>    = Color3.<span class="fn">fromRGB</span>(<span class="num">220</span>, <span class="num">50</span>, <span class="num">50</span>),
+    <span class="vr">Version</span>   = <span class="str">"v2.2"</span>,
+    <span class="vr">Accent</span>    = Color3.<span class="fn">fromRGB</span>(<span class="num">192</span>, <span class="num">139</span>, <span class="num">230</span>),
     <span class="vr">ToggleKey</span> = Enum.KeyCode.RightControl
 })
 
@@ -678,6 +678,8 @@ p code, li code, td code{
 
 <!-- ════ FULL EXAMPLE ════ -->
 <section class="doc-section" id="s-fullexample">
+  <div class="callout blue"><span class="callout-icon">◇</span><span><strong>v2.2 · Violet Studio</strong> — dark violet panels, lilac accents, square corners, fine inset borders and compact monospace typography. The two-column layout and public API stay familiar. Buttons and input surfaces now use subtle vertical shading; active tabs and values carry the accent. Main-window snow is opt-in.</span></div>
+  <p class="method-desc">Visual direction studied from <a href="https://github.com/ro0ti/Roblox-Scripting-UI/tree/main/Akiri%20Lib">Akiri Lib</a>; implemented independently with Roblox Instances, without importing its code, assets or Drawing API. Run <a href="#s-fullexample">Full Example</a> to inspect all controls in the new theme. Runtime visual verification in Roblox remains pending.</p>
   <div class="method-header">
     <div class="method-label">Getting Started</div>
     <div class="method-title">Full Example</div>
@@ -705,12 +707,12 @@ local Library = loadstring(game:HttpGet(
 
 local Hub = Library.new({
     Title = &quot;HutameHub UI Test&quot;,
-    Version = &quot;API test&quot;,
-    Accent = Color3.fromRGB(220, 50, 50),
+    Version = &quot;v2.2&quot;,
+    Accent = Color3.fromRGB(192, 139, 230),
     ToggleKey = Enum.KeyCode.RightControl,
     LoadingScreen = true,
     LoadingDuration = 1.8,
-    SnowEffect = true,
+    SnowEffect = false,
 })
 
 local function report(name, value)
@@ -754,7 +756,7 @@ local Keybind = Inputs:CreateKeybind({
     Callback = function(key) report(&quot;Selected key&quot;, key.Name) end,
 })
 local Color = Inputs:CreateColorPicker({
-    Title = &quot;Accent&quot;, Default = Color3.fromRGB(220, 50, 50),
+    Title = &quot;Accent&quot;, Default = Color3.fromRGB(192, 139, 230),
     Tooltip = &quot;Open the RGB sliders and change the accent.&quot;,
     Callback = function(value) Hub:SetAccent(value) end,
 })
@@ -871,13 +873,13 @@ button(Actions, &quot;Destroy UI (test last)&quot;, function() Hub:Destroy() end
       <tr>
         <td><span class="p-name">Version</span></td>
         <td><span class="type type-str">string</span></td>
-        <td><span class="p-default">"v1.0"</span></td>
+        <td><span class="p-default">"v2.2"</span></td>
         <td class="p-desc">Version string shown dimmed beside the title.</td>
       </tr>
       <tr>
         <td><span class="p-name">Accent</span></td>
         <td><span class="type type-c3">Color3</span></td>
-        <td><span class="p-default">RGB(220,50,50)</span></td>
+        <td><span class="p-default">RGB(192,139,230)</span></td>
         <td class="p-desc">Accent color applied to tab underlines, slider fills, active checkboxes, and button ripples.</td>
       </tr>
       <tr>
@@ -889,8 +891,8 @@ button(Actions, &quot;Destroy UI (test last)&quot;, function() Hub:Destroy() end
       <tr>
         <td><span class="p-name">SnowEffect</span></td>
         <td><span class="type type-bool">boolean</span></td>
-        <td><span class="p-default">true</span></td>
-        <td class="p-desc">Ambient snowflake animation on the UI background. Pass <code>false</code> to disable.</td>
+        <td><span class="p-default">false</span></td>
+        <td class="p-desc">Optional ambient snow on the main UI. Pass <code>true</code> to enable; disabled by default in v2.2.</td>
       </tr>
       <tr>
         <td><span class="p-name">LoadingScreen</span></td>
@@ -1442,7 +1444,7 @@ button(Actions, &quot;Destroy UI (test last)&quot;, function() Hub:Destroy() end
   <div class="method-header">
     <div class="method-label">UI Behaviour</div>
     <div class="method-title"><code>Tab:SetBadge(n)</code></div>
-    <p class="method-desc">Displays a small red counter dot on the tab button — like a notification badge. Pass a number to set it, or call <code>ClearBadge()</code> to remove it. Numbers above 99 show as <code>99+</code>.</p>
+    <p class="method-desc">Displays a small accent-colored counter badge on the tab button — like a notification badge. Pass a number to set it, or call <code>ClearBadge()</code> to remove it. Numbers above 99 show as <code>99+</code>.</p>
   </div>
   <div class="returns">
     <span class="returns-label">Methods</span>

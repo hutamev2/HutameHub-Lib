@@ -1,6 +1,6 @@
 <div align="center">
 
-# ⚡ Toxin UI Library
+# ⚡ HutameHub UI Library
 
 **Modern, Lightweight & High-Performance Roblox Luau UI Framework**
 
@@ -15,6 +15,12 @@
 ---
 
 Roblox Luau için sıfırdan geliştirilmiş; **Rayfield** ve **Kavo** gibi ağır kütüphanelerin aksine yalnızca yerleşik `Instance.new`, `TweenService` ve `UserInputService` kullanan, ultra hafif, **60+ FPS** odaklı modern UI kütüphanesi.
+
+## v2.2 — Violet Studio
+
+Koyu mor yüzeyler, lila vurgu, keskin köşeler, ince iç çerçeve, monospace yazı ve hafif gölgeli kontroller. Akiri Lib yalnızca görsel referans olarak incelendi; tasarım mevcut Roblox Instance koduyla bağımsız uygulandı. Public API korundu. Ana pencere kar efekti artık varsayılan kapalı; `SnowEffect = true` ile açılır. Loading ekranının karı ayrı çalışır.
+
+[Tüm UI özelliklerini test et](docs/examples/ui-test.lua) · [Dokümantasyon örneği](https://hutamev2.github.io/HutameHub-Lib/#s-fullexample)
 
 ## ✨ Özellikler
 
@@ -32,12 +38,11 @@ Roblox Luau için sıfırdan geliştirilmiş; **Rayfield** ve **Kavo** gibi ağ�
 ```lua
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/hutamev2/HutameHub-Lib/main/Source.lua"))()
 
-local Window = Library:CreateWindow({
-    Title    = "Toxin Premium",
-    Subtitle = "v2.1",
-    Theme    = "Dark",
-    Accent   = Color3.fromRGB(0, 255, 128),
-    Size     = UDim2.fromOffset(640, 430)
+local Window = Library.new({
+    Title    = "HutameHub",
+    Version = "v2.2",
+    Accent   = Color3.fromRGB(192, 139, 230),
+    SnowEffect = false
 })
 
 local Tab     = Window:CreateTab("Combat")
@@ -67,8 +72,8 @@ Section:CreateSlider({
 
 | Bileşen | Method | Dönen Değer |
 |---------|--------|-------------|
-| Pencere | `Library:CreateWindow(config)` | `Window` |
-| Sekme | `Window:CreateTab(name, iconId)` | `Tab` |
+| Pencere | `Library.new(config)` | `Window` |
+| Sekme | `Window:CreateTab(name)` | `Tab` |
 | Bölüm | `Tab:CreateSection(title)` | `Section` |
 | Toggle | `Section:CreateToggle(config)` | `{ State, Set() }` |
 | Slider | `Section:CreateSlider(config)` | `{ Value, Set() }` |
@@ -89,9 +94,9 @@ Tüm API referansı, parametreler, canlı UI simülatörü ve örnekler için:
 ```lua
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/hutamev2/HutameHub-Lib/main/Source.lua"))()
 
-local Window      = Library:CreateWindow({ Title = "Toxin Premium", Subtitle = "v2.1", Accent = Color3.fromRGB(0, 255, 128) })
-local MainTab     = Window:CreateTab("Combat",   "rbxassetid://6031075931")
-local SettingsTab = Window:CreateTab("Settings", "rbxassetid://6031075931")
+local Window      = Library.new({ Title = "HutameHub", Version = "v2.2", Accent = Color3.fromRGB(192, 139, 230) })
+local MainTab     = Window:CreateTab("Combat")
+local SettingsTab = Window:CreateTab("Settings")
 local AimSection  = MainTab:CreateSection("Silent Aim Settings")
 local CfgSection  = SettingsTab:CreateSection("Preferences")
 
@@ -101,7 +106,7 @@ AimSection:CreateDropdown({ Title = "Target",      Options = {"Head","Torso","Hu
 
 CfgSection:CreateTextbox({ Title = "Webhook URL", Placeholder = "https://discord.com/api/webhooks/...", Callback = function(t) print(t) end })
 CfgSection:CreateKeybind({ Title = "Toggle Key",  Default = Enum.KeyCode.RightControl, Callback = function(k) print(k.Name) end })
-CfgSection:CreateColorPicker({ Title = "Accent",  Default = Color3.fromRGB(0, 255, 128), Callback = function(c) Window:SetAccent(c) end })
+CfgSection:CreateColorPicker({ Title = "Accent",  Default = Color3.fromRGB(192, 139, 230), Callback = function(c) Window:SetAccent(c) end })
 CfgSection:CreateButton({ Title = "Destroy UI",   Callback = function() Window:Destroy() end })
 ```
 
