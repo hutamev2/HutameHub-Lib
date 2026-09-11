@@ -89,6 +89,97 @@ function Library.new(config)
 
     self:_build()
 
+    -- ── Persistent Snow Effect on main UI ────────────────────────────────
+    -- Enabled by default. Opt out: SnowEffect = false in config.
+    self._stopUISnow = nil
+    if config.SnowEffect ~= false then
+        -- Snow canvas sits behind everything inside MainFrame (ZIndex 1)
+        local snowCanvas = Instance.new("Frame", self.MainFrame)
+        snowCanvas.Name              = "SnowCanvas"
+        snowCanvas.Size              = UDim2.new(1, 0, 1, 0)
+        snowCanvas.BackgroundTransparency = 1
+        snowCanvas.BorderSizePixel   = 0
+        snowCanvas.ZIndex            = 1
+        snowCanvas.ClipsDescendants  = true
+
+        local flakes      = {}
+        local connections = {}
+        local active      = true
+        local CHARS       = {"•", "·", "✦", "∗", "❄"}
+        local MAX_FLAKES  = 40   -- lighter than splash (UI is interactive)
+
+        local function spawnUIFlake(startY)
+            if not active or #flakes >= MAX_FLAKES then return end
+            local size   = math.random(4, 9)
+            local dur    = math.random(50, 90) / 10   -- 5–9 s (slow, ambient)
+            local flake  = Instance.new("TextLabel", snowCanvas)
+            flake.BackgroundTransparency = 1
+            flake.Font       = Enum.Font.Gotham
+            flake.TextSize   = size
+            flake.Text       = CHARS[math.random(#CHARS)]
+            flake.ZIndex     = 1
+            -- 80% white-ish, 20% accent-tinted
+            flake.TextColor3 = math.random() > 0.8
+                and Color3.fromRGB(
+                    math.floor(self.Accent.R*255),
+                    math.floor(self.Accent.G*255),
+                    math.floor(self.Accent.B*255))
+                or Color3.fromRGB(180, 190, 210)
+            flake.TextTransparency = math.random(3, 7) / 10  -- 0.3–0.7 subtle
+            local sx = math.random(1, 98) / 100
+            local sy = startY or -0.04
+            flake.Size     = UDim2.fromOffset(size, size)
+            flake.Position = UDim2.new(sx, 0, sy, 0)
+            table.insert(flakes, flake)
+            local driftX = (math.random() - 0.5) * 0.06
+            local fallDur = startY and ((1 - startY) * math.random(50, 90) / 10) or dur
+            local tInfo   = TweenInfo.new(fallDur, Enum.EasingStyle.Linear)
+            local t = TweenService:Create(flake, tInfo, {
+                Position         = UDim2.new(sx + driftX, 0, 1.04, 0),
+                TextTransparency = 0.9,
+            })
+            t:Play()
+            t.Completed:Connect(function()
+                if flake and flake.Parent then flake:Destroy() end
+                for i, f in ipairs(flakes) do
+                    if f == flake then table.remove(flakes, i) break end
+                end
+            end)
+        end
+
+        -- Pre-populate with flakes at random heights so it doesn't start empty
+        for i = 1, 14 do
+            task.delay(i * 0.08, function()
+                if active then spawnUIFlake(math.random(0, 95) / 100) end
+            end)
+        end
+
+        -- Continuous spawn loop (slower cadence than splash)
+        local conn = RunService.Heartbeat:Connect(function()
+            if active and math.random() < 0.045 then spawnUIFlake(nil) end
+        end)
+        table.insert(connections, conn)
+
+        -- Keep accent color in sync
+        self:_onAccent(function(c)
+            -- new flakes will pick up the new color automatically
+        end)
+
+        -- Store stop function for Destroy
+        self._stopUISnow = function()
+            active = false
+            for _, c in ipairs(connections) do c:Disconnect() end
+            connections = {}
+            for _, f in ipairs(flakes) do
+                if f and f.Parent then
+                    TweenService:Create(f, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
+                    game:GetService("Debris"):AddItem(f, 0.35)
+                end
+            end
+            flakes = {}
+        end
+    end
+
     -- ── Loading Screen / Splash ───────────────────────────────────────────
     -- Full-screen animated splash shown before the main window appears.
     -- Opt out by passing LoadingScreen = false in config.
@@ -1573,6 +1664,7 @@ end
 -- Window-level helpers
 -- ─────────────────────────────────────────────
 function Library:Destroy()
+    if self._stopUISnow then self._stopUISnow() end
     if self.ScreenGui then self.ScreenGui:Destroy() end
     if self._wmConn  then self._wmConn:Disconnect() end
 end
