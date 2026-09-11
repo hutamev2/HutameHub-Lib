@@ -88,6 +88,117 @@ function Library.new(config)
     )
 
     self:_build()
+
+    -- ── Loading Screen / Splash ───────────────────────────────────────────
+    -- Full-screen animated splash shown before the main window appears.
+    -- Opt out by passing LoadingScreen = false in config.
+    if config.LoadingScreen ~= false then
+        local splashTitle    = self.Title
+        local splashSubtitle = self.Version
+        local loadDur        = config.LoadingDuration or 1.8
+        local sg             = self.ScreenGui
+        local mf             = self.MainFrame
+
+        local splash = Instance.new("Frame", sg)
+        splash.Name             = "Splash"
+        splash.Size             = UDim2.new(1,0,1,0)
+        splash.BackgroundColor3 = T.BG
+        splash.BorderSizePixel  = 0
+        splash.ZIndex           = 100
+
+        -- center card
+        local lsCard = Instance.new("Frame", splash)
+        lsCard.Size              = UDim2.fromOffset(280, 160)
+        lsCard.Position          = UDim2.new(0.5,-140,0.5,-80)
+        lsCard.BackgroundColor3  = T.Surface
+        lsCard.BorderSizePixel   = 0
+        lsCard.ZIndex            = 101
+        Instance.new("UICorner", lsCard).CornerRadius = UDim.new(0,8)
+        local lsStroke = Instance.new("UIStroke", lsCard)
+        lsStroke.Color = T.Border; lsStroke.Thickness = 1; lsStroke.ZIndex = 101
+
+        -- accent top bar
+        local lsAccent = Instance.new("Frame", lsCard)
+        lsAccent.Size             = UDim2.new(1,0,0,2)
+        lsAccent.BackgroundColor3 = self.Accent
+        lsAccent.BorderSizePixel  = 0; lsAccent.ZIndex = 102
+        Instance.new("UICorner", lsAccent).CornerRadius = UDim.new(0,8)
+        self:_onAccent(function(c) lsAccent.BackgroundColor3 = c end)
+
+        -- logo box
+        local lsLogo = Instance.new("Frame", lsCard)
+        lsLogo.Size             = UDim2.fromOffset(36,36)
+        lsLogo.Position         = UDim2.new(0.5,-18,0,22)
+        lsLogo.BackgroundColor3 = self.Accent
+        lsLogo.BorderSizePixel  = 0; lsLogo.ZIndex = 102
+        Instance.new("UICorner", lsLogo).CornerRadius = UDim.new(0,8)
+        self:_onAccent(function(c) lsLogo.BackgroundColor3 = c end)
+        local lsLogoLbl = Instance.new("TextLabel", lsLogo)
+        lsLogoLbl.Size=UDim2.new(1,0,1,0); lsLogoLbl.BackgroundTransparency=1
+        lsLogoLbl.Font=Enum.Font.GothamBold; lsLogoLbl.TextSize=18
+        lsLogoLbl.TextColor3=T.Black; lsLogoLbl.Text=string.sub(splashTitle,1,1)
+        lsLogoLbl.ZIndex=103
+
+        -- title / subtitle
+        local lsTitleLbl = Instance.new("TextLabel", lsCard)
+        lsTitleLbl.Size=UDim2.new(1,0,0,20); lsTitleLbl.Position=UDim2.fromOffset(0,66)
+        lsTitleLbl.BackgroundTransparency=1; lsTitleLbl.Font=Enum.Font.GothamBold
+        lsTitleLbl.TextSize=15; lsTitleLbl.TextColor3=T.White
+        lsTitleLbl.Text=splashTitle; lsTitleLbl.ZIndex=102
+
+        local lsSubLbl = Instance.new("TextLabel", lsCard)
+        lsSubLbl.Size=UDim2.new(1,0,0,16); lsSubLbl.Position=UDim2.fromOffset(0,88)
+        lsSubLbl.BackgroundTransparency=1; lsSubLbl.Font=Enum.Font.Gotham
+        lsSubLbl.TextSize=11; lsSubLbl.TextColor3=T.TextDim
+        lsSubLbl.Text=splashSubtitle; lsSubLbl.ZIndex=102
+
+        -- progress track
+        local lsTrack = Instance.new("Frame", lsCard)
+        lsTrack.Size=UDim2.new(1,-40,0,3); lsTrack.Position=UDim2.new(0,20,1,-18)
+        lsTrack.BackgroundColor3=T.Element; lsTrack.BorderSizePixel=0; lsTrack.ZIndex=102
+        Instance.new("UICorner", lsTrack).CornerRadius = UDim.new(1,0)
+
+        local lsFill = Instance.new("Frame", lsTrack)
+        lsFill.Size=UDim2.new(0,0,1,0); lsFill.BackgroundColor3=self.Accent
+        lsFill.BorderSizePixel=0; lsFill.ZIndex=103
+        Instance.new("UICorner", lsFill).CornerRadius = UDim.new(1,0)
+        self:_onAccent(function(c) lsFill.BackgroundColor3 = c end)
+
+        -- status label
+        local lsStatus = Instance.new("TextLabel", lsCard)
+        lsStatus.Size=UDim2.new(1,0,0,12); lsStatus.Position=UDim2.new(0,0,1,-34)
+        lsStatus.BackgroundTransparency=1; lsStatus.Font=Enum.Font.Gotham
+        lsStatus.TextSize=10; lsStatus.TextColor3=T.TextMute
+        lsStatus.Text="Loading..."; lsStatus.ZIndex=102
+
+        mf.Visible = false   -- hide main window until splash done
+
+        local steps = {
+            {pct=0.30, label="Initializing...",    t=loadDur*0.25},
+            {pct=0.60, label="Loading elements...",t=loadDur*0.25},
+            {pct=0.85, label="Applying theme...",  t=loadDur*0.20},
+            {pct=1.00, label="Ready!",             t=loadDur*0.20},
+        }
+
+        task.spawn(function()
+            for _, step in ipairs(steps) do
+                task.wait(step.t)
+                lsStatus.Text = step.label
+                tw(lsFill, step.t + 0.05, {Size = UDim2.new(step.pct,0,1,0)})
+            end
+            task.wait(0.25)
+            -- fade out
+            for _, d in ipairs(splash:GetDescendants()) do
+                if d:IsA("TextLabel") then tw(d, 0.35, {TextTransparency=1}) end
+                if d:IsA("Frame")     then pcall(function() tw(d,0.35,{BackgroundTransparency=1}) end) end
+            end
+            tw(splash, 0.35, {BackgroundTransparency=1})
+            task.wait(0.4)
+            splash:Destroy()
+            mf.Visible = true
+        end)
+    end
+
     return self
 end
 
@@ -106,6 +217,12 @@ end
 function Library:_build()
     -- ScreenGui
     local sg = Instance.new("ScreenGui")
+    sg.Name            = "HutameHub_" .. math.random(1000,9999)
+    sg.ZIndexBehavior  = Enum.ZIndexBehavior.Sibling
+    sg.ResetOnSpawn    = false
+    sg.IgnoreGuiInset  = true
+    sg.Parent          = safeParent()
+    self.ScreenGui     = sg
     sg.Name            = "HutameHub_" .. math.random(1000,9999)
     sg.ZIndexBehavior  = Enum.ZIndexBehavior.Sibling
     sg.ResetOnSpawn    = false
@@ -277,7 +394,7 @@ function Library:CreateTab(name)
     -- tab button
     local btn = Instance.new("TextButton", self.TabList)
     btn.Name               = "Tab_"..name
-    btn.Size               = UDim2.new(0,0,1,0)   -- auto width
+    btn.Size               = UDim2.new(0,0,1,0)
     btn.AutomaticSize      = Enum.AutomaticSize.X
     btn.BackgroundTransparency = 1
     btn.BorderSizePixel    = 0
@@ -286,6 +403,7 @@ function Library:CreateTab(name)
     btn.TextColor3         = T.TextDim
     btn.Text               = "  "..name.."  "
     btn.AutoButtonColor    = false
+    btn.ClipsDescendants   = false
 
     -- active underline
     local uline = Instance.new("Frame", btn)
@@ -296,6 +414,40 @@ function Library:CreateTab(name)
     uline.BackgroundTransparency = 1
     uline.BorderSizePixel  = 0
     self:_onAccent(function(c) if Tab.Active then uline.BackgroundColor3 = c end end)
+
+    -- ── Tab Badge ──────────────────────────────
+    local badge = Instance.new("Frame", btn)
+    badge.Name              = "Badge"
+    badge.Size              = UDim2.fromOffset(16, 16)
+    badge.Position          = UDim2.new(1, -6, 0, -4)
+    badge.AnchorPoint       = Vector2.new(0.5, 0.5)
+    badge.BackgroundColor3  = T.Accent
+    badge.BorderSizePixel   = 0
+    badge.Visible           = false
+    badge.ZIndex            = 10
+    Instance.new("UICorner", badge).CornerRadius = UDim.new(1, 0)
+    local badgeLbl = Instance.new("TextLabel", badge)
+    badgeLbl.Size                 = UDim2.new(1,0,1,0)
+    badgeLbl.BackgroundTransparency = 1
+    badgeLbl.Font                 = Enum.Font.GothamBold
+    badgeLbl.TextSize             = 9
+    badgeLbl.TextColor3           = Color3.new(1,1,1)
+    badgeLbl.Text                 = ""
+    badgeLbl.ZIndex               = 11
+    Tab._badge    = badge
+    Tab._badgeLbl = badgeLbl
+    self:_onAccent(function(c) badge.BackgroundColor3 = c end)
+
+    function Tab:SetBadge(n)
+        if n and n > 0 then
+            badgeLbl.Text  = n > 99 and "99+" or tostring(n)
+            badge.Visible  = true
+        else
+            badge.Visible  = false
+            badgeLbl.Text  = ""
+        end
+    end
+    function Tab:ClearBadge() Tab:SetBadge(0) end
 
     -- content page (two columns inside)
     local page = Instance.new("Frame", self._body)
@@ -326,6 +478,7 @@ function Library:CreateTab(name)
 
     -- divider between columns
     local div = Instance.new("Frame", page)
+    div.Name             = "ColDivider"
     div.Size             = UDim2.new(0,1,1,0)
     div.Position         = UDim2.new(0.5,0,0,0)
     div.BackgroundColor3 = T.Border
@@ -351,11 +504,39 @@ function Library:CreateTab(name)
     rLayout.SortOrder = Enum.SortOrder.LayoutOrder
     rLayout.Padding   = UDim.new(0,6)
 
+    -- ── Mobile Layout ─────────────────────────────
+    local function applyMobileLayout(isMobile)
+        if isMobile then
+            leftScroll.Size     = UDim2.new(1,0,1,0)
+            rightScroll.Visible = false
+            div.Visible         = false
+            for _, child in ipairs(rightScroll:GetChildren()) do
+                if child:IsA("Frame") and child.Name:sub(1,4)=="Sec_" then
+                    child.Parent = leftScroll
+                end
+            end
+        else
+            leftScroll.Size     = UDim2.new(0.5,-1,1,0)
+            rightScroll.Visible = true
+            div.Visible         = true
+        end
+    end
+
+    local cam = workspace.CurrentCamera
+    local function checkMobile()
+        applyMobileLayout(cam.ViewportSize.X < 600)
+    end
+    checkMobile()
+    cam:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+        if page.Visible then checkMobile() end
+    end)
+
     Tab._page      = page
     Tab._left      = leftScroll
     Tab._right     = rightScroll
     Tab._btn       = btn
     Tab._uline     = uline
+    Tab._checkMobile = checkMobile
 
     function Tab:Activate()
         for _, t in ipairs(self._lib.Tabs) do t:Deactivate() end
@@ -364,6 +545,7 @@ function Library:CreateTab(name)
         tw(btn,   0.15, {TextColor3 = T.White})
         tw(uline, 0.15, {BackgroundTransparency = 0, BackgroundColor3 = self._lib.Accent})
         self._lib.ActiveTab = Tab
+        Tab._checkMobile()
     end
 
     function Tab:Deactivate()
@@ -414,23 +596,75 @@ function Library:_createSection(title, parent)
     layout.SortOrder = Enum.SortOrder.LayoutOrder
     layout.Padding   = UDim.new(0,3)
 
-    -- section header
-    local hdr = Instance.new("TextLabel", card)
-    hdr.Size                  = UDim2.new(1,0,0,16)
+    -- section header (clickable for collapse)
+    local hdrBtn = Instance.new("TextButton", card)
+    hdrBtn.Name                = "Header"
+    hdrBtn.Size                = UDim2.new(1,0,0,18)
+    hdrBtn.BackgroundTransparency = 1
+    hdrBtn.BorderSizePixel     = 0
+    hdrBtn.Text                = ""
+    hdrBtn.AutoButtonColor     = false
+    hdrBtn.LayoutOrder         = 0
+
+    local hdr = Instance.new("TextLabel", hdrBtn)
+    hdr.Size                  = UDim2.new(1,-20,1,0)
     hdr.BackgroundTransparency= 1
     hdr.Font                  = Enum.Font.GothamBold
     hdr.TextSize               = 10
     hdr.TextColor3             = T.TextMute
     hdr.TextXAlignment         = Enum.TextXAlignment.Left
     hdr.Text                   = string.upper(title)
-    hdr.LayoutOrder            = 0
+
+    -- collapse arrow
+    local colArrow = Instance.new("TextLabel", hdrBtn)
+    colArrow.Size                  = UDim2.fromOffset(14,18)
+    colArrow.Position              = UDim2.new(1,-14,0,0)
+    colArrow.BackgroundTransparency= 1
+    colArrow.Font                  = Enum.Font.GothamBold
+    colArrow.TextSize              = 8
+    colArrow.TextColor3            = T.TextMute
+    colArrow.Text                  = "▲"
 
     -- separator under header
     local sep = Instance.new("Frame", card)
+    sep.Name             = "HeaderSep"
     sep.Size             = UDim2.new(1,0,0,1)
     sep.BackgroundColor3 = T.Border
     sep.BorderSizePixel  = 0
     sep.LayoutOrder      = 1
+
+    -- ── Collapse logic ───────────────────────────
+    local collapsed = false
+    local function setCollapsed(val)
+        collapsed = val
+        colArrow.Text = val and "▼" or "▲"
+        -- hide/show all children except header and sep
+        for _, child in ipairs(card:GetChildren()) do
+            if child ~= hdrBtn and child ~= sep
+               and not child:IsA("UIListLayout")
+               and not child:IsA("UIPadding")
+               and not child:IsA("UIStroke")
+               and not child:IsA("UICorner") then
+                child.Visible = not val
+            end
+        end
+        if val then
+            card.AutomaticSize = Enum.AutomaticSize.None
+            tw(card, 0.2, {Size = UDim2.new(1,0,0,28)})
+        else
+            task.delay(0.21, function()
+                card.AutomaticSize = Enum.AutomaticSize.Y
+                card.Size = UDim2.new(1,0,0,0)
+            end)
+        end
+    end
+
+    hdrBtn.MouseButton1Click:Connect(function() setCollapsed(not collapsed) end)
+    hdrBtn.MouseEnter:Connect(function() tw(hdr,0.1,{TextColor3=T.TextDim}) end)
+    hdrBtn.MouseLeave:Connect(function() tw(hdr,0.1,{TextColor3=T.TextMute}) end)
+
+    function Section:Collapse() setCollapsed(true) end
+    function Section:Expand()   setCollapsed(false) end
 
     Section._card   = card
     Section._lib    = self
@@ -446,6 +680,7 @@ function Library:_createSection(title, parent)
         local ttl      = config.Title    or "Toggle"
         local state    = config.Default  or false
         local cb       = config.Callback or function() end
+        local bindKey  = config.Keybind  or nil   -- e.g. Enum.KeyCode.F
         local Toggle   = {State = state}
 
         local row = Instance.new("TextButton", card)
@@ -522,6 +757,17 @@ function Library:_createSection(title, parent)
         row.MouseButton1Click:Connect(function() Toggle:Set(not Toggle.State) end)
         row.MouseEnter:Connect(function() tw(lbl,0.1,{TextColor3=T.Text}) end)
         row.MouseLeave:Connect(function() if not Toggle.State then tw(lbl,0.1,{TextColor3=T.TextDim}) end end)
+
+        -- ── Keybind Toggle Bind ──────────────────
+        if bindKey then
+            valLbl.Text      = "["..bindKey.Name.."]"
+            valLbl.TextColor3= T.TextMute
+            UserInputService.InputBegan:Connect(function(input, gp)
+                if not gp and input.KeyCode == bindKey then
+                    Toggle:Set(not Toggle.State)
+                end
+            end)
+        end
 
         return Toggle
     end
