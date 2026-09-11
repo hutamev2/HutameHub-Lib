@@ -500,6 +500,7 @@ p code, li code, td code{
     <ul class="sb-links">
       <li><a href="#intro" class="active">Introduction</a></li>
       <li><a href="#quickstart">Quick Start</a></li>
+      <li><a href="#s-types">Type Check</a></li>
       <li><a href="#s-fullexample">Full Example <span class="sb-badge new-badge">New</span></a></li>
     </ul>
   </div>
@@ -679,6 +680,92 @@ p code, li code, td code{
 </section>
 
 <!-- ════ FULL EXAMPLE ════ -->
+<section class="doc-section" id="s-types"><div class="method-header"><div class="method-label">Getting Started</div><h1 class="method-title">Type Check</h1><p class="method-desc">Copy these Luau aliases above your loader for editor type checking and autocomplete. They describe the actual Source.lua API: use <code>Title</code>, not <code>Name</code>. Constructors return control handles, and buttons return TextButton. Types do not validate runtime input.</p></div><p class="method-desc"><a href="examples/types.luau" download>Download types.luau</a> · Includes profiles, conditions, reset, confirmation and all value controls. Requires Roblox/Luau type definitions; plain Lua does not support type aliases.</p><div class="code-block"><div class="code-block-header"><span class="code-block-lang">Luau types</span><button class="copy-code" onclick="copyCode(this,'ex-types')">Copy types</button></div><pre id="ex-types"><code>-- Paste these aliases above your loader in Roblox Studio / a Luau-aware editor.
+-- This describes Source.lua; it does not perform runtime validation.
+type ControlOptions = {
+    Title: string?, Tooltip: string?, ConfigKey: string?,
+    VisibleWhen: (() -&gt; boolean)?, EnabledWhen: (() -&gt; boolean)?,
+}
+type ToggleOptions = ControlOptions &amp; {Default: boolean?, Keybind: Enum.KeyCode?, Callback: ((boolean) -&gt; ())?}
+type SliderOptions = ControlOptions &amp; {Min: number?, Max: number?, Default: number?, Decimals: number?, Suffix: string?, Callback: ((number) -&gt; ())?}
+type DropdownOptions = ControlOptions &amp; {Options: {string}?, Default: string?, MaxVisibleItems: number?, Callback: ((string) -&gt; ())?}
+type MultiDropdownOptions = ControlOptions &amp; {Options: {string}?, Default: {string}?, MaxShow: number?, MaxVisibleItems: number?, Callback: (({string}) -&gt; ())?}
+type TextboxOptions = ControlOptions &amp; {Default: string?, Placeholder: string?, Callback: ((string, boolean) -&gt; ())?}
+type KeybindOptions = ControlOptions &amp; {Default: Enum.KeyCode?, Callback: ((Enum.KeyCode) -&gt; ())?}
+type ColorPickerOptions = ControlOptions &amp; {Default: Color3?, Callback: ((Color3) -&gt; ())?}
+type ButtonOptions = {Title: string?, Tooltip: string?, Desc: string?, Callback: (() -&gt; ())?, VisibleWhen: (() -&gt; boolean)?, EnabledWhen: (() -&gt; boolean)?}
+
+type ToggleControl = {State: boolean, Set: (self: ToggleControl, value: boolean) -&gt; (), Reset: (self: ToggleControl) -&gt; ()}
+type SliderControl = {Value: number, Set: (self: SliderControl, value: number) -&gt; (), Reset: (self: SliderControl) -&gt; ()}
+type DropdownControl = {
+    Selected: string, Options: {string}, Opened: boolean,
+    Set: (self: DropdownControl, value: string) -&gt; (), Reset: (self: DropdownControl) -&gt; (),
+    Open: (self: DropdownControl) -&gt; (), Close: (self: DropdownControl) -&gt; (),
+    Refresh: (self: DropdownControl, options: {string}?) -&gt; (),
+}
+type MultiDropdownControl = {
+    Options: {string}, Opened: boolean,
+    Set: (self: MultiDropdownControl, values: {string}) -&gt; (), Reset: (self: MultiDropdownControl) -&gt; (),
+    GetSelected: (self: MultiDropdownControl) -&gt; {string},
+    Open: (self: MultiDropdownControl) -&gt; (), Close: (self: MultiDropdownControl) -&gt; (),
+    Refresh: (self: MultiDropdownControl, options: {string}?) -&gt; (),
+}
+type TextboxControl = {Text: string, Set: (self: TextboxControl, text: string) -&gt; (), Reset: (self: TextboxControl) -&gt; ()}
+type KeybindControl = {Key: Enum.KeyCode, Listening: boolean, Set: (self: KeybindControl, key: Enum.KeyCode) -&gt; (), Reset: (self: KeybindControl) -&gt; ()}
+type ColorPickerControl = {Color: Color3, Opened: boolean, Set: (self: ColorPickerControl, color: Color3) -&gt; (), Toggle: (self: ColorPickerControl) -&gt; (), Reset: (self: ColorPickerControl) -&gt; ()}
+type HutameControl = ToggleControl | SliderControl | DropdownControl | MultiDropdownControl | TextboxControl | KeybindControl | ColorPickerControl | TextButton
+type HutameSection = {
+    CreateToggle: (self: HutameSection, options: ToggleOptions?) -&gt; ToggleControl,
+    CreateSlider: (self: HutameSection, options: SliderOptions?) -&gt; SliderControl,
+    CreateDropdown: (self: HutameSection, options: DropdownOptions?) -&gt; DropdownControl,
+    CreateMultiDropdown: (self: HutameSection, options: MultiDropdownOptions?) -&gt; MultiDropdownControl,
+    CreateTextbox: (self: HutameSection, options: TextboxOptions?) -&gt; TextboxControl,
+    CreateKeybind: (self: HutameSection, options: KeybindOptions?) -&gt; KeybindControl,
+    CreateColorPicker: (self: HutameSection, options: ColorPickerOptions?) -&gt; ColorPickerControl,
+    CreateButton: (self: HutameSection, options: ButtonOptions?) -&gt; TextButton,
+    CreateLabel: (self: HutameSection, text: string, color: Color3?) -&gt; TextLabel,
+    CreateSeparator: (self: HutameSection) -&gt; (),
+    Collapse: (self: HutameSection) -&gt; (), Expand: (self: HutameSection) -&gt; (),
+}
+type HutameTab = {
+    Name: string, Active: boolean,
+    CreateSection: (self: HutameTab, title: string, side: (&quot;left&quot; | &quot;right&quot;)?) -&gt; HutameSection,
+    Activate: (self: HutameTab) -&gt; (), Deactivate: (self: HutameTab) -&gt; (),
+    SetBadge: (self: HutameTab, count: number?) -&gt; (), ClearBadge: (self: HutameTab) -&gt; (),
+}
+type NotificationOptions = {Title: string?, Text: string?, Type: (&quot;info&quot; | &quot;success&quot; | &quot;warning&quot; | &quot;error&quot;)?, Duration: number?}
+type WatermarkOptions = {Format: string?, Position: (&quot;TopLeft&quot; | &quot;TopRight&quot; | &quot;BottomLeft&quot; | &quot;BottomRight&quot;)?, BgAlpha: number?}
+type ConfirmOptions = {Title: string?, Text: string?, ConfirmText: string?, CancelText: string?, OnConfirm: (() -&gt; ())?, OnCancel: (() -&gt; ())?}
+type HutameWindow = {
+    Title: string, Version: string, Accent: Color3, ToggleKey: Enum.KeyCode,
+    CreateTab: (self: HutameWindow, title: string) -&gt; HutameTab,
+    SetAccent: (self: HutameWindow, color: Color3) -&gt; (),
+    SetTitle: (self: HutameWindow, title: string?, version: string?) -&gt; (),
+    Destroy: (self: HutameWindow) -&gt; (), Notify: (self: HutameWindow, options: NotificationOptions?) -&gt; (),
+    SetWatermark: (self: HutameWindow, options: WatermarkOptions?) -&gt; (),
+    UpdateWatermark: (self: HutameWindow, format: string) -&gt; (), RemoveWatermark: (self: HutameWindow) -&gt; (),
+    SaveConfig: (self: HutameWindow, name: string?) -&gt; (), LoadConfig: (self: HutameWindow, name: string?) -&gt; (),
+    ListProfiles: (self: HutameWindow) -&gt; {string},
+    SaveProfile: (self: HutameWindow, name: string) -&gt; (boolean, any),
+    LoadProfile: (self: HutameWindow, name: string) -&gt; (boolean, any),
+    RenameProfile: (self: HutameWindow, oldName: string, newName: string) -&gt; (boolean, any),
+    DeleteProfile: (self: HutameWindow, name: string) -&gt; (boolean, any),
+    SetDefaultProfile: (self: HutameWindow, name: string?) -&gt; (boolean, any),
+    LoadDefaultProfile: (self: HutameWindow) -&gt; (boolean, any),
+    ResetValues: (self: HutameWindow) -&gt; (), RefreshConditions: (self: HutameWindow) -&gt; (),
+    SetCondition: (self: HutameWindow, control: HutameControl, predicate: () -&gt; boolean, mode: (&quot;hide&quot; | &quot;disable&quot;)?) -&gt; (),
+    Confirm: (self: HutameWindow, options: ConfirmOptions?) -&gt; {Cancel: () -&gt; ()},
+}
+type WindowOptions = {Title: string?, Version: string?, Accent: Color3?, ToggleKey: Enum.KeyCode?, LoadingScreen: boolean?, LoadingDuration: number?, SnowEffect: boolean?, MobileToggle: boolean?}
+type HutameLibrary = {new: (options: WindowOptions?) -&gt; HutameWindow}
+
+-- After these aliases, annotate your loader:
+-- local Library: HutameLibrary = loadstring(game:HttpGet(&quot;https://raw.githubusercontent.com/hutamev2/HutameHub-Lib/main/Source.lua&quot;))()
+-- local Hub = Library.new({Title = &quot;Typed Hub&quot;})
+-- local Section = Hub:CreateTab(&quot;Home&quot;):CreateSection(&quot;Settings&quot;)
+-- local Enabled = Section:CreateToggle({Title = &quot;Enabled&quot;, Default = false})
+-- Enabled:Set(true)
+</code></pre></div></section>
 <section class="doc-section" id="s-fullexample">
 <div class="callout blue"><span class="callout-icon">↕</span><span><strong>Dropdown layout fix:</strong> lists now expand their section and push following buttons down. Long lists scroll internally; closing restores the row height. Section collapse/expand uses a cancellable 0.2 s tween, so rapid clicks follow the latest state. Try the <strong>Layout</strong> tab in Full Example.</span></div>
   <div class="callout blue"><span class="callout-icon">+</span><span><strong>Profiles &amp; control utilities</strong> — create, load, rename, delete and select a default profile; draggable mobile toggle; per-control and global reset; key conflict warnings; confirmation dialogs; conditional visibility and input. <a href="features.html">Read the complete API guide</a> or try the Profiles tab in the example below.</span></div>
