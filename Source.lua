@@ -1119,11 +1119,553 @@ end
 -- ─────────────────────────────────────────────
 function Library:Destroy()
     if self.ScreenGui then self.ScreenGui:Destroy() end
+    if self._wmConn  then self._wmConn:Disconnect() end
 end
 
 function Library:SetTitle(title, version)
     self.Title   = title   or self.Title
     self.Version = version or self.Version
+end
+
+-- ==============================================================================
+-- MULTI-SELECT DROPDOWN  (Section:CreateMultiDropdown)
+-- ==============================================================================
+-- Injected into every Section via _createSection — added as a standalone
+-- function that sections call.  We monkey-patch it onto the Section metatable
+-- by hooking _createSection's return value below.
+local function _buildMultiDropdown(Section, card, nextOrder, config)
+    local ttl     = config.Title    or "MultiDropdown"
+    local opts    = config.Options  or {}
+    local defs    = config.Default  or {}        -- table of pre-selected strings
+    local maxShow = config.MaxShow  or 2          -- how many labels shown inline
+    local cb      = config.Callback or function() end
+    local Window  = Section._lib
+
+    -- selected set
+    local selected = {}
+    for _, v in ipairs(defs) do selected[v] = true end
+
+    local MDD = {Selected = selected, Opened = false, Options = opts}
+
+    -- summary label builder
+    local function summary()
+        local keys = {}
+        for k in pairs(selected) do table.insert(keys, k) end
+        table.sort(keys)
+        if #keys == 0 then return "None" end
+        if #keys <= maxShow then return table.concat(keys, ", ") end
+        return keys[1]..", +"..tostring(#keys - 1)
+    end
+
+    local container = Instance.new("Frame", card)
+    container.Name             = "MDD_"..ttl
+    container.Size             = UDim2.new(1,0,0,22)
+    container.AutomaticSize    = Enum.AutomaticSize.None
+    container.BackgroundTransparency = 1
+    container.ClipsDescendants = false
+    container.LayoutOrder      = nextOrder()
+
+    local header = Instance.new("TextButton", container)
+    header.Size              = UDim2.new(1,0,0,22)
+    header.BackgroundColor3  = T.Element
+    header.BorderSizePixel   = 0
+    header.Text              = ""
+    header.AutoButtonColor   = false
+    header.ZIndex            = 3
+    Instance.new("UICorner", header).CornerRadius = UDim.new(0,3)
+    local hStroke = Instance.new("UIStroke", header)
+    hStroke.Color = T.Border; hStroke.Thickness = 1
+
+    local hLbl = Instance.new("TextLabel", header)
+    hLbl.Size = UDim2.new(0.48,0,1,0); hLbl.Position = UDim2.fromOffset(7,0)
+    hLbl.BackgroundTransparency=1; hLbl.Font=Enum.Font.Gotham
+    hLbl.TextSize=11; hLbl.TextColor3=T.TextDim
+    hLbl.TextXAlignment=Enum.TextXAlignment.Left; hLbl.Text=ttl
+
+    local valLbl = Instance.new("TextLabel", header)
+    valLbl.Size = UDim2.new(0.46,-20,1,0); valLbl.Position = UDim2.new(0.48,0,0,0)
+    valLbl.BackgroundTransparency=1; valLbl.Font=Enum.Font.GothamMedium
+    valLbl.TextSize=10; valLbl.TextColor3=T.Text
+    valLbl.TextXAlignment=Enum.TextXAlignment.Right
+    valLbl.TextTruncate=Enum.TextTruncate.AtEnd
+    valLbl.Text = summary()
+
+    local arrow = Instance.new("TextLabel", header)
+    arrow.Size=UDim2.fromOffset(14,22); arrow.Position=UDim2.new(1,-16,0,0)
+    arrow.BackgroundTransparency=1; arrow.Font=Enum.Font.GothamBold
+    arrow.TextSize=8; arrow.TextColor3=T.TextMute; arrow.Text="▼"
+
+    -- dropdown list
+    local listFrame = Instance.new("Frame", container)
+    listFrame.Name="List"; listFrame.Size=UDim2.new(1,0,0,0)
+    listFrame.Position=UDim2.fromOffset(0,24)
+    listFrame.BackgroundColor3=T.Element; listFrame.BorderSizePixel=0
+    listFrame.ClipsDescendants=true; listFrame.ZIndex=10; listFrame.Visible=false
+    Instance.new("UICorner", listFrame).CornerRadius=UDim.new(0,3)
+    local lStroke=Instance.new("UIStroke",listFrame)
+    lStroke.Color=T.BorderLight; lStroke.Thickness=1; lStroke.ZIndex=10
+    local listLayout=Instance.new("UIListLayout",listFrame)
+    listLayout.SortOrder=Enum.SortOrder.LayoutOrder; listLayout.Padding=UDim.new(0,1)
+    local lPad=Instance.new("UIPadding",listFrame)
+    lPad.PaddingTop=UDim.new(0,3); lPad.PaddingBottom=UDim.new(0,3)
+
+    local function buildList()
+        for _, c in ipairs(listFrame:GetChildren()) do
+            if c:IsA("TextButton") then c:Destroy() end
+        end
+        for _, opt in ipairs(MDD.Options) do
+            local isSel = selected[opt] == true
+            local ob = Instance.new("TextButton", listFrame)
+            ob.Size=UDim2.new(1,0,0,20); ob.BorderSizePixel=0
+            ob.BackgroundColor3 = isSel and Window.Accent or T.Element
+            ob.BackgroundTransparency = isSel and 0.3 or 0.95
+            ob.Font=Enum.Font.Gotham; ob.TextSize=11
+            ob.TextColor3 = isSel and T.White or T.TextDim
+            ob.TextXAlignment=Enum.TextXAlignment.Left
+            ob.Text="  "..tostring(opt); ob.AutoButtonColor=false; ob.ZIndex=11
+            Instance.new("UICorner",ob).CornerRadius=UDim.new(0,2)
+
+            -- checkmark on right
+            local ck=Instance.new("TextLabel",ob)
+            ck.Size=UDim2.fromOffset(16,20); ck.Position=UDim2.new(1,-18,0,0)
+            ck.BackgroundTransparency=1; ck.Font=Enum.Font.GothamBold
+            ck.TextSize=10; ck.ZIndex=12
+            ck.TextColor3=Window.Accent; ck.Text=isSel and "✓" or ""
+
+            ob.MouseEnter:Connect(function()
+                if not selected[opt] then tw(ob,0.1,{BackgroundTransparency=0.7,TextColor3=T.Text}) end
+            end)
+            ob.MouseLeave:Connect(function()
+                if not selected[opt] then tw(ob,0.1,{BackgroundTransparency=0.95,TextColor3=T.TextDim}) end
+            end)
+            ob.MouseButton1Click:Connect(function()
+                if selected[opt] then
+                    selected[opt] = nil
+                else
+                    selected[opt] = true
+                end
+                valLbl.Text = summary()
+                buildList()
+                -- collect ordered list
+                local res={}; for k in pairs(selected) do table.insert(res,k) end
+                pcall(cb, res)
+            end)
+        end
+        listFrame.Size=UDim2.new(1,0,0, listLayout.AbsoluteContentSize.Y+6)
+    end
+
+    function MDD:Open()
+        MDD.Opened=true; listFrame.Visible=true; buildList()
+        tw(arrow,0.15,{Rotation=180})
+        tw(hStroke,0.15,{Color=Window.Accent})
+    end
+    function MDD:Close()
+        MDD.Opened=false
+        tw(arrow,0.15,{Rotation=0}); tw(hStroke,0.15,{Color=T.Border})
+        task.delay(0.15,function() if not MDD.Opened then listFrame.Visible=false end end)
+    end
+    function MDD:Set(tbl)   -- tbl = {"Head","Torso"}
+        selected={}; for _,v in ipairs(tbl) do selected[v]=true end
+        valLbl.Text=summary(); buildList()
+        local res={}; for k in pairs(selected) do table.insert(res,k) end
+        pcall(cb,res)
+    end
+    function MDD:GetSelected()
+        local res={}; for k in pairs(selected) do table.insert(res,k) end
+        return res
+    end
+    function MDD:Refresh(newOpts)
+        MDD.Options=newOpts or {}; buildList()
+    end
+
+    header.MouseButton1Click:Connect(function()
+        if MDD.Opened then MDD:Close() else MDD:Open() end
+    end)
+
+    return MDD
+end
+
+-- ==============================================================================
+-- NOTIFICATION SYSTEM  (Hub:Notify)
+-- ==============================================================================
+function Library:_initNotify()
+    if self._notifyReady then return end
+    self._notifyReady  = true
+    self._notifyQueue  = {}
+    self._notifyActive = 0
+
+    -- container pinned to bottom-right of screen
+    local holder = Instance.new("Frame", self.ScreenGui)
+    holder.Name              = "NotifyHolder"
+    holder.Size              = UDim2.fromOffset(260, 600)
+    holder.Position          = UDim2.new(1,-268, 1,-8)
+    holder.AnchorPoint       = Vector2.new(0, 1)
+    holder.BackgroundTransparency = 1
+    holder.BorderSizePixel   = 0
+    local hLayout = Instance.new("UIListLayout", holder)
+    hLayout.SortOrder        = Enum.SortOrder.LayoutOrder
+    hLayout.VerticalAlignment= Enum.VerticalAlignment.Bottom
+    hLayout.Padding          = UDim.new(0,6)
+    self._notifyHolder = holder
+end
+
+function Library:Notify(config)
+    self:_initNotify()
+    config = config or {}
+    local title    = config.Title    or "Notification"
+    local text     = config.Text     or ""
+    local duration = config.Duration or 3
+    local ntype    = config.Type     or "info"   -- "info" | "success" | "error" | "warning"
+
+    local typeColors = {
+        info    = self.Accent,
+        success = Color3.fromRGB(34, 197, 94),
+        error   = Color3.fromRGB(220, 50, 50),
+        warning = Color3.fromRGB(245, 158, 11),
+    }
+    local accent = typeColors[ntype] or self.Accent
+
+    local TOAST_H = text ~= "" and 52 or 34
+
+    local toast = Instance.new("Frame", self._notifyHolder)
+    toast.Name              = "Toast"
+    toast.Size              = UDim2.fromOffset(0, TOAST_H)   -- width animates in
+    toast.BackgroundColor3  = T.Card
+    toast.BorderSizePixel   = 0
+    toast.ClipsDescendants  = true
+    toast.LayoutOrder       = os.clock() * 1000
+    Instance.new("UICorner", toast).CornerRadius = UDim.new(0,5)
+    local tStroke = Instance.new("UIStroke", toast)
+    tStroke.Color = T.Border; tStroke.Thickness = 1
+
+    -- left accent bar
+    local bar = Instance.new("Frame", toast)
+    bar.Size=UDim2.new(0,3,1,0); bar.BackgroundColor3=accent; bar.BorderSizePixel=0
+    Instance.new("UICorner",bar).CornerRadius=UDim.new(0,5)
+
+    -- icon
+    local icons = {info="ℹ", success="✓", error="✕", warning="⚠"}
+    local iconLbl = Instance.new("TextLabel", toast)
+    iconLbl.Size=UDim2.fromOffset(20,TOAST_H); iconLbl.Position=UDim2.fromOffset(10,0)
+    iconLbl.BackgroundTransparency=1; iconLbl.Font=Enum.Font.GothamBold
+    iconLbl.TextSize=13; iconLbl.TextColor3=accent; iconLbl.Text=icons[ntype] or "ℹ"
+
+    -- title
+    local titleLbl = Instance.new("TextLabel", toast)
+    titleLbl.Size=UDim2.new(1,-50,0,TOAST_H); titleLbl.Position=UDim2.fromOffset(32,0)
+    titleLbl.BackgroundTransparency=1; titleLbl.Font=Enum.Font.GothamBold
+    titleLbl.TextSize=12; titleLbl.TextColor3=T.Text
+    titleLbl.TextXAlignment=Enum.TextXAlignment.Left
+    titleLbl.Text=title
+
+    if text ~= "" then
+        titleLbl.Size=UDim2.new(1,-50,0,20)
+        local bodyLbl = Instance.new("TextLabel", toast)
+        bodyLbl.Size=UDim2.new(1,-50,0,16); bodyLbl.Position=UDim2.fromOffset(32,20)
+        bodyLbl.BackgroundTransparency=1; bodyLbl.Font=Enum.Font.Gotham
+        bodyLbl.TextSize=11; bodyLbl.TextColor3=T.TextDim
+        bodyLbl.TextXAlignment=Enum.TextXAlignment.Left
+        bodyLbl.TextTruncate=Enum.TextTruncate.AtEnd
+        bodyLbl.Text=text
+    end
+
+    -- close button
+    local closeBtn = Instance.new("TextButton", toast)
+    closeBtn.Size=UDim2.fromOffset(16,16); closeBtn.Position=UDim2.new(1,-20,0,9)
+    closeBtn.BackgroundTransparency=1; closeBtn.Font=Enum.Font.GothamBold
+    closeBtn.TextSize=10; closeBtn.TextColor3=T.TextMute; closeBtn.Text="✕"
+    closeBtn.AutoButtonColor=false
+    closeBtn.MouseEnter:Connect(function() closeBtn.TextColor3=T.Text end)
+    closeBtn.MouseLeave:Connect(function() closeBtn.TextColor3=T.TextMute end)
+
+    -- progress bar
+    local prog = Instance.new("Frame", toast)
+    prog.Size=UDim2.new(1,0,0,2); prog.Position=UDim2.new(0,0,1,-2)
+    prog.BackgroundColor3=accent; prog.BackgroundTransparency=0.5; prog.BorderSizePixel=0
+
+    -- animate in
+    tw(toast, 0.25, {Size=UDim2.fromOffset(258, TOAST_H)})
+
+    -- progress drain
+    tw(prog, duration, {Size=UDim2.new(0,0,0,2)})
+
+    local function dismiss()
+        tw(toast, 0.2, {BackgroundTransparency=1, Size=UDim2.fromOffset(258,0)})
+        task.delay(0.25, function() pcall(function() toast:Destroy() end) end)
+    end
+
+    closeBtn.MouseButton1Click:Connect(dismiss)
+    task.delay(duration, function()
+        if toast and toast.Parent then dismiss() end
+    end)
+end
+
+-- ==============================================================================
+-- CONFIG SAVE / LOAD  (Hub:SaveConfig / Hub:LoadConfig)
+-- ==============================================================================
+-- Serialization: lightweight key=value store (no JSON dependency)
+-- Elements register themselves with Hub:_regElement(key, getter, setter)
+
+function Library:_regElement(key, getter, setter)
+    if not self._configElements then self._configElements = {} end
+    self._configElements[key] = {get=getter, set=setter}
+end
+
+local function _serialize(tbl)
+    -- Produces "key\31value\30key\31value" (unit separator / record separator)
+    local parts = {}
+    for k, v in pairs(tbl) do
+        table.insert(parts, tostring(k).."\31"..tostring(v))
+    end
+    return table.concat(parts, "\30")
+end
+
+local function _deserialize(str)
+    local tbl = {}
+    if not str or str=="" then return tbl end
+    for entry in (str.."\30"):gmatch("(.-)\30") do
+        local k,v = entry:match("^(.-)\31(.*)$")
+        if k then tbl[k]=v end
+    end
+    return tbl
+end
+
+function Library:SaveConfig(name)
+    if not self._configElements then
+        self:Notify({Title="Config", Text="No elements registered.", Type="warning", Duration=2})
+        return
+    end
+    name = (name or "default"):gsub("[^%w_%-]","_")
+    local data = {}
+    for key, elem in pairs(self._configElements) do
+        local ok, val = pcall(elem.get)
+        if ok then data[key] = val end
+    end
+    local encoded = _serialize(data)
+    local fname = "HutameHub_"..name..".cfg"
+    local ok = pcall(writefile, fname, encoded)
+    if ok then
+        self:Notify({Title="Config Saved", Text=fname, Type="success", Duration=2.5})
+    else
+        self:Notify({Title="Config Error", Text="writefile not available.", Type="error", Duration=3})
+    end
+end
+
+function Library:LoadConfig(name)
+    name = (name or "default"):gsub("[^%w_%-]","_")
+    local fname = "HutameHub_"..name..".cfg"
+    local ok, content = pcall(readfile, fname)
+    if not ok or not content then
+        self:Notify({Title="Config Error", Text=fname.." not found.", Type="error", Duration=3})
+        return
+    end
+    local data = _deserialize(content)
+    local loaded = 0
+    if self._configElements then
+        for key, elem in pairs(self._configElements) do
+            if data[key] ~= nil then
+                pcall(elem.set, data[key])
+                loaded = loaded + 1
+            end
+        end
+    end
+    self:Notify({Title="Config Loaded", Text=loaded.." values restored.", Type="success", Duration=2.5})
+end
+
+-- Auto-register Toggle, Slider, Dropdown, MultiDropdown
+-- Patch _createSection to wrap CreateToggle / CreateSlider / CreateDropdown
+local _origCreateSection = Library._createSection
+function Library:_createSection(title, parent)
+    local sec = _origCreateSection(self, title, parent)
+    local hub = self
+
+    -- patch CreateToggle to auto-register
+    local _origToggle = sec.CreateToggle
+    sec.CreateToggle = function(s, config)
+        local t = _origToggle(s, config)
+        if config.ConfigKey then
+            hub:_regElement(config.ConfigKey,
+                function() return tostring(t.State) end,
+                function(v) t:Set(v=="true") end)
+        end
+        return t
+    end
+
+    -- patch CreateSlider
+    local _origSlider = sec.CreateSlider
+    sec.CreateSlider = function(s, config)
+        local sl = _origSlider(s, config)
+        if config.ConfigKey then
+            hub:_regElement(config.ConfigKey,
+                function() return tostring(sl.Value) end,
+                function(v) sl:Set(tonumber(v) or sl.Value) end)
+        end
+        return sl
+    end
+
+    -- patch CreateDropdown
+    local _origDD = sec.CreateDropdown
+    sec.CreateDropdown = function(s, config)
+        local dd = _origDD(s, config)
+        if config.ConfigKey then
+            hub:_regElement(config.ConfigKey,
+                function() return tostring(dd.Selected) end,
+                function(v) dd:Set(v) end)
+        end
+        return dd
+    end
+
+    -- inject CreateMultiDropdown
+    local _nxtOrd = sec._order  -- captured closure won't drift
+    function sec:CreateMultiDropdown(config)
+        return _buildMultiDropdown(self, self._card, function()
+            self._order = self._order + 1; return self._order
+        end, config)
+    end
+
+    -- patch CreateMultiDropdown config key
+    local _origMDD = sec.CreateMultiDropdown
+    sec.CreateMultiDropdown = function(s, config)
+        local mdd = _origMDD(s, config)
+        if config.ConfigKey then
+            hub:_regElement(config.ConfigKey,
+                function()
+                    local res=mdd:GetSelected(); table.sort(res)
+                    return table.concat(res,",")
+                end,
+                function(v)
+                    local tbl={}
+                    if v and v~="" then
+                        for part in (v..","):gmatch("(.-),") do table.insert(tbl,part) end
+                    end
+                    mdd:Set(tbl)
+                end)
+        end
+        return mdd
+    end
+
+    return sec
+end
+
+-- ==============================================================================
+-- WATERMARK  (Hub:SetWatermark / Hub:UpdateWatermark / Hub:RemoveWatermark)
+-- ==============================================================================
+-- Supports placeholders: {player}  {fps}  {ping}  {time}
+
+function Library:SetWatermark(config)
+    config = config or {}
+    local fmt      = config.Format   or "{player}  |  {fps} fps"
+    local pos      = config.Position or "TopRight"   -- TopLeft | TopRight | BottomLeft | BottomRight
+    local bgAlpha  = config.BgAlpha  or 0.45
+
+    if self._wmFrame then self._wmFrame:Destroy() end
+
+    local wm = Instance.new("Frame", self.ScreenGui)
+    wm.Name             = "Watermark"
+    wm.Size             = UDim2.fromOffset(0, 22)
+    wm.AutomaticSize    = Enum.AutomaticSize.X
+    wm.BackgroundColor3 = T.Surface
+    wm.BackgroundTransparency = bgAlpha
+    wm.BorderSizePixel  = 0
+    Instance.new("UICorner", wm).CornerRadius = UDim.new(0,4)
+    local wmStroke = Instance.new("UIStroke", wm)
+    wmStroke.Color = T.Border; wmStroke.Thickness = 1
+    local wmPad = Instance.new("UIPadding", wm)
+    wmPad.PaddingLeft=UDim.new(0,9); wmPad.PaddingRight=UDim.new(0,9)
+    wmPad.PaddingTop=UDim.new(0,0); wmPad.PaddingBottom=UDim.new(0,0)
+
+    -- position
+    local anchors = {
+        TopLeft     = {UDim2.fromOffset(10,10),    Vector2.new(0,0)},
+        TopRight    = {UDim2.new(1,-10,0,10),      Vector2.new(1,0)},
+        BottomLeft  = {UDim2.new(0,10,1,-10),      Vector2.new(0,1)},
+        BottomRight = {UDim2.new(1,-10,1,-10),     Vector2.new(1,1)},
+    }
+    local posData = anchors[pos] or anchors.TopRight
+    wm.Position    = posData[1]
+    wm.AnchorPoint = posData[2]
+
+    local lbl = Instance.new("TextLabel", wm)
+    lbl.Size                 = UDim2.new(1,0,1,0)
+    lbl.BackgroundTransparency= 1
+    lbl.Font                 = Enum.Font.GothamBold
+    lbl.TextSize             = 11
+    lbl.TextColor3           = T.Text
+    lbl.RichText             = true
+    lbl.AutomaticSize        = Enum.AutomaticSize.X
+    lbl.Text                 = fmt
+
+    self:_onAccent(function(c) wmStroke.Color = c end)
+
+    self._wmFrame = wm
+    self._wmFmt   = fmt
+
+    -- FPS tracker
+    local fps, lastTick, frames = 60, os.clock(), 0
+    local fpsConn = RunService.RenderStepped:Connect(function()
+        frames = frames + 1
+        local now = os.clock()
+        if now - lastTick >= 0.5 then
+            fps = math.floor(frames / (now - lastTick) + 0.5)
+            frames = 0; lastTick = now
+        end
+    end)
+
+    -- update loop
+    local function buildText(f)
+        local h = math.floor(os.clock() / 3600 % 24)
+        local m = math.floor(os.clock() / 60 % 60)
+        local s = math.floor(os.clock() % 60)
+        local timeStr = string.format("%02d:%02d:%02d", h, m, s)
+
+        -- ping via Stats service (may not be available in all contexts)
+        local ping = 0
+        pcall(function()
+            ping = game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()
+        end)
+
+        local result = f
+            :gsub("{player}", LocalPlayer.Name)
+            :gsub("{fps}",    tostring(fps))
+            :gsub("{ping}",   tostring(math.floor(ping)))
+            :gsub("{time}",   timeStr)
+            :gsub("{game}",   tostring(game.Name))
+
+        -- color fps: green ≥50, yellow ≥30, red <30
+        local fpsColHex = fps >= 50 and "7ee787" or fps >= 30 and "f5c542" or "ff7b72"
+        result = result:gsub(tostring(fps).." fps",
+            string.format('<font color="#%s">%d fps</font>', fpsColHex, fps))
+
+        return result
+    end
+
+    local wmConn = RunService.Heartbeat:Connect(function()
+        if not wm or not wm.Parent then return end
+        lbl.Text = buildText(self._wmFmt or fmt)
+    end)
+
+    -- store connections for cleanup
+    if self._wmConn  then self._wmConn:Disconnect() end
+    if self._fpsConn then self._fpsConn:Disconnect() end
+    self._wmConn  = wmConn
+    self._fpsConn = fpsConn
+end
+
+function Library:UpdateWatermark(newFmt)
+    self._wmFmt = newFmt
+end
+
+function Library:RemoveWatermark()
+    if self._wmFrame then self._wmFrame:Destroy(); self._wmFrame = nil end
+    if self._wmConn  then self._wmConn:Disconnect();  self._wmConn  = nil end
+    if self._fpsConn then self._fpsConn:Disconnect(); self._fpsConn = nil end
+end
+
+-- clean up watermark on destroy too
+local _origDestroy = Library.Destroy
+function Library:Destroy()
+    _origDestroy(self)
+    self:RemoveWatermark()
 end
 
 return Library
