@@ -678,6 +678,7 @@ p code, li code, td code{
 
 <!-- ════ FULL EXAMPLE ════ -->
 <section class="doc-section" id="s-fullexample">
+  <div class="callout blue"><span class="callout-icon">+</span><span><strong>Profiles &amp; control utilities</strong> — create, load, rename, delete and select a default profile; draggable mobile toggle; per-control and global reset; key conflict warnings; confirmation dialogs; conditional visibility and input. <a href="features.html">Read the complete API guide</a> or try the Profiles tab in the example below.</span></div>
   <div class="callout blue"><span class="callout-icon">◇</span><span><strong>v2.2 · Violet Studio</strong> — dark violet panels, lilac accents, square corners, fine inset borders and compact monospace typography. The two-column layout and public API stay familiar. Buttons and input surfaces now use subtle vertical shading; active tabs and values carry the accent. Main-window snow is opt-in.</span></div>
   <p class="method-desc">Visual direction studied from <a href="https://github.com/ro0ti/Roblox-Scripting-UI/tree/main/Akiri%20Lib">Akiri Lib</a>; implemented independently with Roblox Instances, without importing its code, assets or Drawing API. Run <a href="#s-fullexample">Full Example</a> to inspect all controls in the new theme. Runtime visual verification in Roblox remains pending.</p>
   <div class="method-header">
@@ -696,7 +697,7 @@ p code, li code, td code{
       <span class="code-block-lang">luau</span>
       <button class="copy-code" onclick="copyCode(this,'ex-full')">Copy</button>
     </div>
-    <p class="method-desc"><a href="examples/ui-test.lua" download>Download ui-test.lua</a> · The loader needs a compatible client environment; config tests also need <code>writefile</code>/<code>readfile</code>. Save, change the four ConfigKey controls, then load and inspect their values. Textbox, Keybind and ColorPicker are not persisted by the current library.</p>
+    <p class="method-desc"><a href="examples/ui-test.lua" download>Download ui-test.lua</a> · The loader needs a compatible client environment; config tests also need <code>writefile</code>/<code>readfile</code>. Save, change registered controls, then load and inspect their values. All seven value-control types support ConfigKey. The Profiles tab tests profile management, reset and conditional controls.</p>
     <p class="method-desc">Manual checks: drag the title bar, minimize/restore, resize below and above 600 px, and inspect both columns. Compare startup effects in fresh sessions using <code>LoadingScreen</code> and <code>SnowEffect</code>; the latter controls main-window snow only. <code>CreateKeybind</code> reports binding changes, not key presses. This example was checked against source; it has not been run in Roblox.</p>
     <pre id="ex-full"><code>-- HutameHub: manual UI feature test (Source.lua API)
 -- Run in a client environment that supports the loader below.
@@ -710,6 +711,7 @@ local Hub = Library.new({
     Version = &quot;v2.2&quot;,
     Accent = Color3.fromRGB(192, 139, 230),
     ToggleKey = Enum.KeyCode.RightControl,
+    MobileToggle = true, -- Also show the draggable 48px button on desktop for testing.
     LoadingScreen = true,
     LoadingDuration = 1.8,
     SnowEffect = false,
@@ -742,7 +744,7 @@ local Slider = Inputs:CreateSlider({
     Callback = function(value) report(&quot;Slider&quot;, value) end,
 })
 local Textbox = Inputs:CreateTextbox({
-    Title = &quot;Test text&quot;, Default = &quot;Hello&quot;, Placeholder = &quot;Type here&quot;,
+    Title = &quot;Test text&quot;, Default = &quot;Hello&quot;, Placeholder = &quot;Type here&quot;, ConfigKey = &quot;test_text&quot;,
     Tooltip = &quot;Callback runs when focus is lost.&quot;,
     Callback = function(text, enterPressed)
         report(&quot;Text&quot;, text)
@@ -750,13 +752,13 @@ local Textbox = Inputs:CreateTextbox({
     end,
 })
 local Keybind = Inputs:CreateKeybind({
-    Title = &quot;Select a key&quot;, Default = Enum.KeyCode.G,
+    Title = &quot;Select a key&quot;, Default = Enum.KeyCode.G, ConfigKey = &quot;test_key&quot;,
     Tooltip = &quot;Click then press a key; Backspace clears it.&quot;,
     -- This callback reports a NEW binding, not each key press.
     Callback = function(key) report(&quot;Selected key&quot;, key.Name) end,
 })
 local Color = Inputs:CreateColorPicker({
-    Title = &quot;Accent&quot;, Default = Color3.fromRGB(192, 139, 230),
+    Title = &quot;Accent&quot;, Default = Color3.fromRGB(192, 139, 230), ConfigKey = &quot;test_color&quot;,
     Tooltip = &quot;Open the RGB sliders and change the accent.&quot;,
     Callback = function(value) Hub:SetAccent(value) end,
 })
@@ -837,8 +839,45 @@ end)
 button(Actions, &quot;Back to Controls&quot;, function() Controls:Activate() end)
 button(Actions, &quot;Destroy UI (test last)&quot;, function() Hub:Destroy() end)
 
--- Save -&gt; change the four ConfigKey controls -&gt; Load -&gt; inspect restored values.
--- Textbox, Keybind and ColorPicker are not registered by Source.lua config save.
+-- Save -&gt; change controls -&gt; Load -&gt; inspect all seven registered value types.
+local Profiles = Hub:CreateTab(&quot;Profiles&quot;)
+local Manager = Profiles:CreateSection(&quot;Profile manager&quot;, &quot;left&quot;)
+local Conditional = Profiles:CreateSection(&quot;Conditions and reset&quot;, &quot;right&quot;)
+local ProfileName = Manager:CreateTextbox({Title=&quot;Profile name&quot;, Default=&quot;demo&quot;})
+local RenameTo = Manager:CreateTextbox({Title=&quot;Rename to&quot;, Default=&quot;demo_copy&quot;})
+local ProfileList = Manager:CreateDropdown({Title=&quot;Saved profiles&quot;, Options=Hub:ListProfiles(),
+    Callback=function(name) ProfileName:Set(name) end})
+local function refreshProfiles() ProfileList:Refresh(Hub:ListProfiles()) end
+local function result(ok, err)
+    if not ok then Hub:Notify({Title=&quot;Profile error&quot;, Text=tostring(err), Type=&quot;error&quot;}) end
+    refreshProfiles()
+end
+button(Manager, &quot;Create / save profile&quot;, function()
+    Hub:Confirm({Title=&quot;Save profile&quot;, Text=&quot;Save current values? An existing profile will be overwritten.&quot;,
+        OnConfirm=function() result(Hub:SaveProfile(ProfileName.Text)) end})
+end)
+button(Manager, &quot;Load selected profile&quot;, function() result(Hub:LoadProfile(ProfileName.Text)) end)
+button(Manager, &quot;Rename profile&quot;, function() result(Hub:RenameProfile(ProfileName.Text, RenameTo.Text)) end)
+button(Manager, &quot;Set default profile&quot;, function() result(Hub:SetDefaultProfile(ProfileName.Text)) end)
+button(Manager, &quot;Load default profile&quot;, function() result(Hub:LoadDefaultProfile()) end)
+button(Manager, &quot;Delete profile&quot;, function()
+    local name = ProfileName.Text
+    Hub:Confirm({Title=&quot;Delete profile&quot;, Text=&quot;Permanently delete &quot; .. name .. &quot;?&quot;,
+        OnConfirm=function() result(Hub:DeleteProfile(name)) end})
+end)
+local Advanced = Conditional:CreateToggle({Title=&quot;Show advanced controls&quot;, Default=false})
+Conditional:CreateSlider({Title=&quot;Conditional slider&quot;, Min=0, Max=100, Default=50,
+    VisibleWhen=function() return Advanced.State end})
+Conditional:CreateButton({Title=&quot;Enabled when toggle is on&quot;,
+    EnabledWhen=function() return Advanced.State end,
+    Callback=function() report(&quot;Conditional button&quot;, &quot;clicked&quot;) end})
+button(Conditional, &quot;Reset slider only&quot;, function() Slider:Reset() end)
+button(Conditional, &quot;Reset all values&quot;, function()
+    Hub:Confirm({Title=&quot;Reset values&quot;, Text=&quot;Restore every control to its creation default?&quot;,
+        OnConfirm=function() Hub:ResetValues() end})
+end)
+Conditional:CreateLabel(&quot;Bind Select a key to F or Minus for a warning.&quot;)
+-- For automatic startup restore, call Hub:LoadDefaultProfile() HERE after creation.
 -- RightControl or Minus (-) hides/shows the entire window; F toggles the checkbox.
 -- Type a minus in the textbox: the UI must stay visible while typing.
 -- Hover a control for 0.4 seconds to inspect its tooltip.

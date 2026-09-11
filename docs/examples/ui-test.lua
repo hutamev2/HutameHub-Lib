@@ -10,6 +10,7 @@ local Hub = Library.new({
     Version = "v2.2",
     Accent = Color3.fromRGB(192, 139, 230),
     ToggleKey = Enum.KeyCode.RightControl,
+    MobileToggle = true, -- Also show the draggable 48px button on desktop for testing.
     LoadingScreen = true,
     LoadingDuration = 1.8,
     SnowEffect = false,
@@ -42,7 +43,7 @@ local Slider = Inputs:CreateSlider({
     Callback = function(value) report("Slider", value) end,
 })
 local Textbox = Inputs:CreateTextbox({
-    Title = "Test text", Default = "Hello", Placeholder = "Type here",
+    Title = "Test text", Default = "Hello", Placeholder = "Type here", ConfigKey = "test_text",
     Tooltip = "Callback runs when focus is lost.",
     Callback = function(text, enterPressed)
         report("Text", text)
@@ -50,13 +51,13 @@ local Textbox = Inputs:CreateTextbox({
     end,
 })
 local Keybind = Inputs:CreateKeybind({
-    Title = "Select a key", Default = Enum.KeyCode.G,
+    Title = "Select a key", Default = Enum.KeyCode.G, ConfigKey = "test_key",
     Tooltip = "Click then press a key; Backspace clears it.",
     -- This callback reports a NEW binding, not each key press.
     Callback = function(key) report("Selected key", key.Name) end,
 })
 local Color = Inputs:CreateColorPicker({
-    Title = "Accent", Default = Color3.fromRGB(192, 139, 230),
+    Title = "Accent", Default = Color3.fromRGB(192, 139, 230), ConfigKey = "test_color",
     Tooltip = "Open the RGB sliders and change the accent.",
     Callback = function(value) Hub:SetAccent(value) end,
 })
@@ -137,8 +138,45 @@ end)
 button(Actions, "Back to Controls", function() Controls:Activate() end)
 button(Actions, "Destroy UI (test last)", function() Hub:Destroy() end)
 
--- Save -> change the four ConfigKey controls -> Load -> inspect restored values.
--- Textbox, Keybind and ColorPicker are not registered by Source.lua config save.
+-- Save -> change controls -> Load -> inspect all seven registered value types.
+local Profiles = Hub:CreateTab("Profiles")
+local Manager = Profiles:CreateSection("Profile manager", "left")
+local Conditional = Profiles:CreateSection("Conditions and reset", "right")
+local ProfileName = Manager:CreateTextbox({Title="Profile name", Default="demo"})
+local RenameTo = Manager:CreateTextbox({Title="Rename to", Default="demo_copy"})
+local ProfileList = Manager:CreateDropdown({Title="Saved profiles", Options=Hub:ListProfiles(),
+    Callback=function(name) ProfileName:Set(name) end})
+local function refreshProfiles() ProfileList:Refresh(Hub:ListProfiles()) end
+local function result(ok, err)
+    if not ok then Hub:Notify({Title="Profile error", Text=tostring(err), Type="error"}) end
+    refreshProfiles()
+end
+button(Manager, "Create / save profile", function()
+    Hub:Confirm({Title="Save profile", Text="Save current values? An existing profile will be overwritten.",
+        OnConfirm=function() result(Hub:SaveProfile(ProfileName.Text)) end})
+end)
+button(Manager, "Load selected profile", function() result(Hub:LoadProfile(ProfileName.Text)) end)
+button(Manager, "Rename profile", function() result(Hub:RenameProfile(ProfileName.Text, RenameTo.Text)) end)
+button(Manager, "Set default profile", function() result(Hub:SetDefaultProfile(ProfileName.Text)) end)
+button(Manager, "Load default profile", function() result(Hub:LoadDefaultProfile()) end)
+button(Manager, "Delete profile", function()
+    local name = ProfileName.Text
+    Hub:Confirm({Title="Delete profile", Text="Permanently delete " .. name .. "?",
+        OnConfirm=function() result(Hub:DeleteProfile(name)) end})
+end)
+local Advanced = Conditional:CreateToggle({Title="Show advanced controls", Default=false})
+Conditional:CreateSlider({Title="Conditional slider", Min=0, Max=100, Default=50,
+    VisibleWhen=function() return Advanced.State end})
+Conditional:CreateButton({Title="Enabled when toggle is on",
+    EnabledWhen=function() return Advanced.State end,
+    Callback=function() report("Conditional button", "clicked") end})
+button(Conditional, "Reset slider only", function() Slider:Reset() end)
+button(Conditional, "Reset all values", function()
+    Hub:Confirm({Title="Reset values", Text="Restore every control to its creation default?",
+        OnConfirm=function() Hub:ResetValues() end})
+end)
+Conditional:CreateLabel("Bind Select a key to F or Minus for a warning.")
+-- For automatic startup restore, call Hub:LoadDefaultProfile() HERE after creation.
 -- RightControl or Minus (-) hides/shows the entire window; F toggles the checkbox.
 -- Type a minus in the textbox: the UI must stay visible while typing.
 -- Hover a control for 0.4 seconds to inspect its tooltip.

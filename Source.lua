@@ -567,7 +567,7 @@ function Library:_build()
 
     -- Minus is an additional shortcut; keep the configured ToggleKey working.
     self._toggleConn = UserInputService.InputBegan:Connect(function(input, gp)
-        if gp or UserInputService:GetFocusedTextBox() then return end
+        if gp or self._listeningForKey or UserInputService:GetFocusedTextBox() then return end
         if input.KeyCode == self.ToggleKey or input.KeyCode == Enum.KeyCode.Minus then
             mf.Visible = not mf.Visible
         end
@@ -827,6 +827,7 @@ function Library:_createSection(title, parent)
     local collapsed = false
     local function setCollapsed(val)
         collapsed = val
+        card:SetAttribute("Collapsed", val)
         colArrow.Text = val and "▼" or "▲"
         -- hide/show all children except header and sep
         for _, child in ipairs(card:GetChildren()) do
@@ -835,7 +836,7 @@ function Library:_createSection(title, parent)
                and not child:IsA("UIPadding")
                and not child:IsA("UIStroke")
                and not child:IsA("UICorner") then
-                child.Visible = not val
+                child.Visible = not val and child:GetAttribute("ConditionVisible") ~= false
             end
         end
         if val then
@@ -954,7 +955,7 @@ function Library:_createSection(title, parent)
             valLbl.Text      = "["..bindKey.Name.."]"
             valLbl.TextColor3= T.TextMute
             UserInputService.InputBegan:Connect(function(input, gp)
-                if not gp and input.KeyCode == bindKey then
+                if not gp and not self._lib._listeningForKey and not UserInputService:GetFocusedTextBox() and row.Visible and row:GetAttribute("ConditionEnabled") ~= false and input.KeyCode == bindKey then
                     Toggle:Set(not Toggle.State)
                 end
             end)
@@ -1312,6 +1313,7 @@ function Library:_createSection(title, parent)
         kBtn.MouseButton1Click:Connect(function()
             if Kb.Listening then return end
             Kb.Listening = true
+            self._lib._listeningForKey = true
             kBtn.Text    = "[...]"
             tw(kbStroke,0.15,{Color=self._lib.Accent})
             local conn
@@ -1321,11 +1323,13 @@ function Library:_createSection(title, parent)
                     Kb.Key        = k
                     kBtn.Text     = "["..k.Name.."]"
                     Kb.Listening  = false
+                    self._lib._listeningForKey = false
                     tw(kbStroke,0.15,{Color=T.Border})
                     conn:Disconnect()
                     pcall(cb, k)
                 end
             end)
+            table.insert(self._lib._extraConnections, conn)
         end)
 
         function Kb:Set(k) Kb.Key=k; kBtn.Text="["..k.Name.."]" end
@@ -1985,7 +1989,8 @@ end
 
 function Library:_regElement(key, getter, setter)
     if not self._configElements then self._configElements = {} end
-    self._configElements[key] = {get=getter, set=setter}
+    assert(not self._configElements[key], "Duplicate ConfigKey: " .. key)
+    self._configElements[key] = {get=getter, set=setter, default=getter()}
 end
 
 local function _serialize(tbl)
@@ -2041,8 +2046,8 @@ function Library:LoadConfig(name)
     if self._configElements then
         for key, elem in pairs(self._configElements) do
             if data[key] ~= nil then
-                pcall(elem.set, data[key])
-                loaded = loaded + 1
+                local restored = pcall(elem.set, data[key])
+                if restored then loaded = loaded + 1 end
             end
         end
     end
@@ -2260,6 +2265,321 @@ local _origDestroy = Library.Destroy
 function Library:Destroy()
     _origDestroy(self)
     self:RemoveWatermark()
+end
+
+-- Profiles use a manifest so environments without listfiles remain supported.
+local HttpService = game:GetService("HttpService")
+local function profileName(name)
+    assert(type(name) == "string" and name:match("^[%w_%-]+$") and #name <= 48,
+        "Profile name: 1-48 letters, digits, underscores or hyphens")
+    return name
+end
+local function profilePath(name) return "HutameHub_" .. profileName(name) .. ".cfg" end
+local function readManifest()
+    local ok, data = pcall(function()
+        return HttpService:JSONDecode(readfile("HutameHub_profiles.json"))
+    end)
+    if ok and type(data) == "table" and type(data.names) == "table" then return data end
+    return {names = {}}
+end
+local function writeManifest(data)
+    writefile("HutameHub_profiles.json", HttpService:JSONEncode(data))
+end
+
+function Library:ListProfiles()
+    local names = {}
+    for name in pairs(readManifest().names) do table.insert(names, name) end
+    table.sort(names)
+    return names
+end
+
+function Library:SaveProfile(name)
+    local ok, err = pcall(function()
+        local path = profilePath(name)
+        local values = {}
+        for key, item in pairs(self._configElements or {}) do values[key] = item.get() end
+        writefile(path, _serialize(values))
+        local manifest = readManifest()
+        manifest.names[name] = true
+        writeManifest(manifest)
+    end)
+    self:Notify({Title="Profile", Text=ok and "Saved" or tostring(err), Type=ok and "success" or "error"})
+    return ok, err
+end
+
+function Library:LoadProfile(name)
+    local ok, err = pcall(function()
+        local values = _deserialize(readfile(profilePath(name)))
+        for key, item in pairs(self._configElements or {}) do
+            if values[key] ~= nil then item.set(values[key]) end
+        end
+        self:RefreshConditions()
+    end)
+    self:Notify({Title="Profile", Text=ok and "Loaded" or tostring(err), Type=ok and "success" or "error"})
+    return ok, err
+end
+
+function Library:RenameProfile(oldName, newName)
+    local ok, err = pcall(function()
+        profileName(oldName); profileName(newName)
+        local manifest = readManifest()
+        assert(manifest.names[oldName], "Unknown profile")
+        assert(not manifest.names[newName], "Profile already exists")
+        assert(type(delfile) == "function", "delfile unavailable")
+        local exists = pcall(readfile, profilePath(newName))
+        assert(not exists, "Destination file already exists")
+        writefile(profilePath(newName), readfile(profilePath(oldName)))
+        manifest.names[newName] = true; manifest.names[oldName] = nil
+        if manifest.default == oldName then manifest.default = newName end
+        writeManifest(manifest)
+        delfile(profilePath(oldName))
+    end)
+    return ok, err
+end
+
+function Library:DeleteProfile(name)
+    local ok, err = pcall(function()
+        profileName(name)
+        local manifest = readManifest()
+        assert(manifest.names[name], "Unknown profile")
+        delfile(profilePath(name))
+        manifest.names[name] = nil
+        if manifest.default == name then manifest.default = nil end
+        writeManifest(manifest)
+    end)
+    return ok, err
+end
+
+function Library:SetDefaultProfile(name)
+    local ok, err = pcall(function()
+        local manifest = readManifest()
+        if name ~= nil then profileName(name); assert(manifest.names[name], "Unknown profile") end
+        manifest.default = name
+        writeManifest(manifest)
+    end)
+    return ok, err
+end
+
+-- Call after all controls have been registered, never during window construction.
+function Library:LoadDefaultProfile()
+    local name = readManifest().default
+    if not name then return false, "No default profile" end
+    return self:LoadProfile(name)
+end
+
+function Library:ResetValues()
+    for _, control in ipairs(self._resetControls or {}) do control:Reset() end
+    self:RefreshConditions()
+end
+
+function Library:RefreshConditions()
+    if self._refreshingConditions then return end
+    self._refreshingConditions = true
+    for _, rule in ipairs(self._conditions or {}) do
+        local ok, value = pcall(rule.test)
+        if not ok then warn("HutameHub condition: " .. tostring(value)) end
+        local enabled = ok and not not value
+        if rule.mode == "hide" then
+            rule.row:SetAttribute("ConditionVisible", enabled)
+            rule.row.Visible = enabled and rule.row.Parent:GetAttribute("Collapsed") ~= true
+        else
+            rule.row:SetAttribute("ConditionEnabled", enabled)
+            rule.row.Interactable = enabled
+            for _, child in ipairs(rule.row:GetDescendants()) do
+                if child:IsA("GuiObject") then child.Interactable = enabled end
+            end
+            rule.row.BackgroundTransparency = enabled and rule.transparency or 0.65
+        end
+    end
+    self._refreshingConditions = false
+end
+
+function Library:SetCondition(control, predicate, mode)
+    assert(type(predicate) == "function", "Condition must be a function")
+    assert(mode == nil or mode == "hide" or mode == "disable", "Mode: hide or disable")
+    local row = (self._controlRows or {})[control]
+    assert(row, "Control does not belong to this window")
+    self._conditions = self._conditions or {}
+    table.insert(self._conditions, {row=row, test=predicate, mode=mode or "hide", transparency=row.BackgroundTransparency})
+    self:RefreshConditions()
+end
+
+function Library:_checkBindings()
+    local used = {[self.ToggleKey]="Window toggle", [Enum.KeyCode.Minus]="Window toggle"}
+    local collisions = {}
+    for _, binding in ipairs(self._bindings or {}) do
+        local key = binding.get()
+        if key and key ~= Enum.KeyCode.None then
+            if used[key] then table.insert(collisions, key.Name .. ": " .. used[key] .. " / " .. binding.title)
+            else used[key] = binding.title end
+        end
+    end
+    local signature = table.concat(collisions, "; ")
+    if signature ~= "" and signature ~= self._lastBindingWarning then
+        self:Notify({Title="Key conflict", Text=signature, Type="warning", Duration=5})
+    end
+    self._lastBindingWarning = signature
+end
+
+local advancedSection = Library._createSection
+function Library:_createSection(title, parent)
+    local section = advancedSection(self, title, parent)
+    local hub = self
+    for _, name in ipairs({"Toggle", "Slider", "Dropdown", "MultiDropdown", "Textbox", "Keybind", "ColorPicker", "Button"}) do
+        local kind = name
+        local create = section["Create" .. kind]
+        section["Create" .. kind] = function(sec, config)
+            config = config or {}
+            local options = {}
+            for key, value in pairs(config) do options[key] = value end
+            local callback = config.Callback
+            options.Callback = function(...)
+                if callback then
+                    local ok, err = pcall(callback, ...)
+                    if not ok then warn("HutameHub callback: " .. tostring(err)) end
+                end
+                hub:RefreshConditions()
+                hub:_checkBindings()
+            end
+            local previous = {}
+            for _, child in ipairs(sec._card:GetChildren()) do previous[child] = true end
+            local control = create(sec, options)
+            local row
+            for _, child in ipairs(sec._card:GetChildren()) do
+                if child:IsA("GuiObject") and not previous[child] then row = child; break end
+            end
+            hub._controlRows = hub._controlRows or {}
+            hub._controlRows[control] = row
+            if kind ~= "Button" then
+                local property = ({Toggle="State", Slider="Value", Dropdown="Selected", Textbox="Text", Keybind="Key", ColorPicker="Color"})[kind]
+                local default = kind == "MultiDropdown" and control:GetSelected() or control[property]
+                local set = control.Set
+                control.Set = function(c, value)
+                    set(c, value)
+                    hub:RefreshConditions(); hub:_checkBindings()
+                end
+                function control:Reset() self:Set(default) end
+                hub._resetControls = hub._resetControls or {}
+                table.insert(hub._resetControls, control)
+                if kind == "MultiDropdown" and config.ConfigKey then
+                    local item = hub._configElements[config.ConfigKey]
+                    item.get = function() return HttpService:JSONEncode(control:GetSelected()) end
+                    item.set = function(value)
+                        local ok, selected = pcall(function() return HttpService:JSONDecode(value) end)
+                        if ok and type(selected) == "table" then control:Set(selected)
+                        else
+                            local legacy = {}
+                            for part in (value .. ","):gmatch("(.-),") do
+                                if part ~= "" then table.insert(legacy, part) end
+                            end
+                            control:Set(legacy)
+                        end
+                    end
+                end
+                if config.ConfigKey and (kind == "Textbox" or kind == "Keybind" or kind == "ColorPicker") then
+                    hub:_regElement(config.ConfigKey, function()
+                        if kind == "Keybind" then return control.Key.Name end
+                        if kind == "ColorPicker" then return control.Color:ToHex() end
+                        return HttpService:JSONEncode(control.Text)
+                    end, function(value)
+                        if kind == "Keybind" then control:Set(Enum.KeyCode[value])
+                        elseif kind == "ColorPicker" then control:Set(Color3.fromHex(value))
+                        else control:Set(HttpService:JSONDecode(value)) end
+                    end)
+                end
+            end
+            if kind == "Keybind" or (kind == "Toggle" and config.Keybind) then
+                hub._bindings = hub._bindings or {}
+                table.insert(hub._bindings, {title=config.Title or kind, get=function()
+                    return kind == "Keybind" and control.Key or config.Keybind
+                end})
+                hub:_checkBindings()
+            end
+            if config.VisibleWhen then hub:SetCondition(control, config.VisibleWhen, "hide") end
+            if config.EnabledWhen then hub:SetCondition(control, config.EnabledWhen, "disable") end
+            return control
+        end
+    end
+    return section
+end
+
+function Library:Confirm(config)
+    config = config or {}
+    if self._cancelConfirm then self._cancelConfirm() end
+    local overlay = Instance.new("TextButton", self.ScreenGui)
+    overlay.Name="Confirmation"; overlay.Size=UDim2.fromScale(1,1)
+    overlay.BackgroundColor3=T.Black; overlay.BackgroundTransparency=0.25
+    overlay.Text=""; overlay.AutoButtonColor=false; overlay.Modal=true; overlay.ZIndex=200
+    local panel = Instance.new("Frame", overlay)
+    panel.AnchorPoint=Vector2.new(0.5,0.5); panel.Position=UDim2.fromScale(0.5,0.5)
+    panel.Size=UDim2.new(0.85,0,0,180); panel.BackgroundColor3=T.Card; panel.ZIndex=201
+    local limit=Instance.new("UISizeConstraint",panel); limit.MaxSize=Vector2.new(380,180)
+    local label=Instance.new("TextLabel",panel)
+    label.Position=UDim2.fromOffset(16,12); label.Size=UDim2.new(1,-32,0,105)
+    label.BackgroundTransparency=1; label.TextColor3=T.Text; label.Font=Enum.Font.Code
+    label.TextSize=15; label.TextWrapped=true; label.ZIndex=202
+    label.Text=(config.Title or "Confirm") .. "\n\n" .. (config.Text or "Continue?")
+    local settled=false
+    local function finish(accepted)
+        if settled then return end
+        settled=true; overlay:Destroy(); self._confirm=nil; self._cancelConfirm=nil
+        if accepted and config.OnConfirm then config.OnConfirm()
+        elseif not accepted and config.OnCancel then config.OnCancel() end
+    end
+    for index, text in ipairs({config.CancelText or "Cancel", config.ConfirmText or "Confirm"}) do
+        local accepted=index==2
+        local button=Instance.new("TextButton",panel)
+        button.Position=UDim2.new((index-1)*0.5,12,1,-48); button.Size=UDim2.new(0.5,-24,0,32)
+        button.Text=text; button.Font=Enum.Font.Code; button.TextSize=14
+        button.BackgroundColor3=accepted and self.Accent or T.Element
+        button.TextColor3=accepted and T.Black or T.Text; button.ZIndex=202
+        button.Activated:Connect(function() finish(accepted) end)
+    end
+    self._confirm=overlay
+    self._cancelConfirm=function() finish(false) end
+    return {Cancel=function() finish(false) end}
+end
+
+local advancedNew = Library.new
+function Library.new(config)
+    config = config or {}
+    local hub = advancedNew(config)
+    hub._extraConnections = {}
+    if config.MobileToggle == true or (config.MobileToggle ~= false and UserInputService.TouchEnabled) then
+        local button=Instance.new("TextButton",hub.ScreenGui)
+        button.Name="MobileToggle"; button.Text="HH"; button.Size=UDim2.fromOffset(48,48)
+        button.Position=UDim2.new(0,12,0.5,-24); button.BackgroundColor3=hub.Accent
+        button.TextColor3=T.Black; button.Font=Enum.Font.Code; button.TextSize=18; button.ZIndex=150
+        hub:_onAccent(function(color) button.BackgroundColor3=color end)
+        local origin, position, pointer, moved
+        button.InputBegan:Connect(function(input)
+            if input.UserInputType==Enum.UserInputType.Touch or input.UserInputType==Enum.UserInputType.MouseButton1 then
+                origin=input.Position; position=button.AbsolutePosition; pointer=input; moved=false
+            end
+        end)
+        table.insert(hub._extraConnections,UserInputService.InputChanged:Connect(function(input)
+            if pointer and (input==pointer or input.UserInputType==Enum.UserInputType.MouseMovement) then
+                local delta=input.Position-origin
+                if delta.Magnitude>6 then moved=true end
+                local viewport=workspace.CurrentCamera.ViewportSize
+                button.Position=UDim2.fromOffset(math.clamp(position.X+delta.X,0,math.max(0,viewport.X-48)),math.clamp(position.Y+delta.Y,0,math.max(0,viewport.Y-48)))
+            end
+        end))
+        table.insert(hub._extraConnections,UserInputService.InputEnded:Connect(function(input)
+            if input==pointer then pointer=nil end
+        end))
+        button.Activated:Connect(function()
+            if not moved then hub.MainFrame.Visible=not hub.MainFrame.Visible end
+        end)
+    end
+    return hub
+end
+
+local advancedDestroy=Library.Destroy
+function Library:Destroy()
+    for _, connection in ipairs(self._extraConnections or {}) do connection:Disconnect() end
+    self._conditions={}; self._resetControls={}; self._controlRows={}; self._bindings={}
+    advancedDestroy(self)
 end
 
 return Library

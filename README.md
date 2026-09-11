@@ -26,6 +26,15 @@ UI penceresini `RightControl` veya `Minus (-)` ile gizleyip gösterebilirsin. Mi
 
 ## ✨ Özellikler
 
+- **Config profilleri:** oluştur, yükle, yeniden adlandır, sil ve varsayılan seç. Yedi değer kontrolü `ConfigKey` ile kaydedilir.
+- **Mobil düğme:** dokunmatik cihazlarda otomatik; `MobileToggle = true` ile masaüstünde de gösterilir. Taşı veya dokunarak UI'ı aç/kapat.
+- **Sıfırlama:** `control:Reset()` ve `Hub:ResetValues()`.
+- **Koşullar:** `VisibleWhen`, `EnabledWhen`, `Hub:SetCondition()`.
+- **Tuş çakışması:** aynı tuşa atanan eylemleri bildiren uyarı.
+- **Onay penceresi:** `Hub:Confirm({Title, Text, OnConfirm, OnCancel})`.
+
+[API rehberi](docs/features.md) · Test örneğindeki **Profiles** sekmesi bütün yeni özellikleri denemek içindir. Profil işlemleri `readfile`/`writefile`, silme ve yeniden adlandırma ayrıca `delfile` gerektirir.
+
 | Özellik | Detay |
 |---------|-------|
 | 🚀 **Ultra Hafif** | Sadece Roblox yerleşik API'leri, sıfır harici bağımlılık |
