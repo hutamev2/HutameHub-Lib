@@ -1,10 +1,8 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>HutameHub · Profiles and controls</title><style>body{max-width:960px;margin:40px auto;padding:0 24px;background:#141120;color:#e1daf4;font:16px/1.7 system-ui}a{color:#c08be6}pre{padding:20px;background:#201a30;overflow:auto}code{font-family:monospace}table{width:100%;border-collapse:collapse}td,th{padding:12px;border:1px solid #413653;text-align:left}h1,h2{line-height:1.3}h2{margin-top:40px}</style></head><body><a href="index.html#s-fullexample">← Documentation and full example</a><h1>Profiles and control utilities</h1>
-<p>All examples use the existing <code>Library.new()</code> / <code>Hub:CreateTab()</code> API.
-See <a href="examples/ui-test.lua">the complete interactive test</a> for a profile manager,
-confirmation dialogs, conditional controls and reset buttons.</p>
-<h2>Profiles</h2>
-<p>Give value controls a unique <code>ConfigKey</code>. Toggle, Slider, Dropdown,
-MultiDropdown, Textbox, Keybind and ColorPicker are supported. Buttons are not values.</p>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>HutameHub · Features and Utilities</title><style>body{max-width:960px;margin:40px auto;padding:0 24px;background:#141120;color:#e1daf4;font:16px/1.7 system-ui}a{color:#c08be6}pre{padding:20px;background:#201a30;overflow:auto}code{font-family:monospace}table{width:100%;border-collapse:collapse}td,th{padding:12px;border:1px solid #413653;text-align:left}h1,h2{line-height:1.3}h2{margin-top:40px}</style></head><body><a href="index.html">← Documentation and full example</a><h1>HutameHub v3.0 - Features and Utilities</h1>
+<p>The v3.0 release brings a massive overhaul to the HutameHub Library, removing spaghetti code and monkey-patching in favor of a clean, Object-Oriented (OOP) architecture.</p>
+<p>All examples use the <code>Library.new()</code> / <code>Hub:CreateTab()</code> API.</p>
+<h2>Configuration System</h2>
+<p>HutameHub now features a clean JSON-based configuration system. By providing a <code>ConfigKey</code> to any value-based control (Toggle, Slider, Dropdown, MultiDropdown, Textbox, Keybind, ColorPicker), its state is automatically tracked.</p>
 <table>
 <thead>
 <tr>
@@ -12,80 +10,92 @@ MultiDropdown, Textbox, Keybind and ColorPicker are supported. Buttons are not v
 <th>Behavior</th>
 </tr>
 </thead>
-<tbody><tr>
-<td><code>SaveProfile(name)</code></td>
-<td>Create or overwrite a profile with current registered values</td>
+<tbody>
+<tr>
+<td><code>SaveConfig(name)</code></td>
+<td>Saves the current state of all controls with a ConfigKey to a <code>.json</code> file.</td>
 </tr>
 <tr>
-<td><code>LoadProfile(name)</code></td>
-<td>Restore registered values and refresh conditions</td>
+<td><code>LoadConfig(name)</code></td>
+<td>Loads and applies the saved state from the <code>.json</code> file.</td>
 </tr>
 <tr>
-<td><code>ListProfiles()</code></td>
-<td>Return sorted names saved through SaveProfile</td>
+<td><code>ListConfigs()</code></td>
+<td>Returns a table of all saved configuration names (requires <code>listfiles</code>).</td>
 </tr>
-<tr>
-<td><code>RenameProfile(oldName, newName)</code></td>
-<td>Rename without overwriting another profile</td>
-</tr>
-<tr>
-<td><code>DeleteProfile(name)</code></td>
-<td>Delete the profile and clear its default selection if needed</td>
-</tr>
-<tr>
-<td><code>SetDefaultProfile(name)</code></td>
-<td>Remember a profile; pass nil to clear</td>
-</tr>
-<tr>
-<td><code>LoadDefaultProfile()</code></td>
-<td>Restore it; call after creating every control</td>
-</tr>
-</tbody></table>
-<p>Mutating profile methods and load methods return <code>ok, error</code>. Names contain 1–48
-letters, digits, underscores or hyphens. Storage requires <code>readfile</code> / <code>writefile</code>;
-rename and delete additionally require <code>delfile</code>. Profiles use <code>HutameHub_NAME.cfg</code>
-and <code>HutameHub_profiles.json</code> in the environment&#39;s filesystem. Existing
-SaveConfig/LoadConfig remain available; old files can be loaded by name but are
-not automatically indexed. Profile loading may partially restore values if a setter fails.</p>
-<h2>Reset</h2>
-<p>Every value control has <code>control:Reset()</code>. <code>Hub:ResetValues()</code> resets all value
-controls, including those without ConfigKey, to their creation defaults. Setters
-keep their existing callback semantics: Textbox and Keybind Set do not call the
-user callback, while conditions and conflict checks still update. Saved profiles
-are unchanged until explicitly saved again.</p>
-<h2>Conditional controls</h2>
-<pre><code class="language-lua">local Enabled = Section:CreateToggle({Title=&quot;Advanced&quot;, Default=false})
-local Amount = Section:CreateSlider({Title=&quot;Amount&quot;, Min=0, Max=100,
-    VisibleWhen=function() return Enabled.State end})
-Section:CreateButton({Title=&quot;Apply&quot;,
-    EnabledWhen=function() return Enabled.State end,
-    Callback=function() print(&quot;Applied&quot;) end})
--- Alternative for an existing control:
-Hub:SetCondition(Amount, function() return Enabled.State end, &quot;hide&quot;)
+</tbody>
+</table>
+<p><em>Configurations are saved as <code>HutameLib_NAME.json</code> in your executor's workspace directory.</em></p>
+<h2>Flags System</h2>
+<p>No more storing control references just to read their values! Every value control can optionally accept a <code>Flag</code> string in its config table. When set, the control's value is automatically synced to the <code>Hub.Flags</code> table.</p>
+<pre><code class="language-lua">local AimbotToggle = Section:CreateToggle({
+    Title = "Enable Aimbot",
+    Flag = "AimbotEnabled",
+    Default = false
+})
+
+-- Later in your script, simply read:
+if Hub.Flags.AimbotEnabled then
+    -- Do aimbot logic
+end
 </code></pre>
-<p>Available on the eight config-table control constructors (including Button).
-Use <code>hide</code> or <code>disable</code>. Conditions reevaluate after control callbacks, Set,
-reset and profile loading. Call <code>Hub:RefreshConditions()</code> when external state
-changes. Predicates should only read state. Disabled controls block user input;
-programmatic Set remains available. Hidden controls retain their value.</p>
-<h2>Confirmation</h2>
-<pre><code class="language-lua">Hub:Confirm({Title=&quot;Reset values&quot;, Text=&quot;Restore defaults?&quot;,
-    ConfirmText=&quot;Reset&quot;, CancelText=&quot;Keep values&quot;,
-    OnConfirm=function() Hub:ResetValues() end,
-    OnCancel=function() print(&quot;Cancelled&quot;) end})
+<h2>Theme Engine</h2>
+<p>HutameHub v3.0 comes with 5 beautifully crafted modern theme presets built directly into the library:</p>
+<ul>
+<li><strong>Midnight</strong> (Deep Purple / Navy) - <em>Default</em></li>
+<li><strong>Ocean</strong> (Blue / Slate)</li>
+<li><strong>Crimson</strong> (Red / Dark Maroon)</li>
+<li><strong>Emerald</strong> (Green / Dark Forest)</li>
+<li><strong>Sakura</strong> (Pink / Deep Magenta)</li>
+</ul>
+<p>You can set the theme when initializing the hub, or change it dynamically at runtime:</p>
+<pre><code class="language-lua">-- Change to a preset
+Hub:SetTheme("Ocean")
+
+-- Or provide a custom color table
+Hub:SetTheme({
+    Accent = Color3.fromRGB(255, 200, 0),
+    BG = Color3.fromRGB(15, 15, 15)
+})
+
+-- Change only the accent color:
+Hub:SetAccent(Color3.fromRGB(0, 255, 150))
 </code></pre>
-<p>Only Confirm runs OnConfirm. The returned handle has <code>Cancel()</code>. A new dialog
-replaces the previous one. Profile deletion and reset methods are direct API
-operations: wrap them in Confirm as the interactive example does.</p>
-<h2>Mobile toggle and key conflicts</h2>
-<p><code>Library.new({MobileToggle=true})</code> shows a draggable 48×48 HH button. Omit the
-option to show it on touch devices only; false disables it. Tap to hide/show the
-main window; drag without toggling. RightControl/custom ToggleKey and Minus still work.</p>
-<p>Duplicate bindings display a warning naming both actions. Checks include toggle
-Keybinds, key selector controls, the window ToggleKey and Minus. None is ignored.
-Warnings do not change bindings or block assignment.</p>
-<h2>Validation</h2>
-<p><code>tests/features.lua</code> covers profile lifecycle, storage errors, reset dispatch,
-condition state and conflict warning deduplication using a headless Lua harness.
-Roblox visual layout, actual touch delivery and modal focus require client testing.</p>
+<h2>Notifications (Toasts)</h2>
+<p>The notification system uses <code>TweenService</code> for smooth transitions and features a progress drain bar.</p>
+<pre><code class="language-lua">Hub:Notify({
+    Title = "Success",
+    Text = "Your settings have been applied.",
+    Type = "success", -- info, success, warning, error
+    Duration = 3
+})
+</code></pre>
+<h2>Watermark HUD</h2>
+<p>A live-updating watermark HUD that you can place in any corner of the screen. It supports dynamic placeholders for FPS, Ping, Time, and Player Name.</p>
+<pre><code class="language-lua">Hub:SetWatermark({
+    Format = "MyHub | {player} | {fps} fps | {ping} ms",
+    Position = "TopRight", -- TopLeft, TopRight, BottomLeft, BottomRight
+    BgAlpha = 0.5
+})
+
+-- Update the text format later:
+Hub:UpdateWatermark("New Format | {time}")
+
+-- Remove it entirely:
+Hub:RemoveWatermark()
+</code></pre>
+<h2>HSV Color Picker</h2>
+<p>The old RGB slider has been completely replaced by a professional <strong>HSV Color Picker</strong>. It features:</p>
+<ul>
+<li>A 2D Saturation/Value gradient square.</li>
+<li>A vertical Hue slider.</li>
+<li>A hexadecimal text input for pasting exact color codes.</li>
+</ul>
+<pre><code class="language-lua">Section:CreateColorPicker({
+    Title = "ESP Color",
+    Flag = "EspColor",
+    Default = Color3.fromRGB(255, 80, 80),
+    ConfigKey = "esp_color"
+})
+</code></pre>
 </body></html>
