@@ -1,0 +1,36 @@
+name: Publish static docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/deploy-docs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publish the versioned docs directory
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          mkdir -p "$RUNNER_TEMP/hutamehub-docs"
+          cp -R docs/. "$RUNNER_TEMP/hutamehub-docs/"
+          git fetch origin gh-pages:refs/remotes/origin/gh-pages
+          git switch -C gh-pages origin/gh-pages
+          git rm -r --ignore-unmatch .
+          cp -R "$RUNNER_TEMP/hutamehub-docs/." .
+          touch .nojekyll
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m 'docs: publish static HutameHub documentation'
+            git push origin gh-pages
+          fi
