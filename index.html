@@ -834,9 +834,9 @@ Actions:CreateLabel(&quot;RightControl or Minus shows and hides the window.&quot
       <span class="code-block-lang">luau</span>
       <button class="copy-code" onclick="copyCode(this,'ex-full')">Copy</button>
     </div>
-    <p class="method-desc"><a href="examples/ui-test.lua" download>Download ui-test.lua</a> · The loader needs a compatible client environment; config tests also need <code>writefile</code>/<code>readfile</code>. Save, change registered controls, then load and inspect their values. All seven value-control types support ConfigKey. The Profiles tab tests profile management, reset and conditional controls.</p>
-    <p class="method-desc">Manual checks: drag the title bar, click the — button to hide the full window, restore with RightControl/Minus, resize below and above 600 px, and inspect both columns. Compare startup effects in fresh sessions using <code>LoadingScreen</code> and <code>SnowEffect</code>; the latter controls main-window snow only. <code>CreateKeybind</code> reports binding changes, not key presses. This example was checked against source; it has not been run in Roblox.</p>
-    <pre id="ex-full"><code>-- HutameHub: manual UI feature test (Source.lua API)
+    <p class="method-desc"><a href="examples/ui-test.lua" download>Download ui-test.lua</a> · The loader needs a compatible client environment; config tests also need <code>writefile</code>/<code>readfile</code>. Save, change registered controls, then load and inspect their values. All seven value-control types support ConfigKey. The Profiles tab tests config profile Create, Overwrite, Load, rename, delete and default selection, plus reset and conditional controls.</p>
+    <p class="method-desc">Manual checks: drag the title bar, click the — button to hide the full window, restore with RightControl/Minus, resize below and above 600 px, and inspect both columns. Compare startup effects in fresh sessions by changing <code>LoadingScreen</code>, <code>SnowEffect</code> and <code>MobileToggle</code> at the top of the example; these are construction options, not live setters. <code>CreateKeybind</code> reports binding changes, not key presses. This example was checked against source; it has not been run in Roblox.</p>
+    <pre id="ex-full"><code>-- HutameHub v2.3: manual UI feature test (Source.lua API)
 -- Run in a client environment that supports the loader below.
 -- Config tests additionally require writefile/readfile.
 local Library = loadstring(game:HttpGet(
@@ -964,8 +964,15 @@ button(Actions, &quot;Update watermark&quot;, function()
     Hub:UpdateWatermark(&quot;{game} | {fps} fps&quot;)
 end)
 button(Actions, &quot;Remove watermark&quot;, function() Hub:RemoveWatermark() end)
+button(Actions, &quot;Set window title&quot;, function() Hub:SetTitle(&quot;HutameHub Renamed&quot;, &quot;v2.3 test&quot;) end)
+button(Actions, &quot;Restore window title&quot;, function() Hub:SetTitle(&quot;HutameHub UI Test&quot;, &quot;v2.3&quot;) end)
 button(Actions, &quot;Save test config&quot;, function() Hub:SaveConfig(&quot;ui_test&quot;) end)
 button(Actions, &quot;Load test config&quot;, function() Hub:LoadConfig(&quot;ui_test&quot;) end)
+button(Actions, &quot;Test cancel callback&quot;, function()
+    Hub:Confirm({Title=&quot;Cancel test&quot;, Text=&quot;Press Cancel to test OnCancel.&quot;,
+        OnConfirm=function() report(&quot;Confirm&quot;, &quot;accepted&quot;) end,
+        OnCancel=function() report(&quot;Confirm&quot;, &quot;cancelled&quot;) end})
+end)
 button(Actions, &quot;Read current values&quot;, function()
     report(&quot;Toggle.State&quot;, Toggle.State)
     report(&quot;Slider.Value&quot;, Slider.Value)
@@ -978,24 +985,53 @@ button(Actions, &quot;Destroy UI (test last)&quot;, function() Hub:Destroy() end
 
 -- Save -&gt; change controls -&gt; Load -&gt; inspect all seven registered value types.
 local Profiles = Hub:CreateTab(&quot;Profiles&quot;)
-local Manager = Profiles:CreateSection(&quot;Profile manager&quot;, &quot;left&quot;)
+local Manager = Profiles:CreateSection(&quot;Config profiles&quot;, &quot;left&quot;)
 local Conditional = Profiles:CreateSection(&quot;Conditions and reset&quot;, &quot;right&quot;)
 local ProfileName = Manager:CreateTextbox({Title=&quot;Profile name&quot;, Default=&quot;demo&quot;})
 local RenameTo = Manager:CreateTextbox({Title=&quot;Rename to&quot;, Default=&quot;demo_copy&quot;})
 local ProfileList = Manager:CreateDropdown({Title=&quot;Saved profiles&quot;, Options=Hub:ListProfiles(),
     Callback=function(name) ProfileName:Set(name) end})
 local function refreshProfiles() ProfileList:Refresh(Hub:ListProfiles()) end
+local function profileExists(name)
+    if type(name) ~= &quot;string&quot; or not name:match(&quot;^[%w_%-]+$&quot;) or #name &gt; 48 then return false end
+    for _, existing in ipairs(Hub:ListProfiles()) do
+        if existing == name then return true end
+    end
+    -- SaveConfig uses the same filename without adding it to the profile list.
+    if type(readfile) ~= &quot;function&quot; then return false end
+    local ok, content = pcall(readfile, &quot;HutameHub_&quot; .. name .. &quot;.cfg&quot;)
+    return ok and content ~= nil
+end
 local function result(ok, err)
     if not ok then Hub:Notify({Title=&quot;Profile error&quot;, Text=tostring(err), Type=&quot;error&quot;}) end
     refreshProfiles()
 end
-button(Manager, &quot;Create / save profile&quot;, function()
-    Hub:Confirm({Title=&quot;Save profile&quot;, Text=&quot;Save current values? An existing profile will be overwritten.&quot;,
-        OnConfirm=function() result(Hub:SaveProfile(ProfileName.Text)) end})
+Manager:CreateLabel(&quot;Create never overwrites; Overwrite requires confirmation.&quot;)
+button(Manager, &quot;Create config profile&quot;, function()
+    local name = ProfileName.Text
+    if profileExists(name) then
+        Hub:Notify({Title=&quot;Profile exists&quot;, Text=&quot;Use Overwrite instead.&quot;, Type=&quot;warning&quot;})
+        return
+    end
+    result(Hub:SaveProfile(name))
 end)
-button(Manager, &quot;Load selected profile&quot;, function() result(Hub:LoadProfile(ProfileName.Text)) end)
+button(Manager, &quot;Overwrite config profile&quot;, function()
+    local name = ProfileName.Text
+    if not profileExists(name) then
+        Hub:Notify({Title=&quot;Profile missing&quot;, Text=&quot;Create it first.&quot;, Type=&quot;warning&quot;})
+        return
+    end
+    Hub:Confirm({Title=&quot;Overwrite profile&quot;, Text=&quot;Replace saved values in &quot; .. name .. &quot;?&quot;,
+        OnConfirm=function() result(Hub:SaveProfile(name)) end})
+end)
+button(Manager, &quot;Load config profile&quot;, function() result(Hub:LoadProfile(ProfileName.Text)) end)
 button(Manager, &quot;Rename profile&quot;, function() result(Hub:RenameProfile(ProfileName.Text, RenameTo.Text)) end)
 button(Manager, &quot;Set default profile&quot;, function() result(Hub:SetDefaultProfile(ProfileName.Text)) end)
+button(Manager, &quot;Clear default profile&quot;, function()
+    local ok, err = Hub:SetDefaultProfile(nil)
+    result(ok, err)
+    if ok then Hub:Notify({Title=&quot;Profile&quot;, Text=&quot;Default cleared&quot;, Type=&quot;success&quot;}) end
+end)
 button(Manager, &quot;Load default profile&quot;, function() result(Hub:LoadDefaultProfile()) end)
 button(Manager, &quot;Delete profile&quot;, function()
     local name = ProfileName.Text
@@ -1008,6 +1044,15 @@ Conditional:CreateSlider({Title=&quot;Conditional slider&quot;, Min=0, Max=100, 
 Conditional:CreateButton({Title=&quot;Enabled when toggle is on&quot;,
     EnabledWhen=function() return Advanced.State end,
     Callback=function() report(&quot;Conditional button&quot;, &quot;clicked&quot;) end})
+local externalVisible = false
+local ManualTarget = Conditional:CreateButton({Title=&quot;Manual condition target&quot;,
+    Callback=function() report(&quot;Manual condition&quot;, &quot;clicked&quot;) end})
+Hub:SetCondition(ManualTarget, function() return externalVisible end, &quot;hide&quot;)
+button(Conditional, &quot;Refresh external condition&quot;, function()
+    externalVisible = not externalVisible
+    Hub:RefreshConditions()
+    report(&quot;External condition visible&quot;, externalVisible)
+end)
 button(Conditional, &quot;Reset slider only&quot;, function() Slider:Reset() end)
 button(Conditional, &quot;Reset all values&quot;, function()
     Hub:Confirm({Title=&quot;Reset values&quot;, Text=&quot;Restore every control to its creation default?&quot;,
@@ -1034,8 +1079,8 @@ button(LayoutActions, &quot;Restore 20 options&quot;, function() FlowDropdown:Re
 -- Type a minus in the textbox: the UI must stay visible while typing.
 -- Hover a control for 0.4 seconds to inspect its tooltip.
 -- To compare startup effects, change LoadingScreen/SnowEffect above and run
--- in a fresh session. SnowEffect controls main-window snow only.
-</code></pre>
+-- in a fresh session. Try LoadingScreen=false, SnowEffect=true and
+-- MobileToggle=false separately; these construction options are not live setters.</code></pre>
   </div>
 </section>
 
@@ -1843,6 +1888,7 @@ rename and delete additionally require <code>delfile</code>. Profiles use <code>
 and <code>HutameHub_profiles.json</code> in the environment&#39;s filesystem. Existing
 SaveConfig/LoadConfig remain available; old files can be loaded by name but are
 not automatically indexed. Profile loading may partially restore values if a setter fails.</p>
+<p>The Full Example's <strong>Config profiles</strong> section has separate Create, Overwrite and Load buttons. Create checks existing profiles and config files; Overwrite asks for confirmation. <code>SaveProfile(name)</code> itself creates or overwrites, so guard Create in your own config UI.</p>
 <h2>Reset</h2>
 <p>Every value control has <code>control:Reset()</code>. <code>Hub:ResetValues()</code> resets all value
 controls, including those without ConfigKey, to their creation defaults. Setters

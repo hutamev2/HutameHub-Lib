@@ -26,6 +26,12 @@ and `HutameHub_profiles.json` in the environment's filesystem. Existing
 SaveConfig/LoadConfig remain available; old files can be loaded by name but are
 not automatically indexed. Profile loading may partially restore values if a setter fails.
 
+The Full Example's **Config profiles** section offers separate Create, Overwrite
+and Load buttons. Create checks the saved profile list and an existing config
+file before writing; Overwrite requires confirmation. The library's
+`SaveProfile(name)` method itself creates or overwrites, so use the same guard
+when building your own config manager UI.
+
 ## Reset
 
 Every value control has `control:Reset()`. `Hub:ResetValues()` resets all value
