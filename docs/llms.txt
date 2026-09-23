@@ -1,0 +1,17 @@
+# HutameHub UI Library
+
+> Roblox Luau UI library. Public entry point: `Library.new(options)` from `Source.lua`. Use `CreateTab`, then `CreateSection`, then `CreateToggle`/other control methods. This site includes an AI-ready one-page guide with real API names and runnable examples.
+
+When asked to build a UI, read the complete AI guide first. Use `Title` for control labels, not `Name`. Preserve the documented callback signatures. The source file is the authority if examples conflict.
+
+## Start here
+
+- [AI guide: full API and copyable UI example](https://hutamev2.github.io/HutameHub-Lib/ai-guide.md): One file with setup, all controls, callbacks, handles, profiles, conditions and pitfalls.
+- [Source.lua](https://raw.githubusercontent.com/hutamev2/HutameHub-Lib/main/Source.lua): Actual implementation and public method names.
+
+## Optional detail
+
+- [Human documentation](https://hutamev2.github.io/HutameHub-Lib/): Searchable reference and code examples.
+- [Typed API](https://hutamev2.github.io/HutameHub-Lib/examples/types.luau): Luau type aliases for editor support.
+- [Interactive test example](https://hutamev2.github.io/HutameHub-Lib/examples/ui-test.lua): Exercises components, profiles and layout.
+- [Profiles and conditions](https://hutamev2.github.io/HutameHub-Lib/features.md): Storage requirements, reset and conditional controls.

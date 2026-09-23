@@ -16,6 +16,8 @@
 
 Roblox Luau için sıfırdan geliştirilmiş; **Rayfield** ve **Kavo** gibi ağır kütüphanelerin aksine yalnızca yerleşik `Instance.new`, `TweenService` ve `UserInputService` kullanan, ultra hafif, **60+ FPS** odaklı modern UI kütüphanesi.
 
+**AI ile UI yaptırmak için tek link:** [AI Guide](https://hutamev2.github.io/HutameHub-Lib/ai-guide.md). Yükleme, gerçek API adları, bütün kontrol örnekleri ve sık hatalar tek dosyada. AI araçları için ayrıca [llms.txt](https://hutamev2.github.io/HutameHub-Lib/llms.txt) bulunur.
+
 ## v2.3 — Informant-inspired
 
 Koyu füme-mor yüzeyler, ölçülü mor vurgu, katmanlı keskin çerçeveler, sıkı sekmeler ve üst çizgisi başlıkla bölünen section'lar. [Informant.wtf Lib](https://github.com/ro0ti/Roblox-Scripting-UI/tree/main/2%20Informant.wtf%20Lib%20%28FIXED%29) tasarım dili referans alındı; görünüm HutameHub'ın kendi Roblox Instance koduyla uygulandı. Public API korundu. Kar efekti varsayılan kapalı; `SnowEffect = true` ile açılır.
