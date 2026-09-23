@@ -523,8 +523,8 @@ function Library:_build()
         btn.MouseButton1Click:Connect(onClick)
         return btn
     end
-    -- minimize at x=4, close at x=32  (4 + 24 + 4 + 24 + 6 = 62px total)
-    mkCtrl("—", 4,  T.ElementHov,              function() if self._body then self._body.Visible = not self._body.Visible end end)
+    -- Hide the whole window, exactly like ToggleKey / Minus.
+    mkCtrl("—", 4, T.ElementHov, function() mf.Visible = not mf.Visible end)
     mkCtrl("✕", 32, Color3.fromRGB(200,40,40), function() self:Destroy() end)
 
     -- drag

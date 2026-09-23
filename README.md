@@ -24,7 +24,7 @@ Koyu füme-mor yüzeyler, ölçülü mor vurgu, katmanlı keskin çerçeveler, s
 
 Dokümantasyon `docs/` içindeki statik sayfadan yayımlanır. `main` dalındaki docs değişiklikleri `gh-pages` dalına otomatik gönderilir; MkDocs yapılandırması gerekmez.
 
-UI penceresini `RightControl` veya `Minus (-)` ile gizleyip gösterebilirsin. Minus, özel `ToggleKey` ayarlansa da çalışır; metin kutusuna yazarken kısayollar devreye girmez.
+Üst çubukta `✕` yanındaki `—` düğmesi tüm UI penceresini gizler. `RightControl` (veya ayarladığın `ToggleKey`), `Minus (-)` ya da mobil düğmeyle yeniden gösterebilirsin. Minus, özel `ToggleKey` ayarlansa da çalışır; metin kutusuna yazarken kısayollar devreye girmez.
 
 ## ✨ Özellikler
 

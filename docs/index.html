@@ -819,7 +819,7 @@ Actions:CreateLabel(&quot;RightControl or Minus shows and hides the window.&quot
 
   <div class="callout blue">
     <span class="callout-icon">💡</span>
-    <span>Press <strong>RightControl</strong> or <strong>Minus (-)</strong> to hide/show the entire window and <strong>F</strong> to test the checkbox binding. Hover controls for 0.4 s for tooltips. Use the <strong>Features</strong> tab for feature tests; test Destroy last.</span>
+    <span>The <strong>— button beside ✕</strong> hides the entire window, just like <strong>RightControl</strong> or <strong>Minus (-)</strong>. Use either key (or the mobile toggle) to show it again. Press <strong>F</strong> to test the checkbox binding. Hover controls for 0.4 s for tooltips; test Destroy last.</span>
   </div>
 
   <div class="code-block">
@@ -828,7 +828,7 @@ Actions:CreateLabel(&quot;RightControl or Minus shows and hides the window.&quot
       <button class="copy-code" onclick="copyCode(this,'ex-full')">Copy</button>
     </div>
     <p class="method-desc"><a href="examples/ui-test.lua" download>Download ui-test.lua</a> · The loader needs a compatible client environment; config tests also need <code>writefile</code>/<code>readfile</code>. Save, change registered controls, then load and inspect their values. All seven value-control types support ConfigKey. The Profiles tab tests profile management, reset and conditional controls.</p>
-    <p class="method-desc">Manual checks: drag the title bar, minimize/restore, resize below and above 600 px, and inspect both columns. Compare startup effects in fresh sessions using <code>LoadingScreen</code> and <code>SnowEffect</code>; the latter controls main-window snow only. <code>CreateKeybind</code> reports binding changes, not key presses. This example was checked against source; it has not been run in Roblox.</p>
+    <p class="method-desc">Manual checks: drag the title bar, click the — button to hide the full window, restore with RightControl/Minus, resize below and above 600 px, and inspect both columns. Compare startup effects in fresh sessions using <code>LoadingScreen</code> and <code>SnowEffect</code>; the latter controls main-window snow only. <code>CreateKeybind</code> reports binding changes, not key presses. This example was checked against source; it has not been run in Roblox.</p>
     <pre id="ex-full"><code>-- HutameHub: manual UI feature test (Source.lua API)
 -- Run in a client environment that supports the loader below.
 -- Config tests additionally require writefile/readfile.
