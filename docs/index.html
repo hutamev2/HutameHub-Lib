@@ -486,154 +486,1392 @@ p code, li code, td code{
   </div>
 </header>
 
-
 <div class="layout">
-  <div class="sidebar">
-    <div class="sb-search">
-      <input type="text" placeholder="Search docs..." id="sbSearch">
-      <div class="sb-search-ic">🔍</div>
+
+<!-- ── Left Sidebar ───────────────────────────── -->
+<nav class="sidebar" id="docs-navigation" aria-label="Documentation">
+  <div class="sb-search">
+    <span class="sb-search-ic">🔍</span>
+    <input type="text" id="sbSearch" aria-label="Search documentation" placeholder="Search docs… Ctrl K" oninput="filterNav()">
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-title">Getting Started</div>
+    <ul class="sb-links">
+      <li><a href="#intro" class="active">Introduction</a></li>
+      <li><a href="#quickstart">Quick Start</a></li>
+      <li><a href="#s-types">Type Check</a></li>
+      <li><a href="#s-fullexample">Full Example <span class="sb-badge new-badge">New</span></a></li>
+    </ul>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-title">Window & Tabs</div>
+    <ul class="sb-links">
+      <li><a href="#s-window">Library.new <span class="sb-badge">Window</span></a></li>
+      <li><a href="#s-tab">CreateTab <span class="sb-badge">Tab</span></a></li>
+      <li><a href="#s-section">CreateSection <span class="sb-badge">Section</span></a></li>
+    </ul>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-title">Elements</div>
+    <ul class="sb-links">
+      <li><a href="#s-toggle">CreateToggle <span class="sb-badge">Bool</span></a></li>
+      <li><a href="#s-slider">CreateSlider <span class="sb-badge">Number</span></a></li>
+      <li><a href="#s-dropdown">CreateDropdown <span class="sb-badge">String</span></a></li>
+      <li><a href="#s-multidd">CreateMultiDropdown <span class="sb-badge">Table</span></a></li>
+      <li><a href="#s-textbox">CreateTextbox <span class="sb-badge">Input</span></a></li>
+      <li><a href="#s-keybind">CreateKeybind <span class="sb-badge">Key</span></a></li>
+      <li><a href="#s-color">CreateColorPicker <span class="sb-badge">Color</span></a></li>
+      <li><a href="#s-button">CreateButton <span class="sb-badge">Action</span></a></li>
+    </ul>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-title">Visual FX</div>
+    <ul class="sb-links">
+      <li><a href="#s-tooltip">Tooltip <span class="sb-badge new-badge">New</span></a></li>
+      <li><a href="#s-snow">Snow Effect <span class="sb-badge new-badge">New</span></a></li>
+    </ul>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-title">Hub Features</div>
+    <ul class="sb-links">
+      <li><a href="#s-notify">Notify <span class="sb-badge">Toast</span></a></li>
+      <li><a href="#s-watermark">SetWatermark <span class="sb-badge">HUD</span></a></li>
+      <li><a href="#s-utilities">Profiles &amp; control utilities</a></li>
+      <li><a href="#s-config">SaveConfig / LoadConfig <span class="sb-badge">Persist</span></a></li>
+      <li><a href="#s-loading">Loading Screen <span class="sb-badge">Splash</span></a></li>
+    </ul>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-title">UI Behaviour</div>
+    <ul class="sb-links">
+      <li><a href="#s-collapse">Section Collapse <span class="sb-badge">Toggle</span></a></li>
+      <li><a href="#s-badge">Tab Badge <span class="sb-badge">Counter</span></a></li>
+      <li><a href="#s-mobile">Mobile Layout <span class="sb-badge">Responsive</span></a></li>
+    </ul>
+  </div>
+<p class="search-empty" hidden>No matching topics. Try another keyword.</p></nav>
+
+<!-- ── Main Content ────────────────────────────── -->
+<main class="content" id="content">
+
+<!-- ════ INTRODUCTION ════ -->
+<section class="page-hero" id="intro">
+  <div class="page-hero-eyebrow">⚡ Private Hub Style · Luau</div>
+  <h1>HutameHub Library</h1>
+  <p>A compact, two-column Roblox Luau UI framework inspired by the best private hubs. Horizontal tab bar, checkbox toggles, thin sliders — built entirely with Roblox's native API. Now featuring a <strong>hover Tooltip system</strong> and a <strong>Snow Effect</strong> on the loading screen.</p>
+
+  <div class="feat-grid">
+    <div class="feat-chip"><span class="dot"></span>Horizontal Tab Bar</div>
+    <div class="feat-chip"><span class="dot"></span>Two-Column Layout</div>
+    <div class="feat-chip"><span class="dot"></span>Checkbox Toggles</div>
+    <div class="feat-chip"><span class="dot"></span>Thin Slider Bars</div>
+    <div class="feat-chip"><span class="dot"></span>Toast Notifications</div>
+    <div class="feat-chip"><span class="dot"></span>Config Save / Load</div>
+    <div class="feat-chip"><span class="dot"></span>FPS Watermark</div>
+    <div class="feat-chip"><span class="dot"></span>Loading Screen</div>
+    <div class="feat-chip"><span class="dot"></span>Section Collapse</div>
+    <div class="feat-chip"><span class="dot"></span>Tab Badge Counter</div>
+    <div class="feat-chip"><span class="dot"></span>Keybind Toggle Bind</div>
+    <div class="feat-chip"><span class="dot"></span>Mobile Layout</div>
+    <div class="feat-chip"><span class="dot"></span>Tooltip System</div>
+    <div class="feat-chip"><span class="dot"></span>Snow Effect</div>
+  </div>
+
+  <div class="callout blue">
+    <span class="callout-icon">💡</span>
+    <span>Every parameter in every element is <strong>optional</strong> unless marked <code>required</code>. Defaults are listed in each table below.</span>
+  </div>
+</section>
+
+<!-- ════ QUICK START ════ -->
+<section class="doc-section" id="quickstart">
+  <div class="method-header">
+    <div class="method-label">Getting Started</div>
+    <div class="method-title">Quick Start</div>
+    <p class="method-desc">Load the library, create a window, add tabs and sections, then fill them with elements. That's the whole model.</p>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-line"></div>
+      <div class="step-body">
+        <div class="step-title">Load the library</div>
+        <div class="step-desc">Paste this at the top of your script. The <code>loadstring</code> call fetches and executes the latest version.</div>
+      </div>
     </div>
-    
-    <div class="sb-group">
-      <div class="sb-group-title">Getting Started</div>
-      <ul class="sb-links">
-        <li><a href="#s-initialization">Initialization</a></li>
-      </ul>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-line"></div>
+      <div class="step-body">
+        <div class="step-title">Create a window</div>
+        <div class="step-desc">Call <code>Library.new()</code> with your title and accent color. This builds the full UI frame.</div>
+      </div>
     </div>
-    
-    <div class="sb-group">
-      <div class="sb-group-title">Layout</div>
-      <ul class="sb-links">
-        <li><a href="#s-tabs">Tabs</a></li>
-        <li><a href="#s-sections">Sections</a></li>
-      </ul>
-    </div>
-    
-    <div class="sb-group">
-      <div class="sb-group-title">Elements</div>
-      <ul class="sb-links">
-        <li><a href="#s-controls">UI Controls</a></li>
-      </ul>
-    </div>
-    
-    <div class="sb-group">
-      <div class="sb-group-title">API</div>
-      <ul class="sb-links">
-        <li><a href="#s-systems">Core Systems <span class="sb-badge new-badge">v3.0</span></a></li>
-        <li><a href="features.html">Feature Details</a></li>
-      </ul>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-line"></div>
+      <div class="step-body">
+        <div class="step-title">Add tabs → sections → elements</div>
+        <div class="step-desc">Tabs go on the horizontal bar. Each tab has a left and right column. Sections are cards inside columns.</div>
+      </div>
     </div>
   </div>
 
-  <div class="content">
-    <div class="page-hero">
-      <div class="page-hero-eyebrow">v3.0 Release</div>
-      <h1>HutameHub Library</h1>
-      <p>A modern, instance-based, TweenService-powered UI framework for Roblox Luau.</p>
-      <div class="feat-grid">
-        <div class="feat-chip"><div class="dot"></div> Object-Oriented</div>
-        <div class="feat-chip"><div class="dot"></div> HSV Color Picker</div>
-        <div class="feat-chip"><div class="dot"></div> Flags System</div>
-        <div class="feat-chip"><div class="dot"></div> Theme Engine</div>
-      </div>
+  <div class="code-block">
+    <div class="code-block-header">
+      <span class="code-block-lang">luau</span>
+      <button class="copy-code" onclick="copyCode(this,'qs')">Copy</button>
     </div>
+    <pre id="qs"><code><span class="kw">local</span> <span class="vr">Library</span> = <span class="fn">loadstring</span>(game:<span class="fn">HttpGet</span>(
+    <span class="str">"https://raw.githubusercontent.com/hutamev2/HutameHub-Lib/main/Source.lua"</span>
+))()
 
-    <div class="doc-section" id="s-initialization">
-      <div class="method-header">
-        <div class="method-label">Initialization</div>
-        <h2 class="method-title"><code>Library.new(config)</code></h2>
-        <p class="method-desc">Creates a new HutameHub window instance.</p>
-      </div>
-      <div class="returns"><span class="returns-label">Returns:</span><span class="returns-type">Hub (table)</span></div>
-      
-      <h3 class="params-title">Config Table Parameters</h3>
-      <table class="params-table">
-        <thead><tr><th>Key</th><th>Type</th><th>Description</th></tr></thead>
-        <tbody>
-          <tr><td><code>Title</code></td><td>string</td><td>Window title (default: "HutameHub")</td></tr>
-          <tr><td><code>Version</code></td><td>string</td><td>Version text (default: "v3.0")</td></tr>
-          <tr><td><code>Theme</code></td><td>string|table</td><td>Preset name ("Midnight", "Ocean", "Crimson", "Emerald", "Sakura") or custom table</td></tr>
-          <tr><td><code>Accent</code></td><td>Color3</td><td>Custom accent color (overrides theme preset)</td></tr>
-          <tr><td><code>ToggleKey</code></td><td>Enum.KeyCode</td><td>Key to toggle the UI (default: RightControl)</td></tr>
-        </tbody>
-      </table>
-    </div>
+<span class="cmt">-- 1. Create the window</span>
+<span class="kw">local</span> <span class="vr">Hub</span> = <span class="vr">Library</span>.<span class="fn">new</span>({
+    <span class="vr">Title</span>     = <span class="str">"MyHub"</span>,
+    <span class="vr">Version</span>   = <span class="str">"v2.2"</span>,
+    <span class="vr">Accent</span>    = Color3.<span class="fn">fromRGB</span>(<span class="num">192</span>, <span class="num">139</span>, <span class="num">230</span>),
+    <span class="vr">ToggleKey</span> = Enum.KeyCode.RightControl
+})
 
-    <div class="doc-section" id="s-tabs">
-      <div class="method-header">
-        <div class="method-label">Components</div>
-        <h2 class="method-title"><code>Hub:CreateTab(name, icon)</code></h2>
-        <p class="method-desc">Creates a new tab.</p>
-      </div>
-      <div class="returns"><span class="returns-label">Returns:</span><span class="returns-type">Tab (table)</span></div>
-    </div>
+<span class="cmt">-- 2. Add a tab</span>
+<span class="kw">local</span> <span class="vr">CombatTab</span> = <span class="vr">Hub</span>:<span class="fn">CreateTab</span>(<span class="str">"Combat"</span>)
 
-    <div class="doc-section" id="s-sections">
-      <div class="method-header">
-        <div class="method-label">Components</div>
-        <h2 class="method-title"><code>Tab:CreateSection(title, column)</code></h2>
-        <p class="method-desc">Creates a collapsible section inside the tab.</p>
-      </div>
-      <div class="returns"><span class="returns-label">Returns:</span><span class="returns-type">Section (table)</span></div>
-      <table class="params-table">
-        <thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead>
-        <tbody>
-          <tr><td><code>title</code></td><td>string</td><td>The name of the section</td></tr>
-          <tr><td><code>column</code></td><td>string</td><td>"left" or "right" (default: "left")</td></tr>
-        </tbody>
-      </table>
-    </div>
+<span class="cmt">-- 3. Create sections (left column by default, pass "right" for right column)</span>
+<span class="kw">local</span> <span class="vr">AimSection</span>    = <span class="vr">CombatTab</span>:<span class="fn">CreateSection</span>(<span class="str">"Silent Aim"</span>)
+<span class="kw">local</span> <span class="vr">ExtrasSection</span> = <span class="vr">CombatTab</span>:<span class="fn">CreateSection</span>(<span class="str">"Extras"</span>, <span class="str">"right"</span>)
 
-    <div class="doc-section" id="s-controls">
-      <div class="method-header">
-        <div class="method-label">Controls</div>
-        <h2 class="method-title">Section Elements</h2>
-        <p class="method-desc">Methods available on a Section to create interactive elements.</p>
-      </div>
-      
-      <table class="params-table">
-        <thead><tr><th>Method</th><th>Description</th></tr></thead>
-        <tbody>
-          <tr><td><code>CreateToggle(cfg)</code></td><td>Creates a checkbox toggle</td></tr>
-          <tr><td><code>CreateSlider(cfg)</code></td><td>Creates a draggable slider</td></tr>
-          <tr><td><code>CreateDropdown(cfg)</code></td><td>Creates a single-select dropdown</td></tr>
-          <tr><td><code>CreateMultiDropdown(cfg)</code></td><td>Creates a multi-select dropdown</td></tr>
-          <tr><td><code>CreateTextbox(cfg)</code></td><td>Creates a text input field</td></tr>
-          <tr><td><code>CreateKeybind(cfg)</code></td><td>Creates a keybind listener</td></tr>
-          <tr><td><code>CreateColorPicker(cfg)</code></td><td>Creates an HSV color picker</td></tr>
-          <tr><td><code>CreateButton(cfg)</code></td><td>Creates a clickable button</td></tr>
-          <tr><td><code>CreateLabel(text, color)</code></td><td>Creates a text label</td></tr>
-          <tr><td><code>CreateSeparator(text)</code></td><td>Creates a dividing line</td></tr>
-        </tbody>
-      </table>
-      
-      <div class="callout blue">
-        <span class="callout-icon">ℹ</span>
-        <div>Most controls accept a configuration table with standard keys: <code>Title</code>, <code>Flag</code>, <code>Default</code>, <code>Callback</code>, and <code>ConfigKey</code>.</div>
-      </div>
-    </div>
+<span class="cmt">-- 4. Fill with elements</span>
+<span class="vr">AimSection</span>:<span class="fn">CreateToggle</span>({
+    <span class="vr">Title</span>    = <span class="str">"Enable Silent Aim"</span>,
+    <span class="vr">Default</span>  = <span class="kw">false</span>,
+    <span class="vr">Callback</span> = <span class="kw">function</span>(<span class="vr">enabled</span>)
+        <span class="fn">print</span>(<span class="str">"Silent Aim:"</span>, <span class="vr">enabled</span>)
+    <span class="kw">end</span>
+})
 
-    <div class="doc-section" id="s-systems">
-      <div class="method-header">
-        <div class="method-label">Systems</div>
-        <h2 class="method-title">Core Systems</h2>
-        <p class="method-desc">Global methods available on the Hub instance.</p>
-      </div>
-      
-      <table class="params-table">
-        <thead><tr><th>Method</th><th>Description</th></tr></thead>
-        <tbody>
-          <tr><td><code>Hub:SaveConfig(name)</code></td><td>Saves all ConfigKey values to a JSON file</td></tr>
-          <tr><td><code>Hub:LoadConfig(name)</code></td><td>Loads configuration from a JSON file</td></tr>
-          <tr><td><code>Hub:ListConfigs()</code></td><td>Lists saved configurations</td></tr>
-          <tr><td><code>Hub:Notify(cfg)</code></td><td>Shows a toast notification</td></tr>
-          <tr><td><code>Hub:SetWatermark(cfg)</code></td><td>Displays a watermark HUD</td></tr>
-          <tr><td><code>Hub:SetTheme(theme)</code></td><td>Changes the theme dynamically</td></tr>
-        </tbody>
-      </table>
-    </div>
+<span class="vr">AimSection</span>:<span class="fn">CreateSlider</span>({
+    <span class="vr">Title</span>    = <span class="str">"FOV Radius"</span>,
+    <span class="vr">Min</span>      = <span class="num">10</span>,
+    <span class="vr">Max</span>      = <span class="num">500</span>,
+    <span class="vr">Default</span>  = <span class="num">150</span>,
+    <span class="vr">Suffix</span>   = <span class="str">" px"</span>,
+    <span class="vr">Callback</span> = <span class="kw">function</span>(<span class="vr">value</span>)
+        <span class="fn">print</span>(<span class="str">"FOV:"</span>, <span class="vr">value</span>)
+    <span class="kw">end</span>
+})
 
+<span class="vr">ExtrasSection</span>:<span class="fn">CreateDropdown</span>({
+    <span class="vr">Title</span>    = <span class="str">"Aim Part"</span>,
+    <span class="vr">Options</span>  = {<span class="str">"Head"</span>, <span class="str">"Torso"</span>, <span class="str">"HumanoidRootPart"</span>},
+    <span class="vr">Default</span>  = <span class="str">"Head"</span>,
+    <span class="vr">Callback</span> = <span class="kw">function</span>(<span class="vr">selected</span>)
+        <span class="fn">print</span>(<span class="str">"Aim part:"</span>, <span class="vr">selected</span>)
+    <span class="kw">end</span>
+})</code></pre>
   </div>
-</div>
-</body>
+</section>
+
+<!-- ════ FULL EXAMPLE ════ -->
+<section class="doc-section" id="s-types"><div class="method-header"><div class="method-label">Getting Started</div><h1 class="method-title">Type Check</h1><p class="method-desc">Copy these Luau aliases above your loader for editor type checking and autocomplete. They describe the actual Source.lua API: use <code>Title</code>, not <code>Name</code>. Constructors return control handles, and buttons return TextButton. Types do not validate runtime input.</p></div><p class="method-desc"><a href="examples/types.luau" download>Download types.luau</a> · Includes profiles, conditions, reset, confirmation and all value controls. Requires Roblox/Luau type definitions; plain Lua does not support type aliases.</p><div class="code-block"><div class="code-block-header"><span class="code-block-lang">Luau types</span><button class="copy-code" onclick="copyCode(this,'ex-types')">Copy types</button></div><pre id="ex-types"><code>-- Paste these aliases above your loader in Roblox Studio / a Luau-aware editor.
+-- This describes Source.lua; it does not perform runtime validation.
+type ControlOptions = {
+    Title: string?, Tooltip: string?, ConfigKey: string?,
+    VisibleWhen: (() -&gt; boolean)?, EnabledWhen: (() -&gt; boolean)?,
+}
+type ToggleOptions = ControlOptions &amp; {Default: boolean?, Keybind: Enum.KeyCode?, Callback: ((boolean) -&gt; ())?}
+type SliderOptions = ControlOptions &amp; {Min: number?, Max: number?, Default: number?, Decimals: number?, Suffix: string?, Callback: ((number) -&gt; ())?}
+type DropdownOptions = ControlOptions &amp; {Options: {string}?, Default: string?, MaxVisibleItems: number?, Callback: ((string) -&gt; ())?}
+type MultiDropdownOptions = ControlOptions &amp; {Options: {string}?, Default: {string}?, MaxShow: number?, MaxVisibleItems: number?, Callback: (({string}) -&gt; ())?}
+type TextboxOptions = ControlOptions &amp; {Default: string?, Placeholder: string?, Callback: ((string, boolean) -&gt; ())?}
+type KeybindOptions = ControlOptions &amp; {Default: Enum.KeyCode?, Callback: ((Enum.KeyCode) -&gt; ())?}
+type ColorPickerOptions = ControlOptions &amp; {Default: Color3?, Callback: ((Color3) -&gt; ())?}
+type ButtonOptions = {Title: string?, Tooltip: string?, Desc: string?, Callback: (() -&gt; ())?, VisibleWhen: (() -&gt; boolean)?, EnabledWhen: (() -&gt; boolean)?}
+
+type ToggleControl = {State: boolean, Set: (self: ToggleControl, value: boolean) -&gt; (), Reset: (self: ToggleControl) -&gt; ()}
+type SliderControl = {Value: number, Set: (self: SliderControl, value: number) -&gt; (), Reset: (self: SliderControl) -&gt; ()}
+type DropdownControl = {
+    Selected: string, Options: {string}, Opened: boolean,
+    Set: (self: DropdownControl, value: string) -&gt; (), Reset: (self: DropdownControl) -&gt; (),
+    Open: (self: DropdownControl) -&gt; (), Close: (self: DropdownControl) -&gt; (),
+    Refresh: (self: DropdownControl, options: {string}?) -&gt; (),
+}
+type MultiDropdownControl = {
+    Options: {string}, Opened: boolean,
+    Set: (self: MultiDropdownControl, values: {string}) -&gt; (), Reset: (self: MultiDropdownControl) -&gt; (),
+    GetSelected: (self: MultiDropdownControl) -&gt; {string},
+    Open: (self: MultiDropdownControl) -&gt; (), Close: (self: MultiDropdownControl) -&gt; (),
+    Refresh: (self: MultiDropdownControl, options: {string}?) -&gt; (),
+}
+type TextboxControl = {Text: string, Set: (self: TextboxControl, text: string) -&gt; (), Reset: (self: TextboxControl) -&gt; ()}
+type KeybindControl = {Key: Enum.KeyCode, Listening: boolean, Set: (self: KeybindControl, key: Enum.KeyCode) -&gt; (), Reset: (self: KeybindControl) -&gt; ()}
+type ColorPickerControl = {Color: Color3, Opened: boolean, Set: (self: ColorPickerControl, color: Color3) -&gt; (), Toggle: (self: ColorPickerControl) -&gt; (), Reset: (self: ColorPickerControl) -&gt; ()}
+type HutameControl = ToggleControl | SliderControl | DropdownControl | MultiDropdownControl | TextboxControl | KeybindControl | ColorPickerControl | TextButton
+type HutameSection = {
+    CreateToggle: (self: HutameSection, options: ToggleOptions?) -&gt; ToggleControl,
+    CreateSlider: (self: HutameSection, options: SliderOptions?) -&gt; SliderControl,
+    CreateDropdown: (self: HutameSection, options: DropdownOptions?) -&gt; DropdownControl,
+    CreateMultiDropdown: (self: HutameSection, options: MultiDropdownOptions?) -&gt; MultiDropdownControl,
+    CreateTextbox: (self: HutameSection, options: TextboxOptions?) -&gt; TextboxControl,
+    CreateKeybind: (self: HutameSection, options: KeybindOptions?) -&gt; KeybindControl,
+    CreateColorPicker: (self: HutameSection, options: ColorPickerOptions?) -&gt; ColorPickerControl,
+    CreateButton: (self: HutameSection, options: ButtonOptions?) -&gt; TextButton,
+    CreateLabel: (self: HutameSection, text: string, color: Color3?) -&gt; TextLabel,
+    CreateSeparator: (self: HutameSection) -&gt; (),
+    Collapse: (self: HutameSection) -&gt; (), Expand: (self: HutameSection) -&gt; (),
+}
+type HutameTab = {
+    Name: string, Active: boolean,
+    CreateSection: (self: HutameTab, title: string, side: (&quot;left&quot; | &quot;right&quot;)?) -&gt; HutameSection,
+    Activate: (self: HutameTab) -&gt; (), Deactivate: (self: HutameTab) -&gt; (),
+    SetBadge: (self: HutameTab, count: number?) -&gt; (), ClearBadge: (self: HutameTab) -&gt; (),
+}
+type NotificationOptions = {Title: string?, Text: string?, Type: (&quot;info&quot; | &quot;success&quot; | &quot;warning&quot; | &quot;error&quot;)?, Duration: number?}
+type WatermarkOptions = {Format: string?, Position: (&quot;TopLeft&quot; | &quot;TopRight&quot; | &quot;BottomLeft&quot; | &quot;BottomRight&quot;)?, BgAlpha: number?}
+type ConfirmOptions = {Title: string?, Text: string?, ConfirmText: string?, CancelText: string?, OnConfirm: (() -&gt; ())?, OnCancel: (() -&gt; ())?}
+type HutameWindow = {
+    Title: string, Version: string, Accent: Color3, ToggleKey: Enum.KeyCode,
+    CreateTab: (self: HutameWindow, title: string) -&gt; HutameTab,
+    SetAccent: (self: HutameWindow, color: Color3) -&gt; (),
+    SetTitle: (self: HutameWindow, title: string?, version: string?) -&gt; (),
+    Destroy: (self: HutameWindow) -&gt; (), Notify: (self: HutameWindow, options: NotificationOptions?) -&gt; (),
+    SetWatermark: (self: HutameWindow, options: WatermarkOptions?) -&gt; (),
+    UpdateWatermark: (self: HutameWindow, format: string) -&gt; (), RemoveWatermark: (self: HutameWindow) -&gt; (),
+    SaveConfig: (self: HutameWindow, name: string?) -&gt; (), LoadConfig: (self: HutameWindow, name: string?) -&gt; (),
+    ListProfiles: (self: HutameWindow) -&gt; {string},
+    SaveProfile: (self: HutameWindow, name: string) -&gt; (boolean, any),
+    LoadProfile: (self: HutameWindow, name: string) -&gt; (boolean, any),
+    RenameProfile: (self: HutameWindow, oldName: string, newName: string) -&gt; (boolean, any),
+    DeleteProfile: (self: HutameWindow, name: string) -&gt; (boolean, any),
+    SetDefaultProfile: (self: HutameWindow, name: string?) -&gt; (boolean, any),
+    LoadDefaultProfile: (self: HutameWindow) -&gt; (boolean, any),
+    ResetValues: (self: HutameWindow) -&gt; (), RefreshConditions: (self: HutameWindow) -&gt; (),
+    SetCondition: (self: HutameWindow, control: HutameControl, predicate: () -&gt; boolean, mode: (&quot;hide&quot; | &quot;disable&quot;)?) -&gt; (),
+    Confirm: (self: HutameWindow, options: ConfirmOptions?) -&gt; {Cancel: () -&gt; ()},
+}
+type WindowOptions = {Title: string?, Version: string?, Accent: Color3?, ToggleKey: Enum.KeyCode?, LoadingScreen: boolean?, LoadingDuration: number?, SnowEffect: boolean?, MobileToggle: boolean?}
+type HutameLibrary = {new: (options: WindowOptions?) -&gt; HutameWindow}
+
+-- After these aliases, annotate your loader:
+-- local Library: HutameLibrary = loadstring(game:HttpGet(&quot;https://raw.githubusercontent.com/hutamev2/HutameHub-Lib/main/Source.lua&quot;))()
+-- local Hub = Library.new({Title = &quot;Typed Hub&quot;})
+-- local Section = Hub:CreateTab(&quot;Home&quot;):CreateSection(&quot;Settings&quot;)
+-- local Enabled = Section:CreateToggle({Title = &quot;Enabled&quot;, Default = false})
+-- Enabled:Set(true)
+</code></pre></div></section>
+<section class="doc-section" id="s-fullexample">
+<div class="callout blue"><span class="callout-icon">↕</span><span><strong>Dropdown layout fix:</strong> lists now expand their section and push following buttons down. Long lists scroll internally; closing restores the row height. Section collapse/expand uses a cancellable 0.2 s tween, so rapid clicks follow the latest state. Try the <strong>Layout</strong> tab in Full Example.</span></div>
+  <div class="callout blue"><span class="callout-icon">+</span><span><strong>Profiles &amp; control utilities</strong> — create, load, rename, delete and select a default profile; draggable mobile toggle; per-control and global reset; key conflict warnings; confirmation dialogs; conditional visibility and input. <a href="features.html">Read the complete API guide</a> or try the Profiles tab in the example below.</span></div>
+  <div class="callout blue"><span class="callout-icon">◇</span><span><strong>v2.2 · Violet Studio</strong> — dark violet panels, lilac accents, square corners, fine inset borders and compact monospace typography. The two-column layout and public API stay familiar. Buttons and input surfaces now use subtle vertical shading; active tabs and values carry the accent. Main-window snow is opt-in.</span></div>
+  <p class="method-desc">Visual direction studied from <a href="https://github.com/ro0ti/Roblox-Scripting-UI/tree/main/Akiri%20Lib">Akiri Lib</a>; implemented independently with Roblox Instances, without importing its code, assets or Drawing API. Run <a href="#s-fullexample">Full Example</a> to inspect all controls in the new theme. Runtime visual verification in Roblox remains pending.</p>
+  <div class="method-header">
+    <div class="method-label">Getting Started</div>
+    <div class="method-title">Full Example</div>
+    <p class="method-desc">Interactive UI test using the actual Source.lua API. Try every component, setters, dropdown refresh, notifications, section collapse, badges, watermark and config save/load. Callback values appear in Output / the client console.</p>
+  </div>
+
+  <div class="callout blue">
+    <span class="callout-icon">💡</span>
+    <span>Press <strong>RightControl</strong> or <strong>Minus (-)</strong> to hide/show the entire window and <strong>F</strong> to test the checkbox binding. Hover controls for 0.4 s for tooltips. Use the <strong>Features</strong> tab for feature tests; test Destroy last.</span>
+  </div>
+
+  <div class="code-block">
+    <div class="code-block-header">
+      <span class="code-block-lang">luau</span>
+      <button class="copy-code" onclick="copyCode(this,'ex-full')">Copy</button>
+    </div>
+    <p class="method-desc"><a href="examples/ui-test.lua" download>Download ui-test.lua</a> · The loader needs a compatible client environment; config tests also need <code>writefile</code>/<code>readfile</code>. Save, change registered controls, then load and inspect their values. All seven value-control types support ConfigKey. The Profiles tab tests profile management, reset and conditional controls.</p>
+    <p class="method-desc">Manual checks: drag the title bar, minimize/restore, resize below and above 600 px, and inspect both columns. Compare startup effects in fresh sessions using <code>LoadingScreen</code> and <code>SnowEffect</code>; the latter controls main-window snow only. <code>CreateKeybind</code> reports binding changes, not key presses. This example was checked against source; it has not been run in Roblox.</p>
+    <pre id="ex-full"><code>-- HutameHub: manual UI feature test (Source.lua API)
+-- Run in a client environment that supports the loader below.
+-- Config tests additionally require writefile/readfile.
+local Library = loadstring(game:HttpGet(
+    &quot;https://raw.githubusercontent.com/hutamev2/HutameHub-Lib/main/Source.lua&quot;
+))()
+
+local Hub = Library.new({
+    Title = &quot;HutameHub UI Test&quot;,
+    Version = &quot;v2.2&quot;,
+    Accent = Color3.fromRGB(192, 139, 230),
+    ToggleKey = Enum.KeyCode.RightControl,
+    MobileToggle = true, -- Also show the draggable 48px button on desktop for testing.
+    LoadingScreen = true,
+    LoadingDuration = 1.8,
+    SnowEffect = false,
+})
+
+local function report(name, value)
+    print(&quot;[UI Test] &quot; .. name, value)
+end
+
+local Controls = Hub:CreateTab(&quot;Controls&quot;)
+local Features = Hub:CreateTab(&quot;Features&quot;)
+Features:SetBadge(3)
+local Inputs = Controls:CreateSection(&quot;Inputs&quot;, &quot;left&quot;)
+local Selection = Controls:CreateSection(&quot;Selection&quot;, &quot;right&quot;)
+local Actions = Features:CreateSection(&quot;Actions&quot;, &quot;left&quot;)
+local Preview = Features:CreateSection(&quot;Collapse target&quot;, &quot;right&quot;)
+Preview:CreateLabel(&quot;Collapse and expand this section.&quot;)
+Preview:CreateSeparator()
+Preview:CreateLabel(&quot;Drag the top bar; resize the viewport.&quot;)
+
+local Toggle = Inputs:CreateToggle({
+    Title = &quot;Test toggle&quot;, Default = false, Keybind = Enum.KeyCode.F,
+    ConfigKey = &quot;test_toggle&quot;, Tooltip = &quot;Click or press F outside a textbox.&quot;,
+    Callback = function(value) report(&quot;Toggle&quot;, value) end,
+})
+local Slider = Inputs:CreateSlider({
+    Title = &quot;Test slider&quot;, Min = 0, Max = 100, Default = 25,
+    Decimals = 1, Suffix = &quot;%&quot;, ConfigKey = &quot;test_slider&quot;,
+    Tooltip = &quot;Drag with mouse or touch; watch Output.&quot;,
+    Callback = function(value) report(&quot;Slider&quot;, value) end,
+})
+local Textbox = Inputs:CreateTextbox({
+    Title = &quot;Test text&quot;, Default = &quot;Hello&quot;, Placeholder = &quot;Type here&quot;, ConfigKey = &quot;test_text&quot;,
+    Tooltip = &quot;Callback runs when focus is lost.&quot;,
+    Callback = function(text, enterPressed)
+        report(&quot;Text&quot;, text)
+        report(&quot;Enter pressed&quot;, enterPressed)
+    end,
+})
+local Keybind = Inputs:CreateKeybind({
+    Title = &quot;Select a key&quot;, Default = Enum.KeyCode.G, ConfigKey = &quot;test_key&quot;,
+    Tooltip = &quot;Click then press a key; Backspace clears it.&quot;,
+    -- This callback reports a NEW binding, not each key press.
+    Callback = function(key) report(&quot;Selected key&quot;, key.Name) end,
+})
+local Color = Inputs:CreateColorPicker({
+    Title = &quot;Accent&quot;, Default = Color3.fromRGB(192, 139, 230), ConfigKey = &quot;test_color&quot;,
+    Tooltip = &quot;Open the RGB sliders and change the accent.&quot;,
+    Callback = function(value) Hub:SetAccent(value) end,
+})
+local Dropdown = Selection:CreateDropdown({
+    Title = &quot;Single choice&quot;, Options = {&quot;Alpha&quot;, &quot;Beta&quot;, &quot;Gamma&quot;},
+    Default = &quot;Alpha&quot;, ConfigKey = &quot;test_dropdown&quot;,
+    Tooltip = &quot;Choose one item.&quot;,
+    Callback = function(value) report(&quot;Dropdown&quot;, value) end,
+})
+local Multi = Selection:CreateMultiDropdown({
+    Title = &quot;Multiple choices&quot;, Options = {&quot;Red&quot;, &quot;Green&quot;, &quot;Blue&quot;},
+    Default = {&quot;Red&quot;}, MaxShow = 2, ConfigKey = &quot;test_multi&quot;,
+    Tooltip = &quot;Select several items; selection stays open.&quot;,
+    Callback = function(values) report(&quot;Multi&quot;, table.concat(values, &quot;, &quot;)) end,
+})
+
+-- Helper belongs to this example, not the library.
+local function button(section, title, callback)
+    section:CreateButton({Title = title, Tooltip = title, Callback = function()
+        local ok, err = pcall(callback)
+        if not ok then warn(&quot;[UI Test] &quot; .. title .. &quot;: &quot; .. tostring(err)) end
+    end})
+end
+
+button(Inputs, &quot;Set values from code&quot;, function()
+    Toggle:Set(true)
+    Slider:Set(75.5)
+    Textbox:Set(&quot;Set() worked&quot;) -- Does not invoke the textbox callback.
+    Keybind:Set(Enum.KeyCode.H) -- Does not invoke the keybind callback.
+    Color:Set(Color3.fromRGB(80, 160, 255))
+    report(&quot;Textbox.Text&quot;, Textbox.Text)
+    report(&quot;Keybind.Key&quot;, Keybind.Key.Name)
+end)
+button(Inputs, &quot;Toggle RGB panel&quot;, function() Color:Toggle() end)
+button(Selection, &quot;Set selections&quot;, function()
+    Dropdown:Set(&quot;Beta&quot;)
+    Multi:Set({&quot;Green&quot;, &quot;Blue&quot;})
+    report(&quot;GetSelected&quot;, table.concat(Multi:GetSelected(), &quot;, &quot;))
+end)
+button(Selection, &quot;Refresh options&quot;, function()
+    Dropdown:Refresh({&quot;Alpha&quot;, &quot;Beta&quot;, &quot;Gamma&quot;, &quot;Delta&quot;})
+    Multi:Refresh({&quot;Red&quot;, &quot;Green&quot;, &quot;Blue&quot;, &quot;Yellow&quot;})
+end)
+button(Selection, &quot;Open single choice&quot;, function() Dropdown:Open() end)
+button(Selection, &quot;Close single choice&quot;, function() Dropdown:Close() end)
+button(Selection, &quot;Open multiple choices&quot;, function() Multi:Open() end)
+button(Selection, &quot;Close multiple choices&quot;, function() Multi:Close() end)
+button(Selection, &quot;Go to Features&quot;, function() Features:Activate() end)
+
+for _, kind in ipairs({&quot;info&quot;, &quot;success&quot;, &quot;warning&quot;, &quot;error&quot;}) do
+    local notificationType = kind
+    button(Actions, &quot;Notify: &quot; .. notificationType, function()
+        Hub:Notify({Title = &quot;UI Test&quot;, Text = notificationType,
+            Type = notificationType, Duration = 3})
+    end)
+end
+button(Actions, &quot;Collapse target&quot;, function() Preview:Collapse() end)
+button(Actions, &quot;Expand target&quot;, function() Preview:Expand() end)
+button(Actions, &quot;Badge = 7&quot;, function() Features:SetBadge(7) end)
+button(Actions, &quot;Clear badge&quot;, function() Features:ClearBadge() end)
+button(Actions, &quot;Show watermark&quot;, function()
+    Hub:SetWatermark({Format = &quot;{player} | {fps} fps | {ping} ms | {time}&quot;,
+        Position = &quot;BottomRight&quot;, BgAlpha = 0.45})
+end)
+button(Actions, &quot;Update watermark&quot;, function()
+    Hub:UpdateWatermark(&quot;{game} | {fps} fps&quot;)
+end)
+button(Actions, &quot;Remove watermark&quot;, function() Hub:RemoveWatermark() end)
+button(Actions, &quot;Save test config&quot;, function() Hub:SaveConfig(&quot;ui_test&quot;) end)
+button(Actions, &quot;Load test config&quot;, function() Hub:LoadConfig(&quot;ui_test&quot;) end)
+button(Actions, &quot;Read current values&quot;, function()
+    report(&quot;Toggle.State&quot;, Toggle.State)
+    report(&quot;Slider.Value&quot;, Slider.Value)
+    report(&quot;Dropdown.Selected&quot;, Dropdown.Selected)
+    report(&quot;Multi:GetSelected()&quot;, table.concat(Multi:GetSelected(), &quot;, &quot;))
+    report(&quot;Color.Color&quot;, Color.Color)
+end)
+button(Actions, &quot;Back to Controls&quot;, function() Controls:Activate() end)
+button(Actions, &quot;Destroy UI (test last)&quot;, function() Hub:Destroy() end)
+
+-- Save -&gt; change controls -&gt; Load -&gt; inspect all seven registered value types.
+local Profiles = Hub:CreateTab(&quot;Profiles&quot;)
+local Manager = Profiles:CreateSection(&quot;Profile manager&quot;, &quot;left&quot;)
+local Conditional = Profiles:CreateSection(&quot;Conditions and reset&quot;, &quot;right&quot;)
+local ProfileName = Manager:CreateTextbox({Title=&quot;Profile name&quot;, Default=&quot;demo&quot;})
+local RenameTo = Manager:CreateTextbox({Title=&quot;Rename to&quot;, Default=&quot;demo_copy&quot;})
+local ProfileList = Manager:CreateDropdown({Title=&quot;Saved profiles&quot;, Options=Hub:ListProfiles(),
+    Callback=function(name) ProfileName:Set(name) end})
+local function refreshProfiles() ProfileList:Refresh(Hub:ListProfiles()) end
+local function result(ok, err)
+    if not ok then Hub:Notify({Title=&quot;Profile error&quot;, Text=tostring(err), Type=&quot;error&quot;}) end
+    refreshProfiles()
+end
+button(Manager, &quot;Create / save profile&quot;, function()
+    Hub:Confirm({Title=&quot;Save profile&quot;, Text=&quot;Save current values? An existing profile will be overwritten.&quot;,
+        OnConfirm=function() result(Hub:SaveProfile(ProfileName.Text)) end})
+end)
+button(Manager, &quot;Load selected profile&quot;, function() result(Hub:LoadProfile(ProfileName.Text)) end)
+button(Manager, &quot;Rename profile&quot;, function() result(Hub:RenameProfile(ProfileName.Text, RenameTo.Text)) end)
+button(Manager, &quot;Set default profile&quot;, function() result(Hub:SetDefaultProfile(ProfileName.Text)) end)
+button(Manager, &quot;Load default profile&quot;, function() result(Hub:LoadDefaultProfile()) end)
+button(Manager, &quot;Delete profile&quot;, function()
+    local name = ProfileName.Text
+    Hub:Confirm({Title=&quot;Delete profile&quot;, Text=&quot;Permanently delete &quot; .. name .. &quot;?&quot;,
+        OnConfirm=function() result(Hub:DeleteProfile(name)) end})
+end)
+local Advanced = Conditional:CreateToggle({Title=&quot;Show advanced controls&quot;, Default=false})
+Conditional:CreateSlider({Title=&quot;Conditional slider&quot;, Min=0, Max=100, Default=50,
+    VisibleWhen=function() return Advanced.State end})
+Conditional:CreateButton({Title=&quot;Enabled when toggle is on&quot;,
+    EnabledWhen=function() return Advanced.State end,
+    Callback=function() report(&quot;Conditional button&quot;, &quot;clicked&quot;) end})
+button(Conditional, &quot;Reset slider only&quot;, function() Slider:Reset() end)
+button(Conditional, &quot;Reset all values&quot;, function()
+    Hub:Confirm({Title=&quot;Reset values&quot;, Text=&quot;Restore every control to its creation default?&quot;,
+        OnConfirm=function() Hub:ResetValues() end})
+end)
+Conditional:CreateLabel(&quot;Bind Select a key to F or Minus for a warning.&quot;)
+-- For automatic startup restore, call Hub:LoadDefaultProfile() HERE after creation.
+local LayoutTests = Hub:CreateTab(&quot;Layout&quot;)
+local Flow = LayoutTests:CreateSection(&quot;Dropdown followed by button&quot;, &quot;left&quot;)
+local LongOptions = {}
+for i = 1, 20 do LongOptions[i] = &quot;Option &quot; .. i end
+local FlowDropdown = Flow:CreateDropdown({Title=&quot;Scrollable single&quot;, Options=LongOptions, MaxVisibleItems=4})
+button(Flow, &quot;Button below single list&quot;, function() report(&quot;Flow&quot;, &quot;Single button clicked&quot;) end)
+local FlowMulti = Flow:CreateMultiDropdown({Title=&quot;Scrollable multi&quot;, Options=LongOptions, MaxVisibleItems=4})
+button(Flow, &quot;Button below multi list&quot;, function() report(&quot;Flow&quot;, &quot;Multi button clicked&quot;) end)
+local LayoutActions = LayoutTests:CreateSection(&quot;Animation checks&quot;, &quot;right&quot;)
+button(LayoutActions, &quot;Collapse left section&quot;, function() Flow:Collapse() end)
+button(LayoutActions, &quot;Expand left section&quot;, function() Flow:Expand() end)
+button(LayoutActions, &quot;Shorten open list&quot;, function() FlowDropdown:Refresh({&quot;One&quot;, &quot;Two&quot;}) end)
+button(LayoutActions, &quot;Restore 20 options&quot;, function() FlowDropdown:Refresh(LongOptions) end)
+-- Open both lists: buttons must move DOWN, and every item must be scrollable.
+-- Close lists: section shrinks. Rapidly alternate Collapse/Expand: last click wins.
+-- RightControl or Minus (-) hides/shows the entire window; F toggles the checkbox.
+-- Type a minus in the textbox: the UI must stay visible while typing.
+-- Hover a control for 0.4 seconds to inspect its tooltip.
+-- To compare startup effects, change LoadingScreen/SnowEffect above and run
+-- in a fresh session. SnowEffect controls main-window snow only.
+</code></pre>
+  </div>
+</section>
+
+<!-- ════ LIBRARY.NEW ════ -->
+<section class="doc-section" id="s-window">
+  <div class="method-header">
+    <div class="method-label">Window</div>
+    <div class="method-title"><code>Library.new(config)</code></div>
+    <p class="method-desc">Creates the hub window. Returns a <strong>Hub</strong> object that all tabs, sections and features attach to. Call this once at the top of your script.</p>
+  </div>
+
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">Hub</span>
+  </div>
+
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="p-name">Title</span></td>
+        <td><span class="type type-str">string</span></td>
+        <td><span class="p-default">"HutameHub"</span></td>
+        <td class="p-desc">Name shown in the topbar next to the version tag.</td>
+      </tr>
+      <tr>
+        <td><span class="p-name">Version</span></td>
+        <td><span class="type type-str">string</span></td>
+        <td><span class="p-default">"v2.2"</span></td>
+        <td class="p-desc">Version string shown dimmed beside the title.</td>
+      </tr>
+      <tr>
+        <td><span class="p-name">Accent</span></td>
+        <td><span class="type type-c3">Color3</span></td>
+        <td><span class="p-default">RGB(192,139,230)</span></td>
+        <td class="p-desc">Accent color applied to tab underlines, slider fills, active checkboxes, and button ripples.</td>
+      </tr>
+      <tr>
+        <td><span class="p-name">ToggleKey</span></td>
+        <td><span class="type type-kc">KeyCode</span></td>
+        <td><span class="p-default">RightControl</span></td>
+        <td class="p-desc">Keyboard key to show/hide the entire window. Minus (-) is always an additional shortcut, even with a custom ToggleKey. Shortcuts are ignored while typing in a textbox or when input is already processed.</td>
+      </tr>
+      <tr>
+        <td><span class="p-name">SnowEffect</span></td>
+        <td><span class="type type-bool">boolean</span></td>
+        <td><span class="p-default">false</span></td>
+        <td class="p-desc">Optional ambient snow on the main UI. Pass <code>true</code> to enable; disabled by default in v2.2.</td>
+      </tr>
+      <tr>
+        <td><span class="p-name">LoadingScreen</span></td>
+        <td><span class="type type-bool">boolean</span></td>
+        <td><span class="p-default">true</span></td>
+        <td class="p-desc">Full-screen animated splash on startup. Pass <code>false</code> to skip.</td>
+      </tr>
+      <tr>
+        <td><span class="p-name">LoadingDuration</span></td>
+        <td><span class="type type-num">number</span></td>
+        <td><span class="p-default">1.8</span></td>
+        <td class="p-desc">Seconds the loading bar takes to fill before revealing the main window.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="params-title">Methods</div>
+  <table class="params-table">
+    <thead><tr><th>Method</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="p-name">Hub:SetAccent(Color3)</span></td>
+        <td class="p-desc">Changes the accent color at runtime. All subscribed elements update instantly.</td>
+      </tr>
+      <tr>
+        <td><span class="p-name">Hub:Destroy()</span></td>
+        <td class="p-desc">Removes the UI and cleans up all connections.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════ CREATETAB ════ -->
+<section class="doc-section" id="s-tab">
+  <div class="method-header">
+    <div class="method-label">Tab</div>
+    <div class="method-title"><code>Hub:CreateTab(name)</code></div>
+    <p class="method-desc">Adds a button to the horizontal tab bar. Each tab contains an independent left and right scroll column. The first tab created is automatically activated.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">Tab</span>
+  </div>
+  <div class="params-title">Parameters</div>
+  <table class="params-table">
+    <thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="p-name">name<span class="p-req">required</span></span></td>
+        <td><span class="type type-str">string</span></td>
+        <td class="p-desc">Text shown on the tab button (e.g. <code>"Combat"</code>, <code>"ESP"</code>, <code>"Settings"</code>).</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════ CREATESECTION ════ -->
+<section class="doc-section" id="s-section">
+  <div class="method-header">
+    <div class="method-label">Section</div>
+    <div class="method-title"><code>Tab:CreateSection(title, col?)</code></div>
+    <p class="method-desc">Adds a card container to either the left or right scroll column of the tab. Sections group related elements under a header label.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">Section</span>
+  </div>
+  <div class="params-title">Parameters</div>
+  <table class="params-table">
+    <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="p-name">title<span class="p-req">required</span></span></td>
+        <td><span class="type type-str">string</span></td>
+        <td>—</td>
+        <td class="p-desc">Uppercase label shown at the top of the card.</td>
+      </tr>
+      <tr>
+        <td><span class="p-name">col</span></td>
+        <td><span class="type type-str">string</span></td>
+        <td><span class="p-default">"left"</span></td>
+        <td class="p-desc">Which column to place the section in. Pass <code>"right"</code> for the right column.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <span class="callout-icon">📐</span>
+    <span>Sections in the <strong>left</strong> and <strong>right</strong> columns scroll independently, so you can pack each side with as many elements as you need.</span>
+  </div>
+</section>
+
+<!-- ════ TOGGLE ════ -->
+<section class="doc-section" id="s-toggle">
+  <div class="method-header">
+    <div class="method-label">Element</div>
+    <div class="method-title"><code>Section:CreateToggle(config)</code></div>
+    <p class="method-desc">A compact checkbox-style toggle. The box fills with the accent color and shows a checkmark when active. Clicking the row anywhere toggles the state.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">{ State: bool,  Set(bool) }</span>
+  </div>
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="p-name">Title</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"Toggle"</span></td><td class="p-desc">Label shown next to the checkbox.</td></tr>
+      <tr><td><span class="p-name">Default</span></td><td><span class="type type-bool">boolean</span></td><td><span class="p-default">false</span></td><td class="p-desc">Initial on/off state.</td></tr>
+      <tr><td><span class="p-name">ConfigKey</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Unique key for <a href="#s-config" style="color:var(--acc)">Config Save/Load</a>.</td></tr>
+      <tr><td><span class="p-name">Keybind</span></td><td><span class="type type-kc">KeyCode</span></td><td><span class="p-default">nil</span></td><td class="p-desc">When set, pressing this key anywhere toggles the state automatically. The bound key is shown dimmed on the right side of the row.</td></tr>
+      <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function(bool)</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Called every time the state changes. Receives the new boolean value.</td></tr>
+      <tr><td><span class="p-name">Tooltip</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Short description shown in a floating tooltip on hover (0.4 s delay, fade-in animation).</td></tr>
+    </tbody>
+  </table>
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-toggle')">Copy</button></div>
+    <pre id="ex-toggle"><code><span class="kw">local</span> <span class="vr">silentAim</span> = <span class="vr">Section</span>:<span class="fn">CreateToggle</span>({
+    <span class="vr">Title</span>     = <span class="str">"Enable Silent Aim"</span>,
+    <span class="vr">Default</span>   = <span class="kw">false</span>,
+    <span class="vr">ConfigKey</span> = <span class="str">"silent_aim"</span>,
+    <span class="vr">Keybind</span>   = Enum.KeyCode.F,  <span class="cmt">-- press F anywhere to toggle</span>
+    <span class="vr">Callback</span>  = <span class="kw">function</span>(<span class="vr">enabled</span>)
+        <span class="fn">print</span>(<span class="str">"Silent Aim:"</span>, <span class="vr">enabled</span>)
+    <span class="kw">end</span>
+})
+
+<span class="cmt">-- Read current state</span>
+<span class="fn">print</span>(<span class="vr">silentAim</span>.State)
+
+<span class="cmt">-- Set programmatically</span>
+<span class="vr">silentAim</span>:<span class="fn">Set</span>(<span class="kw">true</span>)</code></pre>
+  </div>
+</section>
+
+<!-- ════ SLIDER ════ -->
+<section class="doc-section" id="s-slider">
+  <div class="method-header">
+    <div class="method-label">Element</div>
+    <div class="method-title"><code>Section:CreateSlider(config)</code></div>
+    <p class="method-desc">A thin draggable bar. The current value is shown as <code>value/max</code> on the right. Supports decimal precision and a custom suffix unit.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">{ Value: number,  Set(number) }</span>
+  </div>
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="p-name">Title</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"Slider"</span></td><td class="p-desc">Label shown above the track.</td></tr>
+      <tr><td><span class="p-name">Min</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">0</span></td><td class="p-desc">Minimum value.</td></tr>
+      <tr><td><span class="p-name">Max</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">100</span></td><td class="p-desc">Maximum value.</td></tr>
+      <tr><td><span class="p-name">Default</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">Min</span></td><td class="p-desc">Starting value.</td></tr>
+      <tr><td><span class="p-name">Decimals</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">0</span></td><td class="p-desc">Decimal places — <code>0</code> for integers, <code>1</code> or <code>2</code> for floats.</td></tr>
+      <tr><td><span class="p-name">Suffix</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">""</span></td><td class="p-desc">Appended to the value label, e.g. <code>" px"</code>, <code>" ms"</code>, <code>"%"</code>.</td></tr>
+      <tr><td><span class="p-name">ConfigKey</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Key for Config Save/Load.</td></tr>
+      <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function(number)</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Fires continuously as the slider moves.</td></tr>
+      <tr><td><span class="p-name">Tooltip</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Floating tooltip text shown on hover.</td></tr>
+    </tbody>
+  </table>
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-slider')">Copy</button></div>
+    <pre id="ex-slider"><code><span class="kw">local</span> <span class="vr">fovSlider</span> = <span class="vr">Section</span>:<span class="fn">CreateSlider</span>({
+    <span class="vr">Title</span>     = <span class="str">"FOV Radius"</span>,
+    <span class="vr">Min</span>       = <span class="num">10</span>,
+    <span class="vr">Max</span>       = <span class="num">500</span>,
+    <span class="vr">Default</span>   = <span class="num">150</span>,
+    <span class="vr">Suffix</span>    = <span class="str">" px"</span>,
+    <span class="vr">ConfigKey</span> = <span class="str">"fov"</span>,
+    <span class="vr">Callback</span>  = <span class="kw">function</span>(<span class="vr">value</span>)
+        <span class="fn">print</span>(<span class="str">"FOV:"</span>, <span class="vr">value</span>)
+    <span class="kw">end</span>
+})
+
+<span class="cmt">-- Read current value</span>
+<span class="fn">print</span>(<span class="vr">fovSlider</span>.Value)
+
+<span class="cmt">-- Set programmatically</span>
+<span class="vr">fovSlider</span>:<span class="fn">Set</span>(<span class="num">200</span>)</code></pre>
+  </div>
+</section>
+
+<!-- ════ DROPDOWN ════ -->
+<section class="doc-section" id="s-dropdown">
+  <div class="method-header">
+    <div class="method-label">Element</div>
+    <div class="method-title"><code>Section:CreateDropdown(config)</code></div>
+    <p class="method-desc">A compact inline dropdown. Clicking opens a list of options; the selected value is shown on the right side of the header row.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">{ Selected: string,  Set(string),  Refresh(table) }</span>
+  </div>
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+<tr><td><span class="p-name">MaxVisibleItems</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">6</span></td><td class="p-desc">Visible list rows before internal scrolling (1–20). The dropdown reserves its full header + visible list height, moving following controls down.</td></tr>
+      <tr><td><span class="p-name">Title</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"Dropdown"</span></td><td class="p-desc">Left-side label.</td></tr>
+      <tr><td><span class="p-name">Options</span></td><td><span class="type type-tbl">table</span></td><td><span class="p-default">{}</span></td><td class="p-desc">Array of option strings: <code>{"Head","Torso","HRP"}</code>.</td></tr>
+      <tr><td><span class="p-name">Default</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">Options[1]</span></td><td class="p-desc">Initially selected option.</td></tr>
+      <tr><td><span class="p-name">ConfigKey</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Key for Config Save/Load.</td></tr>
+      <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function(string)</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Fires when the user picks a new option.</td></tr>
+      <tr><td><span class="p-name">Tooltip</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Floating tooltip text shown on hover.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════ MULTIDROPDOWN ════ -->
+<section class="doc-section" id="s-multidd">
+  <div class="method-header">
+    <div class="method-label">Element</div>
+    <div class="method-title"><code>Section:CreateMultiDropdown(config)</code></div>
+    <p class="method-desc">Like <code>CreateDropdown</code>, but allows selecting multiple options simultaneously. Each option shows a checkmark when selected. The header summarises the selection inline (e.g. <code>Head, +2</code>).</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">{ Selected: table,  Set(table),  GetSelected(),  Refresh(table) }</span>
+  </div>
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+<tr><td><span class="p-name">MaxVisibleItems</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">6</span></td><td class="p-desc">Visible list rows before internal scrolling (1–20). The dropdown reserves its full header + visible list height, moving following controls down.</td></tr>
+      <tr><td><span class="p-name">Title</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"MultiDropdown"</span></td><td class="p-desc">Left-side label.</td></tr>
+      <tr><td><span class="p-name">Options</span></td><td><span class="type type-tbl">table</span></td><td><span class="p-default">{}</span></td><td class="p-desc">Array of option strings.</td></tr>
+      <tr><td><span class="p-name">Default</span></td><td><span class="type type-tbl">table</span></td><td><span class="p-default">{}</span></td><td class="p-desc">Array of pre-selected values: <code>{"Head"}</code>.</td></tr>
+      <tr><td><span class="p-name">MaxShow</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">2</span></td><td class="p-desc">Max labels to show inline before collapsing to <code>+N</code>.</td></tr>
+      <tr><td><span class="p-name">ConfigKey</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Key for Config Save/Load.</td></tr>
+      <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function(table)</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Fires on every change. Receives a sorted array of selected strings.</td></tr>
+      <tr><td><span class="p-name">Tooltip</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Floating tooltip text shown on hover.</td></tr>
+    </tbody>
+  </table>
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-mdd')">Copy</button></div>
+    <pre id="ex-mdd"><code><span class="kw">local</span> <span class="vr">parts</span> = <span class="vr">Section</span>:<span class="fn">CreateMultiDropdown</span>({
+    <span class="vr">Title</span>     = <span class="str">"Hitbox Parts"</span>,
+    <span class="vr">Options</span>   = {<span class="str">"Head"</span>, <span class="str">"Torso"</span>, <span class="str">"HumanoidRootPart"</span>, <span class="str">"LeftArm"</span>, <span class="str">"RightArm"</span>},
+    <span class="vr">Default</span>   = {<span class="str">"Head"</span>},
+    <span class="vr">MaxShow</span>   = <span class="num">2</span>,
+    <span class="vr">ConfigKey</span> = <span class="str">"hitbox_parts"</span>,
+    <span class="vr">Callback</span>  = <span class="kw">function</span>(<span class="vr">selected</span>)
+        <span class="cmt">-- selected is a sorted table, e.g. {"Head", "Torso"}</span>
+        <span class="fn">print</span>(<span class="fn">table.concat</span>(<span class="vr">selected</span>, <span class="str">", "</span>))
+    <span class="kw">end</span>
+})
+
+<span class="vr">parts</span>:<span class="fn">Set</span>({<span class="str">"Head"</span>, <span class="str">"Torso"</span>})       <span class="cmt">-- override selection</span>
+<span class="vr">parts</span>:<span class="fn">GetSelected</span>()                <span class="cmt">-- returns current selection table</span>
+<span class="vr">parts</span>:<span class="fn">Refresh</span>({<span class="str">"A"</span>, <span class="str">"B"</span>, <span class="str">"C"</span>})    <span class="cmt">-- swap options list at runtime</span></code></pre>
+  </div>
+</section>
+
+<!-- ════ TEXTBOX ════ -->
+<section class="doc-section" id="s-textbox">
+  <div class="method-header">
+    <div class="method-label">Element</div>
+    <div class="method-title"><code>Section:CreateTextbox(config)</code></div>
+    <p class="method-desc">An inline text input. The border highlights with the accent color on focus. Callback fires on focus-lost or when Enter is pressed.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">{ Text: string,  Set(string) }</span>
+  </div>
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="p-name">Title</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"Textbox"</span></td><td class="p-desc">Label on the left.</td></tr>
+      <tr><td><span class="p-name">Placeholder</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"..."</span></td><td class="p-desc">Greyed hint text when empty.</td></tr>
+      <tr><td><span class="p-name">Default</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">""</span></td><td class="p-desc">Pre-filled value.</td></tr>
+      <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function(text, enterPressed)</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Fires when focus is lost. <code>enterPressed</code> is true if the user pressed Enter.</td></tr>
+      <tr><td><span class="p-name">Tooltip</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Floating tooltip text shown on hover.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════ KEYBIND ════ -->
+<section class="doc-section" id="s-keybind">
+  <div class="method-header">
+    <div class="method-label">Element</div>
+    <div class="method-title"><code>Section:CreateKeybind(config)</code></div>
+    <p class="method-desc">A key-capture button. Clicking puts it into listening mode (<code>[...]</code>); the next key pressed is saved as the binding. Press <kbd>Backspace</kbd> while listening to clear it.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">{ Key: KeyCode,  Set(KeyCode) }</span>
+  </div>
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="p-name">Title</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"Keybind"</span></td><td class="p-desc">Label on the left.</td></tr>
+      <tr><td><span class="p-name">Default</span></td><td><span class="type type-kc">KeyCode</span></td><td><span class="p-default">KeyCode.None</span></td><td class="p-desc">The initial bound key.</td></tr>
+      <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function(KeyCode)</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Fires when a new key is assigned.</td></tr>
+      <tr><td><span class="p-name">Tooltip</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Floating tooltip text shown on hover.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════ COLORPICKER ════ -->
+<section class="doc-section" id="s-color">
+  <div class="method-header">
+    <div class="method-label">Element</div>
+    <div class="method-title"><code>Section:CreateColorPicker(config)</code></div>
+    <p class="method-desc">A compact color swatch that expands into three RGB sliders when clicked. The live preview square updates as you drag.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">{ Color: Color3,  Set(Color3) }</span>
+  </div>
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="p-name">Title</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"Color"</span></td><td class="p-desc">Label on the left.</td></tr>
+      <tr><td><span class="p-name">Default</span></td><td><span class="type type-c3">Color3</span></td><td><span class="p-default">RGB(255,255,255)</span></td><td class="p-desc">Starting color.</td></tr>
+      <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function(Color3)</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Fires continuously as any RGB channel changes.</td></tr>
+      <tr><td><span class="p-name">Tooltip</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Floating tooltip text shown on hover.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════ BUTTON ════ -->
+<section class="doc-section" id="s-button">
+  <div class="method-header">
+    <div class="method-label">Element</div>
+    <div class="method-title"><code>Section:CreateButton(config)</code></div>
+    <p class="method-desc">A clickable button with a ripple effect on press. Background flashes to the accent color and returns.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">TextButton</span>
+  </div>
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="p-name">Title<span class="p-req">required</span></span></td><td><span class="type type-str">string</span></td><td>—</td><td class="p-desc">Button label text.</td></tr>
+      <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function()</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Fires on click.</td></tr>
+      <tr><td><span class="p-name">Tooltip</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Floating tooltip text shown on hover.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════ NOTIFY ════ -->
+<section class="doc-section" id="s-notify">
+  <div class="method-header">
+    <div class="method-label">Hub Feature</div>
+    <div class="method-title"><code>Hub:Notify(config)</code></div>
+    <p class="method-desc">Displays a toast notification in the bottom-right corner. Toasts stack, animate in, drain a progress bar, then dismiss automatically. A close button is always visible.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">nil</span>
+  </div>
+
+  <div class="notify-demo">
+    <div class="toast-chip s"><span class="ti">✓</span><span><strong>Silent Aim</strong> — Enabled</span></div>
+    <div class="toast-chip e"><span class="ti">✕</span><span><strong>Error</strong> — API unreachable</span></div>
+    <div class="toast-chip w"><span class="ti">⚠</span><span><strong>Warning</strong> — Low FPS</span></div>
+    <div class="toast-chip i"><span class="ti">ℹ</span><span><strong>Update</strong> — v2.1 available</span></div>
+  </div>
+
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="p-name">Title</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"Notification"</span></td><td class="p-desc">Bold header line on the toast.</td></tr>
+      <tr><td><span class="p-name">Text</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">""</span></td><td class="p-desc">Dimmer body line. If empty, only the title row is shown.</td></tr>
+      <tr><td><span class="p-name">Type</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"info"</span></td><td class="p-desc"><code>"info"</code> · <code>"success"</code> · <code>"error"</code> · <code>"warning"</code> — controls left-bar color and icon.</td></tr>
+      <tr><td><span class="p-name">Duration</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">3</span></td><td class="p-desc">Seconds the toast stays visible before auto-dismissing.</td></tr>
+    </tbody>
+  </table>
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-notify')">Copy</button></div>
+    <pre id="ex-notify"><code><span class="vr">Hub</span>:<span class="fn">Notify</span>({ <span class="vr">Title</span>=<span class="str">"Silent Aim"</span>, <span class="vr">Text</span>=<span class="str">"Enabled"</span>,         <span class="vr">Type</span>=<span class="str">"success"</span>, <span class="vr">Duration</span>=<span class="num">3</span> })
+<span class="vr">Hub</span>:<span class="fn">Notify</span>({ <span class="vr">Title</span>=<span class="str">"Error"</span>,       <span class="vr">Text</span>=<span class="str">"API unreachable"</span>, <span class="vr">Type</span>=<span class="str">"error"</span>,   <span class="vr">Duration</span>=<span class="num">4</span> })
+<span class="vr">Hub</span>:<span class="fn">Notify</span>({ <span class="vr">Title</span>=<span class="str">"Warning"</span>,     <span class="vr">Text</span>=<span class="str">"Low FPS"</span>,         <span class="vr">Type</span>=<span class="str">"warning"</span>, <span class="vr">Duration</span>=<span class="num">5</span> })
+<span class="vr">Hub</span>:<span class="fn">Notify</span>({ <span class="vr">Title</span>=<span class="str">"Update"</span>,      <span class="vr">Text</span>=<span class="str">"v2.1 available"</span>, <span class="vr">Type</span>=<span class="str">"info"</span> })</code></pre>
+  </div>
+</section>
+
+<!-- ════ WATERMARK ════ -->
+<section class="doc-section" id="s-watermark">
+  <div class="method-header">
+    <div class="method-label">Hub Feature</div>
+    <div class="method-title"><code>Hub:SetWatermark(config)</code></div>
+    <p class="method-desc">Pins a small HUD label to a corner of the screen. Supports live placeholders that update every frame. The FPS value is color-coded: green ≥ 50, yellow ≥ 30, red &lt; 30.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Methods</span>
+    <span class="returns-type">SetWatermark · UpdateWatermark(fmt) · RemoveWatermark()</span>
+  </div>
+
+  <div class="wm-preview">
+    <div class="wm-chip">TigerDusty  |  <span class="fps">144 fps</span>  |  23ms</div>
+  </div>
+
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="p-name">Format</span></td>
+        <td><span class="type type-str">string</span></td>
+        <td><span class="p-default">"{player} | {fps} fps"</span></td>
+        <td class="p-desc">
+          Template string. Available placeholders:<br>
+          <code>{player}</code> — local player name<br>
+          <code>{fps}</code> — current FPS (color-coded)<br>
+          <code>{ping}</code> — server ping in ms<br>
+          <code>{time}</code> — local clock <code>HH:MM:SS</code><br>
+          <code>{game}</code> — game name
+        </td>
+      </tr>
+      <tr><td><span class="p-name">Position</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"TopRight"</span></td><td class="p-desc"><code>"TopLeft"</code> · <code>"TopRight"</code> · <code>"BottomLeft"</code> · <code>"BottomRight"</code></td></tr>
+      <tr><td><span class="p-name">BgAlpha</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">0.45</span></td><td class="p-desc">Background transparency. <code>0</code> = fully opaque, <code>1</code> = invisible.</td></tr>
+    </tbody>
+  </table>
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-wm')">Copy</button></div>
+    <pre id="ex-wm"><code><span class="vr">Hub</span>:<span class="fn">SetWatermark</span>({
+    <span class="vr">Format</span>   = <span class="str">"{player}  |  {fps} fps  |  {ping}ms"</span>,
+    <span class="vr">Position</span> = <span class="str">"TopRight"</span>,
+    <span class="vr">BgAlpha</span>  = <span class="num">0.45</span>
+})
+
+<span class="cmt">-- Change format without rebuilding the widget</span>
+<span class="vr">Hub</span>:<span class="fn">UpdateWatermark</span>(<span class="str">"{player}  |  {game}  |  {time}"</span>)
+
+<span class="cmt">-- Remove entirely</span>
+<span class="vr">Hub</span>:<span class="fn">RemoveWatermark</span>()</code></pre>
+  </div>
+</section>
+
+<!-- ════ CONFIG ════ -->
+<section class="doc-section" id="s-config">
+  <div class="method-header">
+    <div class="method-label">Hub Feature</div>
+    <div class="method-title"><code>Hub:SaveConfig / Hub:LoadConfig</code></div>
+    <p class="method-desc">Persist element values to disk between sessions. Any element that has a <code>ConfigKey</code> is automatically registered. Saved to <code>HutameHub_name.cfg</code> using the executor's <code>writefile</code> / <code>readfile</code>. A Notify toast confirms success or failure.</p>
+  </div>
+
+  <div class="callout orange">
+    <span class="callout-icon">⚠</span>
+    <span><strong>Executor required.</strong> <code>writefile</code> and <code>readfile</code> are executor globals. They are not available in a normal Roblox game. The library shows an error notification if they are missing.</span>
+  </div>
+
+  <div class="params-title">Methods</div>
+  <table class="params-table">
+    <thead><tr><th>Method</th><th>Parameter</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="p-name">Hub:SaveConfig(name)</span></td><td><span class="type type-str">string</span></td><td class="p-desc">Writes all registered element values to <code>HutameHub_name.cfg</code>.</td></tr>
+      <tr><td><span class="p-name">Hub:LoadConfig(name)</span></td><td><span class="type type-str">string</span></td><td class="p-desc">Reads the file and restores each element. Shows a toast with the count of restored values.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout green">
+    <span class="callout-icon">✓</span>
+    <span>Add <code>ConfigKey = "my_key"</code> to any <strong>Toggle</strong>, <strong>Slider</strong>, <strong>Dropdown</strong>, or <strong>MultiDropdown</strong> to opt it into the save system — no extra code needed.</span>
+  </div>
+
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-cfg')">Copy</button></div>
+    <pre id="ex-cfg"><code><span class="cmt">-- Register elements by adding ConfigKey</span>
+<span class="vr">Left</span>:<span class="fn">CreateToggle</span>({ <span class="vr">Title</span>=<span class="str">"Silent Aim"</span>, <span class="vr">Default</span>=<span class="kw">false</span>, <span class="vr">ConfigKey</span>=<span class="str">"silent_aim"</span> })
+<span class="vr">Left</span>:<span class="fn">CreateSlider</span>({ <span class="vr">Title</span>=<span class="str">"FOV"</span>, <span class="vr">Min</span>=<span class="num">10</span>, <span class="vr">Max</span>=<span class="num">500</span>, <span class="vr">Default</span>=<span class="num">150</span>, <span class="vr">ConfigKey</span>=<span class="str">"fov"</span> })
+<span class="vr">Right</span>:<span class="fn">CreateDropdown</span>({ <span class="vr">Title</span>=<span class="str">"Aim Part"</span>, <span class="vr">Options</span>={<span class="str">"Head"</span>,<span class="str">"Torso"</span>}, <span class="vr">ConfigKey</span>=<span class="str">"aim_part"</span> })
+<span class="vr">Right</span>:<span class="fn">CreateMultiDropdown</span>({ <span class="vr">Title</span>=<span class="str">"Parts"</span>, <span class="vr">Options</span>={<span class="str">"Head"</span>,<span class="str">"Torso"</span>}, <span class="vr">ConfigKey</span>=<span class="str">"parts"</span> })
+
+<span class="cmt">-- Save / Load (e.g. from a Settings tab button)</span>
+<span class="vr">CfgSection</span>:<span class="fn">CreateButton</span>({
+    <span class="vr">Title</span>    = <span class="str">"Save Config"</span>,
+    <span class="vr">Callback</span> = <span class="kw">function</span>() <span class="vr">Hub</span>:<span class="fn">SaveConfig</span>(<span class="str">"default"</span>) <span class="kw">end</span>
+})
+
+<span class="vr">CfgSection</span>:<span class="fn">CreateButton</span>({
+    <span class="vr">Title</span>    = <span class="str">"Load Config"</span>,
+    <span class="vr">Callback</span> = <span class="kw">function</span>() <span class="vr">Hub</span>:<span class="fn">LoadConfig</span>(<span class="str">"default"</span>) <span class="kw">end</span>
+})</code></pre>
+  </div>
+</section>
+
+<!-- ════ LOADING SCREEN ════ -->
+<section class="doc-section" id="s-loading">
+  <div class="method-header">
+    <div class="method-label">Hub Feature</div>
+    <div class="method-title"><code>Library.new({ LoadingScreen: true })</code></div>
+    <p class="method-desc">A full-screen animated splash is shown automatically when the hub loads. It displays a logo, title, version, a status message and a filling progress bar, then fades out and reveals the main window.</p>
+  </div>
+
+  <div class="callout green">
+    <span class="callout-icon">✓</span>
+    <span>Enabled by default. Pass <code>LoadingScreen = false</code> to skip it entirely.</span>
+  </div>
+
+  <div class="params-title">Properties (inside Library.new config)</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="p-name">LoadingScreen</span></td><td><span class="type type-bool">boolean</span></td><td><span class="p-default">true</span></td><td class="p-desc">Set to <code>false</code> to disable the splash entirely.</td></tr>
+      <tr><td><span class="p-name">LoadingDuration</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">1.8</span></td><td class="p-desc">Total seconds the progress bar takes to fill before fading out.</td></tr>
+    </tbody>
+  </table>
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-ls')">Copy</button></div>
+    <pre id="ex-ls"><code><span class="cmt">-- Default: splash shows automatically</span>
+<span class="kw">local</span> <span class="vr">Hub</span> = <span class="vr">Library</span>.<span class="fn">new</span>({
+    <span class="vr">Title</span>           = <span class="str">"MyHub"</span>,
+    <span class="vr">Version</span>         = <span class="str">"v2.0"</span>,
+    <span class="vr">LoadingDuration</span> = <span class="num">2.5</span>,   <span class="cmt">-- slower for more dramatic feel</span>
+})
+
+<span class="cmt">-- Opt out</span>
+<span class="kw">local</span> <span class="vr">Hub</span> = <span class="vr">Library</span>.<span class="fn">new</span>({
+    <span class="vr">Title</span>         = <span class="str">"MyHub"</span>,
+    <span class="vr">LoadingScreen</span> = <span class="kw">false</span>,
+})</code></pre>
+  </div>
+</section>
+
+<!-- ════ SECTION COLLAPSE ════ -->
+<section class="doc-section" id="s-collapse">
+  <div class="method-header">
+    <div class="method-label">UI Behaviour</div>
+    <div class="method-title">Section Collapse</div>
+    <p class="method-desc">Every section header has a collapse arrow (▲/▼). Clicking it folds the section down to just the header row, animating the card height. Clicking again expands it. Useful for tabs with many sections.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Methods on Section</span>
+    <span class="returns-type">Section:Collapse()  ·  Section:Expand()</span>
+  </div>
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-col')">Copy</button></div>
+    <pre id="ex-col"><code><span class="kw">local</span> <span class="vr">Section</span> = <span class="vr">Tab</span>:<span class="fn">CreateSection</span>(<span class="str">"Advanced"</span>)
+
+<span class="cmt">-- Collapse programmatically (e.g. start collapsed)</span>
+<span class="vr">Section</span>:<span class="fn">Collapse</span>()
+
+<span class="cmt">-- Expand again</span>
+<span class="vr">Section</span>:<span class="fn">Expand</span>()
+
+<span class="cmt">-- The user can also click the ▲ arrow in the section header at any time</span></code></pre>
+  </div>
+</section>
+
+<!-- ════ TAB BADGE ════ -->
+<section class="doc-section" id="s-badge">
+  <div class="method-header">
+    <div class="method-label">UI Behaviour</div>
+    <div class="method-title"><code>Tab:SetBadge(n)</code></div>
+    <p class="method-desc">Displays a small accent-colored counter badge on the tab button — like a notification badge. Pass a number to set it, or call <code>ClearBadge()</code> to remove it. Numbers above 99 show as <code>99+</code>.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Methods</span>
+    <span class="returns-type">Tab:SetBadge(n)  ·  Tab:ClearBadge()</span>
+  </div>
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-badge')">Copy</button></div>
+    <pre id="ex-badge"><code><span class="kw">local</span> <span class="vr">CombatTab</span> = <span class="vr">Hub</span>:<span class="fn">CreateTab</span>(<span class="str">"Combat"</span>)
+
+<span class="cmt">-- Show a badge with count (e.g. "3 features active")</span>
+<span class="vr">CombatTab</span>:<span class="fn">SetBadge</span>(<span class="num">3</span>)
+
+<span class="cmt">-- Update count</span>
+<span class="vr">CombatTab</span>:<span class="fn">SetBadge</span>(<span class="num">1</span>)
+
+<span class="cmt">-- Remove badge</span>
+<span class="vr">CombatTab</span>:<span class="fn">ClearBadge</span>()
+
+<span class="cmt">-- Typical pattern: increment when a toggle turns on</span>
+<span class="kw">local</span> <span class="vr">active</span> = <span class="num">0</span>
+<span class="vr">Section</span>:<span class="fn">CreateToggle</span>({
+    <span class="vr">Title</span>    = <span class="str">"Silent Aim"</span>,
+    <span class="vr">Callback</span> = <span class="kw">function</span>(<span class="vr">on</span>)
+        <span class="vr">active</span> = <span class="vr">active</span> + (<span class="vr">on</span> <span class="kw">and</span> <span class="num">1</span> <span class="kw">or</span> -<span class="num">1</span>)
+        <span class="vr">CombatTab</span>:<span class="fn">SetBadge</span>(<span class="vr">active</span>)
+    <span class="kw">end</span>
+})</code></pre>
+  </div>
+</section>
+
+<!-- ════ MOBILE LAYOUT ════ -->
+<section class="doc-section" id="s-mobile">
+  <div class="method-header">
+    <div class="method-label">UI Behaviour</div>
+    <div class="method-title">Mobile Layout</div>
+    <p class="method-desc">When the viewport width drops below <strong>600 px</strong> (phone / tablet), the library automatically switches each tab from a two-column layout to a single full-width scrolling column. Right-column sections are appended below the left ones. The layout re-checks every time the viewport is resized or a tab is switched.</p>
+  </div>
+
+  <div class="callout blue">
+    <span class="callout-icon">📱</span>
+    <span>This is <strong>automatic</strong> — no configuration needed. It activates on phones and small screens, and reverts on larger viewports.</span>
+  </div>
+
+  <table class="params-table">
+    <thead><tr><th>Condition</th><th>Behaviour</th></tr></thead>
+    <tbody>
+      <tr><td class="p-desc">Viewport <code>width &lt; 600px</code></td><td class="p-desc">Single full-width column. Right sections stacked below left sections. Divider hidden.</td></tr>
+      <tr><td class="p-desc">Viewport <code>width ≥ 600px</code></td><td class="p-desc">Normal two-column layout. Divider visible.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════ TOOLTIP ════ -->
+<section class="doc-section" id="s-tooltip">
+  <div class="method-header">
+    <div class="method-label">Visual FX · New in v2.1</div>
+    <div class="method-title"><code>Tooltip</code> parameter</div>
+    <p class="method-desc">Pass a <code>Tooltip</code> string inside any element's config table. When the user hovers over the element for 0.4 seconds, a small floating label fades in near the cursor. Moving away fades it out instantly. The tooltip follows the mouse and automatically repositions itself if it would overflow the screen edge.</p>
+  </div>
+
+  <div class="callout green">
+    <span class="callout-icon">✓</span>
+    <span>Works on all eight element types: <strong>Toggle</strong>, <strong>Slider</strong>, <strong>Dropdown</strong>, <strong>MultiDropdown</strong>, <strong>Textbox</strong>, <strong>Keybind</strong>, <strong>ColorPicker</strong>, and <strong>Button</strong>.</span>
+  </div>
+
+  <div class="params-title">Tooltip behaviour</div>
+  <table class="params-table">
+    <thead><tr><th>Detail</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td class="p-desc">Hover delay before appearing</td><td class="p-desc"><code>0.4 s</code></td></tr>
+      <tr><td class="p-desc">Fade-in duration</td><td class="p-desc"><code>0.18 s</code> — TweenService Sine Out</td></tr>
+      <tr><td class="p-desc">Fade-out duration</td><td class="p-desc"><code>0.12 s</code></td></tr>
+      <tr><td class="p-desc">Frame reuse</td><td class="p-desc">One shared tooltip frame per Hub instance — no memory bloat.</td></tr>
+      <tr><td class="p-desc">Screen overflow guard</td><td class="p-desc">Tooltip flips to the left of the cursor when it would clip the right edge.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-tooltip')">Copy</button></div>
+    <pre id="ex-tooltip"><code><span class="cmt">-- Add Tooltip = "..." to any element config</span>
+<span class="vr">Section</span>:<span class="fn">CreateToggle</span>({
+    <span class="vr">Title</span>    = <span class="str">"Silent Aim"</span>,
+    <span class="vr">Default</span>  = <span class="kw">false</span>,
+    <span class="vr">Tooltip</span>  = <span class="str">"Snaps your bullet to the closest hitbox."</span>,
+    <span class="vr">Callback</span> = <span class="kw">function</span>(<span class="vr">v</span>) <span class="fn">print</span>(<span class="vr">v</span>) <span class="kw">end</span>
+})
+
+<span class="vr">Section</span>:<span class="fn">CreateSlider</span>({
+    <span class="vr">Title</span>    = <span class="str">"FOV Radius"</span>,
+    <span class="vr">Min</span>      = <span class="num">10</span>, <span class="vr">Max</span> = <span class="num">500</span>, <span class="vr">Default</span> = <span class="num">150</span>,
+    <span class="vr">Tooltip</span>  = <span class="str">"Visual FOV circle radius in pixels."</span>,
+    <span class="vr">Callback</span> = <span class="kw">function</span>(<span class="vr">v</span>) <span class="fn">print</span>(<span class="vr">v</span>) <span class="kw">end</span>
+})
+
+<span class="vr">Section</span>:<span class="fn">CreateButton</span>({
+    <span class="vr">Title</span>    = <span class="str">"Reset Settings"</span>,
+    <span class="vr">Tooltip</span>  = <span class="str">"Restores all values to their defaults."</span>,
+    <span class="vr">Callback</span> = <span class="kw">function</span>() <span class="fn">print</span>(<span class="str">"reset"</span>) <span class="kw">end</span>
+})
+
+<span class="vr">Section</span>:<span class="fn">CreateKeybind</span>({
+    <span class="vr">Title</span>    = <span class="str">"Trigger Key"</span>,
+    <span class="vr">Default</span>  = Enum.KeyCode.F,
+    <span class="vr">Tooltip</span>  = <span class="str">"Hold this key to activate while in-game."</span>
+})</code></pre>
+  </div>
+</section>
+
+<!-- ════ SNOW EFFECT ════ -->
+<section class="doc-section" id="s-snow">
+  <div class="method-header">
+    <div class="method-label">Visual FX · New in v2.1</div>
+    <div class="method-title">Snow Effect</div>
+    <p class="method-desc">While the loading screen is visible, animated snowflakes fall across the background. Flakes are lightweight <code>TextLabel</code> instances using unicode characters (<code>• · ✦ ∗ ❄</code>), moved entirely via <strong>TweenService</strong>. A burst of 18 pre-positioned flakes starts immediately, followed by a continuous spawn loop. When the progress bar completes, <code>stopSnow()</code> fades every remaining flake out and destroys them.</p>
+  </div>
+
+  <div class="callout blue">
+    <span class="callout-icon">❄</span>
+    <span>The effect is <strong>automatic</strong> — it runs whenever <code>LoadingScreen</code> is enabled (the default). No extra configuration needed.</span>
+  </div>
+
+  <div class="params-title">Implementation details</div>
+  <table class="params-table">
+    <thead><tr><th>Detail</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td class="p-desc">Max active flakes</td><td class="p-desc"><code>55</code></td></tr>
+      <tr><td class="p-desc">Spawn rate</td><td class="p-desc">~5 per second (Heartbeat, probability-based)</td></tr>
+      <tr><td class="p-desc">Fall duration per flake</td><td class="p-desc"><code>3.5 – 7 s</code> (randomised)</td></tr>
+      <tr><td class="p-desc">Horizontal drift</td><td class="p-desc">±4 % width (randomised per flake)</td></tr>
+      <tr><td class="p-desc">Flake size</td><td class="p-desc"><code>5 – 11 px</code> TextSize</td></tr>
+      <tr><td class="p-desc">Accent colour mix</td><td class="p-desc">30 % of flakes tint to the hub's Accent color.</td></tr>
+      <tr><td class="p-desc">Cleanup</td><td class="p-desc">Completed tweens self-destroy; <code>stopSnow()</code> fades survivors in 0.4 s and calls <code>Debris:AddItem</code>.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout orange">
+    <span class="callout-icon">⚠</span>
+    <span>To disable <strong>both</strong> the loading screen and the snow effect, pass <code>LoadingScreen = false</code> in <code>Library.new()</code>.</span>
+  </div>
+
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-snow')">Copy</button></div>
+    <pre id="ex-snow"><code><span class="cmt">-- Snow effect runs automatically with the loading screen.</span>
+<span class="cmt">-- Slower duration = more time to enjoy the snow!</span>
+<span class="kw">local</span> <span class="vr">Hub</span> = <span class="vr">Library</span>.<span class="fn">new</span>({
+    <span class="vr">Title</span>           = <span class="str">"MyHub"</span>,
+    <span class="vr">Version</span>         = <span class="str">"v2.1"</span>,
+    <span class="vr">Accent</span>          = Color3.<span class="fn">fromRGB</span>(<span class="num">80</span>, <span class="num">180</span>, <span class="num">240</span>),   <span class="cmt">-- ice-blue accent</span>
+    <span class="vr">LoadingDuration</span> = <span class="num">3.0</span>,                           <span class="cmt">-- longer = more snow time</span>
+})
+
+<span class="cmt">-- To disable entirely:</span>
+<span class="kw">local</span> <span class="vr">Hub</span> = <span class="vr">Library</span>.<span class="fn">new</span>({ <span class="vr">LoadingScreen</span> = <span class="kw">false</span> })</code></pre>
+  </div>
+</section>
+<section class="doc-section guide" id="s-utilities"><h1 class="method-title">Profiles and control utilities</h1>
+<p>All examples use the existing <code>Library.new()</code> / <code>Hub:CreateTab()</code> API.
+See <a href="examples/ui-test.lua">the complete interactive test</a> for a profile manager,
+confirmation dialogs, conditional controls and reset buttons.</p>
+<h2>Profiles</h2>
+<p>Give value controls a unique <code>ConfigKey</code>. Toggle, Slider, Dropdown,
+MultiDropdown, Textbox, Keybind and ColorPicker are supported. Buttons are not values.</p>
+<table>
+<thead>
+<tr>
+<th>Hub method</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>SaveProfile(name)</code></td>
+<td>Create or overwrite a profile with current registered values</td>
+</tr>
+<tr>
+<td><code>LoadProfile(name)</code></td>
+<td>Restore registered values and refresh conditions</td>
+</tr>
+<tr>
+<td><code>ListProfiles()</code></td>
+<td>Return sorted names saved through SaveProfile</td>
+</tr>
+<tr>
+<td><code>RenameProfile(oldName, newName)</code></td>
+<td>Rename without overwriting another profile</td>
+</tr>
+<tr>
+<td><code>DeleteProfile(name)</code></td>
+<td>Delete the profile and clear its default selection if needed</td>
+</tr>
+<tr>
+<td><code>SetDefaultProfile(name)</code></td>
+<td>Remember a profile; pass nil to clear</td>
+</tr>
+<tr>
+<td><code>LoadDefaultProfile()</code></td>
+<td>Restore it; call after creating every control</td>
+</tr>
+</tbody></table>
+<p>Mutating profile methods and load methods return <code>ok, error</code>. Names contain 1–48
+letters, digits, underscores or hyphens. Storage requires <code>readfile</code> / <code>writefile</code>;
+rename and delete additionally require <code>delfile</code>. Profiles use <code>HutameHub_NAME.cfg</code>
+and <code>HutameHub_profiles.json</code> in the environment&#39;s filesystem. Existing
+SaveConfig/LoadConfig remain available; old files can be loaded by name but are
+not automatically indexed. Profile loading may partially restore values if a setter fails.</p>
+<h2>Reset</h2>
+<p>Every value control has <code>control:Reset()</code>. <code>Hub:ResetValues()</code> resets all value
+controls, including those without ConfigKey, to their creation defaults. Setters
+keep their existing callback semantics: Textbox and Keybind Set do not call the
+user callback, while conditions and conflict checks still update. Saved profiles
+are unchanged until explicitly saved again.</p>
+<h2>Conditional controls</h2>
+<pre><code class="language-lua">local Enabled = Section:CreateToggle({Title=&quot;Advanced&quot;, Default=false})
+local Amount = Section:CreateSlider({Title=&quot;Amount&quot;, Min=0, Max=100,
+    VisibleWhen=function() return Enabled.State end})
+Section:CreateButton({Title=&quot;Apply&quot;,
+    EnabledWhen=function() return Enabled.State end,
+    Callback=function() print(&quot;Applied&quot;) end})
+-- Alternative for an existing control:
+Hub:SetCondition(Amount, function() return Enabled.State end, &quot;hide&quot;)
+</code></pre>
+<p>Available on the eight config-table control constructors (including Button).
+Use <code>hide</code> or <code>disable</code>. Conditions reevaluate after control callbacks, Set,
+reset and profile loading. Call <code>Hub:RefreshConditions()</code> when external state
+changes. Predicates should only read state. Disabled controls block user input;
+programmatic Set remains available. Hidden controls retain their value.</p>
+<h2>Confirmation</h2>
+<pre><code class="language-lua">Hub:Confirm({Title=&quot;Reset values&quot;, Text=&quot;Restore defaults?&quot;,
+    ConfirmText=&quot;Reset&quot;, CancelText=&quot;Keep values&quot;,
+    OnConfirm=function() Hub:ResetValues() end,
+    OnCancel=function() print(&quot;Cancelled&quot;) end})
+</code></pre>
+<p>Only Confirm runs OnConfirm. The returned handle has <code>Cancel()</code>. A new dialog
+replaces the previous one. Profile deletion and reset methods are direct API
+operations: wrap them in Confirm as the interactive example does.</p>
+<h2>Mobile toggle and key conflicts</h2>
+<p><code>Library.new({MobileToggle=true})</code> shows a draggable 48×48 HH button. Omit the
+option to show it on touch devices only; false disables it. Tap to hide/show the
+main window; drag without toggling. RightControl/custom ToggleKey and Minus still work.</p>
+<p>Duplicate bindings display a warning naming both actions. Checks include toggle
+Keybinds, key selector controls, the window ToggleKey and Minus. None is ignored.
+Warnings do not change bindings or block assignment.</p>
+<h2>Validation</h2>
+<p><code>tests/features.lua</code> covers profile lifecycle, storage errors, reset dispatch,
+condition state and conflict warning deduplication using a headless Lua harness.
+Roblox visual layout, actual touch delivery and modal focus require client testing.</p>
+</section><nav class="page-pagination" aria-label="Previous and next topic"></nav></main><aside class="page-toc" aria-label="On this page"></aside></div>
+<script>
+// ── Copy Loadstring ────────────────────────────────
+function copyLoadstring() {
+  navigator.clipboard.writeText(
+    'local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/hutamev2/HutameHub-Lib/main/Source.lua"))()'
+  ).then(() => {
+    const btn = document.getElementById('copyLsBtn');
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = 'Copy Loadstring'; btn.classList.remove('ok'); }, 2200);
+  });
+}
+
+// ── Copy code block ────────────────────────────────
+function copyCode(btn, id) {
+  const el = document.getElementById(id);
+  navigator.clipboard.writeText(el.innerText).then(() => {
+    btn.textContent = '✓ Copied';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('ok'); }, 2000);
+  });
+}
+
+// ── Sidebar search ─────────────────────────────────
+function filterNav() {
+  const q = document.getElementById('sbSearch').value.toLowerCase();
+  document.querySelectorAll('.sb-links li').forEach(li => {
+    li.style.display = li.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+  document.querySelectorAll('.sb-group').forEach(g => {
+    const vis = [...g.querySelectorAll('li')].some(li => li.style.display !== 'none');
+    g.style.display = vis ? '' : 'none';
+  });
+}
+</script>
+<script src="reading.js"></script></body>
 </html>
