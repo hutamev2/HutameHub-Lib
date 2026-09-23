@@ -466,6 +466,7 @@ p code, li code, td code{
 }
 </style>
 <link rel="stylesheet" href="reading.css">
+<link rel="describedby" href="llms.txt" type="text/plain">
 </head>
 <body><a class="skip-link" href="#content">Skip to content</a>
 
@@ -500,6 +501,7 @@ p code, li code, td code{
     <ul class="sb-links">
       <li><a href="#intro" class="active">Introduction</a></li>
       <li><a href="#quickstart">Quick Start</a></li>
+      <li><a href="ai-guide.md">AI Guide <span class="sb-badge new-badge">One file</span></a></li>
       <li><a href="#s-types">Type Check</a></li>
       <li><a href="#s-fullexample">Full Example <span class="sb-badge new-badge">New</span></a></li>
     </ul>
@@ -565,6 +567,11 @@ p code, li code, td code{
   <div class="page-hero-eyebrow">⚡ Private Hub Style · Luau</div>
   <h1>HutameHub Library</h1>
   <p>A compact, two-column Roblox Luau UI framework inspired by the best private hubs. Horizontal tab bar, checkbox toggles, thin sliders — built entirely with Roblox's native API. Now featuring a <strong>hover Tooltip system</strong> and a <strong>Snow Effect</strong> on the loading screen.</p>
+
+  <div class="callout blue">
+    <span class="callout-icon">◇</span>
+    <span><strong>Building with an AI?</strong> Send it the <a href="ai-guide.md">one-page AI guide</a>. It has a complete UI example, the exact API names and common mistakes in one file. <button class="copy-code" type="button" onclick="copyAiGuideLink(this)">Copy AI link</button></span>
+  </div>
 
   <div class="feat-grid">
     <div class="feat-chip"><span class="dot"></span>Horizontal Tab Bar</div>
@@ -1888,6 +1895,13 @@ function copyLoadstring() {
     btn.textContent = '✓ Copied!';
     btn.classList.add('ok');
     setTimeout(() => { btn.textContent = 'Copy Loadstring'; btn.classList.remove('ok'); }, 2200);
+  });
+}
+
+function copyAiGuideLink(btn) {
+  navigator.clipboard.writeText(new URL('ai-guide.md', document.baseURI).href).then(() => {
+    btn.textContent = '✓ Copied';
+    setTimeout(() => { btn.textContent = 'Copy AI link'; }, 2000);
   });
 }
 
