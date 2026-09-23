@@ -479,6 +479,7 @@ function Library:_build()
         self.Accent:ToHex(), self.Title,
         T.TextDim:ToHex(), self.Version
     )
+    self._titleLabel = brand
     self:_onAccent(function(c)
         brand.Text = string.format(
             '<font color="#%s">%s</font>  <font color="#%s">%s</font>',
@@ -1733,6 +1734,13 @@ end
 function Library:SetTitle(title, version)
     self.Title   = title   or self.Title
     self.Version = version or self.Version
+    if self._titleLabel then
+        self._titleLabel.Text = string.format(
+            '<font color="#%s">%s</font>  <font color="#%s">%s</font>',
+            self.Accent:ToHex(), self.Title,
+            T.TextDim:ToHex(), self.Version
+        )
+    end
 end
 
 -- ==============================================================================

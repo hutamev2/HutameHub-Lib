@@ -33,6 +33,7 @@ Dokümantasyon `docs/` içindeki statik sayfadan yayımlanır. `main` dalındaki
 - **Dropdown yerleşimi:** tekli/çoklu liste section içinde yer açar; alttaki düğmeleri aşağı iter. `MaxVisibleItems` (varsayılan 6, 1–20) sonrası iç kaydırma kullanılır. Section aç/kapat geçişi iptal edilebilir 0.2 saniyelik tween ile çalışır. Test örneğindeki **Layout** sekmesinden kontrol edebilirsin.
 
 - **Config profilleri:** oluştur, yükle, yeniden adlandır, sil ve varsayılan seç. Yedi değer kontrolü `ConfigKey` ile kaydedilir.
+- **Config UI örneği:** [Full Example](https://hutamev2.github.io/HutameHub-Lib/#s-fullexample) içindeki **Profiles** sekmesinde ayrı Create, Overwrite (onaylı), Load ve varsayılan profil işlemleri bulunur.
 - **Mobil düğme:** dokunmatik cihazlarda otomatik; `MobileToggle = true` ile masaüstünde de gösterilir. Taşı veya dokunarak UI'ı aç/kapat.
 - **Sıfırlama:** `control:Reset()` ve `Hub:ResetValues()`.
 - **Koşullar:** `VisibleWhen`, `EnabledWhen`, `Hub:SetCondition()`.

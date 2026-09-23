@@ -12,7 +12,8 @@ function http:JSONEncode(value)
     encoded[token] = copy(value); return token
 end
 function http:JSONDecode(token) assert(encoded[token], "Invalid JSON"); return copy(encoded[token]) end
-Color3 = {fromRGB=function() return {} end, new=function() return {} end}
+local function color() return {ToHex=function() return "ffffff" end} end
+Color3 = {fromRGB=color, new=color}
 Enum = {KeyCode={Minus={Name="Minus"}, RightControl={Name="RightControl"}, F={Name="F"}, None={Name="None"}}}
 game = {GetService=function(_, name) return name == "HttpService" and http or {} end}
 warn = function() end
@@ -24,6 +25,13 @@ local Library = dofile("Source.lua")
 local notices = {}
 local hub = setmetatable({ToggleKey=Enum.KeyCode.RightControl}, {__index=Library})
 hub.Notify = function(_, notice) table.insert(notices, notice) end
+hub.Accent = color(); hub.Title = "Before"; hub.Version = "v1"
+hub._titleLabel = {}
+hub:SetTitle("After", "v2")
+assert(hub.Title == "After" and hub.Version == "v2")
+assert(hub._titleLabel.Text:find("After", 1, true) and hub._titleLabel.Text:find("v2", 1, true))
+hub:SetTitle(nil, "v3")
+assert(hub.Title == "After" and hub._titleLabel.Text:find("v3", 1, true))
 local value = "first"
 hub:_regElement("text", function() return value end, function(v) value = v end)
 assert(not pcall(function() hub:_regElement("text", function() end, function() end) end))

@@ -47,6 +47,7 @@ rename and delete additionally require <code>delfile</code>. Profiles use <code>
 and <code>HutameHub_profiles.json</code> in the environment&#39;s filesystem. Existing
 SaveConfig/LoadConfig remain available; old files can be loaded by name but are
 not automatically indexed. Profile loading may partially restore values if a setter fails.</p>
+<p>The Full Example's <strong>Config profiles</strong> section has separate Create, Overwrite and Load buttons. Create checks existing profiles and config files; Overwrite asks for confirmation. <code>SaveProfile(name)</code> itself creates or overwrites, so guard Create in your own config UI.</p>
 <h2>Reset</h2>
 <p>Every value control has <code>control:Reset()</code>. <code>Hub:ResetValues()</code> resets all value
 controls, including those without ConfigKey, to their creation defaults. Setters

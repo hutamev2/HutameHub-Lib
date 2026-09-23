@@ -126,8 +126,15 @@ button(Actions, "Update watermark", function()
     Hub:UpdateWatermark("{game} | {fps} fps")
 end)
 button(Actions, "Remove watermark", function() Hub:RemoveWatermark() end)
+button(Actions, "Set window title", function() Hub:SetTitle("HutameHub Renamed", "v2.3 test") end)
+button(Actions, "Restore window title", function() Hub:SetTitle("HutameHub UI Test", "v2.3") end)
 button(Actions, "Save test config", function() Hub:SaveConfig("ui_test") end)
 button(Actions, "Load test config", function() Hub:LoadConfig("ui_test") end)
+button(Actions, "Test cancel callback", function()
+    Hub:Confirm({Title="Cancel test", Text="Press Cancel to test OnCancel.",
+        OnConfirm=function() report("Confirm", "accepted") end,
+        OnCancel=function() report("Confirm", "cancelled") end})
+end)
 button(Actions, "Read current values", function()
     report("Toggle.State", Toggle.State)
     report("Slider.Value", Slider.Value)
@@ -140,24 +147,53 @@ button(Actions, "Destroy UI (test last)", function() Hub:Destroy() end)
 
 -- Save -> change controls -> Load -> inspect all seven registered value types.
 local Profiles = Hub:CreateTab("Profiles")
-local Manager = Profiles:CreateSection("Profile manager", "left")
+local Manager = Profiles:CreateSection("Config profiles", "left")
 local Conditional = Profiles:CreateSection("Conditions and reset", "right")
 local ProfileName = Manager:CreateTextbox({Title="Profile name", Default="demo"})
 local RenameTo = Manager:CreateTextbox({Title="Rename to", Default="demo_copy"})
 local ProfileList = Manager:CreateDropdown({Title="Saved profiles", Options=Hub:ListProfiles(),
     Callback=function(name) ProfileName:Set(name) end})
 local function refreshProfiles() ProfileList:Refresh(Hub:ListProfiles()) end
+local function profileExists(name)
+    if type(name) ~= "string" or not name:match("^[%w_%-]+$") or #name > 48 then return false end
+    for _, existing in ipairs(Hub:ListProfiles()) do
+        if existing == name then return true end
+    end
+    -- SaveConfig uses the same filename without adding it to the profile list.
+    if type(readfile) ~= "function" then return false end
+    local ok, content = pcall(readfile, "HutameHub_" .. name .. ".cfg")
+    return ok and content ~= nil
+end
 local function result(ok, err)
     if not ok then Hub:Notify({Title="Profile error", Text=tostring(err), Type="error"}) end
     refreshProfiles()
 end
-button(Manager, "Create / save profile", function()
-    Hub:Confirm({Title="Save profile", Text="Save current values? An existing profile will be overwritten.",
-        OnConfirm=function() result(Hub:SaveProfile(ProfileName.Text)) end})
+Manager:CreateLabel("Create never overwrites; Overwrite requires confirmation.")
+button(Manager, "Create config profile", function()
+    local name = ProfileName.Text
+    if profileExists(name) then
+        Hub:Notify({Title="Profile exists", Text="Use Overwrite instead.", Type="warning"})
+        return
+    end
+    result(Hub:SaveProfile(name))
 end)
-button(Manager, "Load selected profile", function() result(Hub:LoadProfile(ProfileName.Text)) end)
+button(Manager, "Overwrite config profile", function()
+    local name = ProfileName.Text
+    if not profileExists(name) then
+        Hub:Notify({Title="Profile missing", Text="Create it first.", Type="warning"})
+        return
+    end
+    Hub:Confirm({Title="Overwrite profile", Text="Replace saved values in " .. name .. "?",
+        OnConfirm=function() result(Hub:SaveProfile(name)) end})
+end)
+button(Manager, "Load config profile", function() result(Hub:LoadProfile(ProfileName.Text)) end)
 button(Manager, "Rename profile", function() result(Hub:RenameProfile(ProfileName.Text, RenameTo.Text)) end)
 button(Manager, "Set default profile", function() result(Hub:SetDefaultProfile(ProfileName.Text)) end)
+button(Manager, "Clear default profile", function()
+    local ok, err = Hub:SetDefaultProfile(nil)
+    result(ok, err)
+    if ok then Hub:Notify({Title="Profile", Text="Default cleared", Type="success"}) end
+end)
 button(Manager, "Load default profile", function() result(Hub:LoadDefaultProfile()) end)
 button(Manager, "Delete profile", function()
     local name = ProfileName.Text
@@ -170,6 +206,15 @@ Conditional:CreateSlider({Title="Conditional slider", Min=0, Max=100, Default=50
 Conditional:CreateButton({Title="Enabled when toggle is on",
     EnabledWhen=function() return Advanced.State end,
     Callback=function() report("Conditional button", "clicked") end})
+local externalVisible = false
+local ManualTarget = Conditional:CreateButton({Title="Manual condition target",
+    Callback=function() report("Manual condition", "clicked") end})
+Hub:SetCondition(ManualTarget, function() return externalVisible end, "hide")
+button(Conditional, "Refresh external condition", function()
+    externalVisible = not externalVisible
+    Hub:RefreshConditions()
+    report("External condition visible", externalVisible)
+end)
 button(Conditional, "Reset slider only", function() Slider:Reset() end)
 button(Conditional, "Reset all values", function()
     Hub:Confirm({Title="Reset values", Text="Restore every control to its creation default?",
@@ -196,4 +241,5 @@ button(LayoutActions, "Restore 20 options", function() FlowDropdown:Refresh(Long
 -- Type a minus in the textbox: the UI must stay visible while typing.
 -- Hover a control for 0.4 seconds to inspect its tooltip.
 -- To compare startup effects, change LoadingScreen/SnowEffect above and run
--- in a fresh session. SnowEffect controls main-window snow only.
+-- in a fresh session. Try LoadingScreen=false, SnowEffect=true and
+-- MobileToggle=false separately; these construction options are not live setters.
