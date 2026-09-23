@@ -1,4 +1,4 @@
--- HutameHub: manual UI feature test (Source.lua API)
+-- HutameHub v2.3: manual UI feature test (Source.lua API)
 -- Run in a client environment that supports the loader below.
 -- Config tests additionally require writefile/readfile.
 local Library = loadstring(game:HttpGet(
@@ -7,8 +7,8 @@ local Library = loadstring(game:HttpGet(
 
 local Hub = Library.new({
     Title = "HutameHub UI Test",
-    Version = "v2.2",
-    Accent = Color3.fromRGB(192, 139, 230),
+    Version = "v2.3",
+    Accent = Color3.fromRGB(103, 89, 179),
     ToggleKey = Enum.KeyCode.RightControl,
     MobileToggle = true, -- Also show the draggable 48px button on desktop for testing.
     LoadingScreen = true,
@@ -57,7 +57,7 @@ local Keybind = Inputs:CreateKeybind({
     Callback = function(key) report("Selected key", key.Name) end,
 })
 local Color = Inputs:CreateColorPicker({
-    Title = "Accent", Default = Color3.fromRGB(192, 139, 230), ConfigKey = "test_color",
+    Title = "Accent", Default = Color3.fromRGB(103, 89, 179), ConfigKey = "test_color",
     Tooltip = "Open the RGB sliders and change the accent.",
     Callback = function(value) Hub:SetAccent(value) end,
 })

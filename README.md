@@ -16,11 +16,11 @@
 
 Roblox Luau için sıfırdan geliştirilmiş; **Rayfield** ve **Kavo** gibi ağır kütüphanelerin aksine yalnızca yerleşik `Instance.new`, `TweenService` ve `UserInputService` kullanan, ultra hafif, **60+ FPS** odaklı modern UI kütüphanesi.
 
-## v2.2 — Violet Studio
+## v2.3 — Informant-inspired
 
-Koyu mor yüzeyler, lila vurgu, keskin köşeler, ince iç çerçeve, monospace yazı ve hafif gölgeli kontroller. Akiri Lib yalnızca görsel referans olarak incelendi; tasarım mevcut Roblox Instance koduyla bağımsız uygulandı. Public API korundu. Ana pencere kar efekti artık varsayılan kapalı; `SnowEffect = true` ile açılır. Loading ekranının karı ayrı çalışır.
+Koyu füme-mor yüzeyler, ölçülü mor vurgu, katmanlı keskin çerçeveler, sıkı sekmeler ve üst çizgisi başlıkla bölünen section'lar. [Informant.wtf Lib](https://github.com/ro0ti/Roblox-Scripting-UI/tree/main/2%20Informant.wtf%20Lib%20%28FIXED%29) tasarım dili referans alındı; görünüm HutameHub'ın kendi Roblox Instance koduyla uygulandı. Public API korundu. Kar efekti varsayılan kapalı; `SnowEffect = true` ile açılır.
 
-[Tüm UI özelliklerini test et](docs/examples/ui-test.lua) · [Dokümantasyon örneği](https://hutamev2.github.io/HutameHub-Lib/#s-fullexample)
+[Yeni görünümün kısa örneği](docs/examples/informant-style.lua) · [Tüm UI özelliklerini test et](docs/examples/ui-test.lua) · [Dokümantasyon örneği](https://hutamev2.github.io/HutameHub-Lib/#s-fullexample)
 
 Dokümantasyon `docs/` içindeki statik sayfadan yayımlanır. `main` dalındaki docs değişiklikleri `gh-pages` dalına otomatik gönderilir; MkDocs yapılandırması gerekmez.
 
@@ -55,8 +55,8 @@ local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/hutam
 
 local Window = Library.new({
     Title    = "HutameHub",
-    Version = "v2.2",
-    Accent   = Color3.fromRGB(192, 139, 230),
+    Version = "v2.3",
+    Accent   = Color3.fromRGB(103, 89, 179),
     SnowEffect = false
 })
 
@@ -109,7 +109,7 @@ Tüm API referansı, parametreler, canlı UI simülatörü ve örnekler için:
 ```lua
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/hutamev2/HutameHub-Lib/main/Source.lua"))()
 
-local Window      = Library.new({ Title = "HutameHub", Version = "v2.2", Accent = Color3.fromRGB(192, 139, 230) })
+local Window      = Library.new({ Title = "HutameHub", Version = "v2.3", Accent = Color3.fromRGB(103, 89, 179) })
 local MainTab     = Window:CreateTab("Combat")
 local SettingsTab = Window:CreateTab("Settings")
 local AimSection  = MainTab:CreateSection("Silent Aim Settings")
@@ -121,7 +121,7 @@ AimSection:CreateDropdown({ Title = "Target",      Options = {"Head","Torso","Hu
 
 CfgSection:CreateTextbox({ Title = "Webhook URL", Placeholder = "https://discord.com/api/webhooks/...", Callback = function(t) print(t) end })
 CfgSection:CreateKeybind({ Title = "Toggle Key",  Default = Enum.KeyCode.RightControl, Callback = function(k) print(k.Name) end })
-CfgSection:CreateColorPicker({ Title = "Accent",  Default = Color3.fromRGB(192, 139, 230), Callback = function(c) Window:SetAccent(c) end })
+CfgSection:CreateColorPicker({ Title = "Accent",  Default = Color3.fromRGB(103, 89, 179), Callback = function(c) Window:SetAccent(c) end })
 CfgSection:CreateButton({ Title = "Destroy UI",   Callback = function() Window:Destroy() end })
 ```
 

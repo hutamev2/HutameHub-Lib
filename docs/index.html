@@ -15,7 +15,7 @@ body{
   font-family:'Inter',system-ui,sans-serif;
   font-size:15px;
   line-height:1.7;
-  background:#141120;
+  background:#16161f;
   color:#e1e1e1;
   display:flex;
   flex-direction:column;
@@ -32,18 +32,18 @@ a{color:inherit;text-decoration:none}
   --nav-w:     260px;
   --toc-w:     220px;
   --header-h:  54px;
-  --bg:        #141120;
-  --bg2:       #1c172b;
-  --bg3:       #201a30;
-  --bg4:       #2a223d;
-  --border:    #413653;
-  --border2:   #63517b;
+  --bg:        #16161f;
+  --bg2:       #181925;
+  --bg3:       #1d1e2b;
+  --bg4:       #272839;
+  --border:    #32323d;
+  --border2:   #454553;
   --text:      #e1e1e1;
-  --text2:     #888;
-  --text3:     #555;
-  --acc:       #c08be6;
-  --acc-dim:   rgba(192,139,230,.15);
-  --acc-rgb:   192,139,230;
+  --text2:     #bbbbc6;
+  --text3:     #9999aa;
+  --acc:       #6759b3;
+  --acc-dim:   rgba(103,89,179,.15);
+  --acc-rgb:   103,89,179;
   --green:     #3fb950;
   --blue:      #58a6ff;
   --orange:    #f0883e;
@@ -55,7 +55,7 @@ a{color:inherit;text-decoration:none}
 .topbar{
   position:fixed;top:0;left:0;right:0;
   height:var(--header-h);
-  background:rgba(20,17,32,.95);
+  background:rgba(22,22,31,.95);
   backdrop-filter:blur(14px);
   border-bottom:1px solid var(--border);
   display:flex;align-items:center;
@@ -619,7 +619,7 @@ p code, li code, td code{
       <div class="step-line"></div>
       <div class="step-body">
         <div class="step-title">Add tabs → sections → elements</div>
-        <div class="step-desc">Tabs go on the horizontal bar. Each tab has a left and right column. Sections are cards inside columns.</div>
+        <div class="step-desc">Tabs go on the horizontal bar. Each tab has a left and right column. Sections use framed panels inside columns; pass "right" for the second column.</div>
       </div>
     </div>
   </div>
@@ -636,8 +636,8 @@ p code, li code, td code{
 <span class="cmt">-- 1. Create the window</span>
 <span class="kw">local</span> <span class="vr">Hub</span> = <span class="vr">Library</span>.<span class="fn">new</span>({
     <span class="vr">Title</span>     = <span class="str">"MyHub"</span>,
-    <span class="vr">Version</span>   = <span class="str">"v2.2"</span>,
-    <span class="vr">Accent</span>    = Color3.<span class="fn">fromRGB</span>(<span class="num">192</span>, <span class="num">139</span>, <span class="num">230</span>),
+    <span class="vr">Version</span>   = <span class="str">"v2.3"</span>,
+    <span class="vr">Accent</span>    = Color3.<span class="fn">fromRGB</span>(<span class="num">103</span>, <span class="num">89</span>, <span class="num">179</span>),
     <span class="vr">ToggleKey</span> = Enum.KeyCode.RightControl
 })
 
@@ -769,8 +769,48 @@ type HutameLibrary = {new: (options: WindowOptions?) -&gt; HutameWindow}
 <section class="doc-section" id="s-fullexample">
 <div class="callout blue"><span class="callout-icon">↕</span><span><strong>Dropdown layout fix:</strong> lists now expand their section and push following buttons down. Long lists scroll internally; closing restores the row height. Section collapse/expand uses a cancellable 0.2 s tween, so rapid clicks follow the latest state. Try the <strong>Layout</strong> tab in Full Example.</span></div>
   <div class="callout blue"><span class="callout-icon">+</span><span><strong>Profiles &amp; control utilities</strong> — create, load, rename, delete and select a default profile; draggable mobile toggle; per-control and global reset; key conflict warnings; confirmation dialogs; conditional visibility and input. <a href="features.html">Read the complete API guide</a> or try the Profiles tab in the example below.</span></div>
-  <div class="callout blue"><span class="callout-icon">◇</span><span><strong>v2.2 · Violet Studio</strong> — dark violet panels, lilac accents, square corners, fine inset borders and compact monospace typography. The two-column layout and public API stay familiar. Buttons and input surfaces now use subtle vertical shading; active tabs and values carry the accent. Main-window snow is opt-in.</span></div>
-  <p class="method-desc">Visual direction studied from <a href="https://github.com/ro0ti/Roblox-Scripting-UI/tree/main/Akiri%20Lib">Akiri Lib</a>; implemented independently with Roblox Instances, without importing its code, assets or Drawing API. Run <a href="#s-fullexample">Full Example</a> to inspect all controls in the new theme. Runtime visual verification in Roblox remains pending.</p>
+  <div class="callout blue"><span class="callout-icon">◇</span><span><strong>v2.3 · Informant-inspired</strong> — charcoal-violet panels, a restrained purple accent, layered square borders, compact tabs and section headers crossed by a thin accent rule. Controls are flat; the two-column layout and public API are unchanged. Main-window snow is opt-in.</span></div>
+  <p class="method-desc">Visual direction studied from <a href="https://github.com/ro0ti/Roblox-Scripting-UI/tree/main/2%20Informant.wtf%20Lib%20%28FIXED%29">Informant.wtf Lib</a>; implemented with HutameHub's own Roblox Instance code. No reference code, assets or Drawing API were imported. <a href="examples/informant-style.lua" download>Download the focused theme example</a> or run <a href="#s-fullexample">Full Example</a> to inspect all controls. Roblox client visual verification is still pending.</p>
+  <div class="code-block"><div class="code-block-header"><span class="code-block-lang">luau · Informant-inspired theme</span><button class="copy-code" onclick="copyCode(this,'ex-theme')">Copy</button></div><pre id="ex-theme"><code>-- HutameHub v2.3: compact Informant-inspired two-column layout.
+-- Uses only HutameHub&#x27;s public API; run in a Roblox client environment.
+local Library = loadstring(game:HttpGet(
+    &quot;https://raw.githubusercontent.com/hutamev2/HutameHub-Lib/main/Source.lua&quot;
+))()
+
+local Hub = Library.new({
+    Title = &quot;HutameHub&quot;,
+    Version = &quot;v2.3&quot;,
+    Accent = Color3.fromRGB(103, 89, 179),
+    ToggleKey = Enum.KeyCode.RightControl,
+    SnowEffect = false,
+})
+
+local Main = Hub:CreateTab(&quot;Main&quot;)
+local Visuals = Main:CreateSection(&quot;Visuals&quot;, &quot;left&quot;)
+local Actions = Main:CreateSection(&quot;Actions&quot;, &quot;right&quot;)
+
+Visuals:CreateToggle({
+    Title = &quot;Show overlay&quot;, Default = false,
+    Callback = function(enabled) print(&quot;Overlay:&quot;, enabled) end,
+})
+Visuals:CreateSlider({
+    Title = &quot;Opacity&quot;, Min = 0, Max = 100, Default = 75, Suffix = &quot;%&quot;,
+    Callback = function(value) print(&quot;Opacity:&quot;, value) end,
+})
+Visuals:CreateDropdown({
+    Title = &quot;Style&quot;, Options = {&quot;Classic&quot;, &quot;Compact&quot;, &quot;Minimal&quot;},
+    Default = &quot;Compact&quot;, MaxVisibleItems = 3,
+    Callback = function(value) print(&quot;Style:&quot;, value) end,
+})
+Actions:CreateButton({
+    Title = &quot;Show notification&quot;,
+    Callback = function()
+        Hub:Notify({Title = &quot;HutameHub&quot;, Text = &quot;Theme preview&quot;, Type = &quot;info&quot;})
+    end,
+})
+Actions:CreateLabel(&quot;RightControl or Minus shows and hides the window.&quot;)
+
+-- The same methods and property names work with any Accent Color3.</code></pre></div>
   <div class="method-header">
     <div class="method-label">Getting Started</div>
     <div class="method-title">Full Example</div>
@@ -798,8 +838,8 @@ local Library = loadstring(game:HttpGet(
 
 local Hub = Library.new({
     Title = &quot;HutameHub UI Test&quot;,
-    Version = &quot;v2.2&quot;,
-    Accent = Color3.fromRGB(192, 139, 230),
+    Version = &quot;v2.3&quot;,
+    Accent = Color3.fromRGB(103, 89, 179),
     ToggleKey = Enum.KeyCode.RightControl,
     MobileToggle = true, -- Also show the draggable 48px button on desktop for testing.
     LoadingScreen = true,
@@ -848,7 +888,7 @@ local Keybind = Inputs:CreateKeybind({
     Callback = function(key) report(&quot;Selected key&quot;, key.Name) end,
 })
 local Color = Inputs:CreateColorPicker({
-    Title = &quot;Accent&quot;, Default = Color3.fromRGB(192, 139, 230), ConfigKey = &quot;test_color&quot;,
+    Title = &quot;Accent&quot;, Default = Color3.fromRGB(103, 89, 179), ConfigKey = &quot;test_color&quot;,
     Tooltip = &quot;Open the RGB sliders and change the accent.&quot;,
     Callback = function(value) Hub:SetAccent(value) end,
 })
@@ -1018,13 +1058,13 @@ button(LayoutActions, &quot;Restore 20 options&quot;, function() FlowDropdown:Re
       <tr>
         <td><span class="p-name">Version</span></td>
         <td><span class="type type-str">string</span></td>
-        <td><span class="p-default">"v2.2"</span></td>
+        <td><span class="p-default">"v2.3"</span></td>
         <td class="p-desc">Version string shown dimmed beside the title.</td>
       </tr>
       <tr>
         <td><span class="p-name">Accent</span></td>
         <td><span class="type type-c3">Color3</span></td>
-        <td><span class="p-default">RGB(192,139,230)</span></td>
+        <td><span class="p-default">RGB(103,89,179)</span></td>
         <td class="p-desc">Accent color applied to tab underlines, slider fills, active checkboxes, and button ripples.</td>
       </tr>
       <tr>
@@ -1037,7 +1077,7 @@ button(LayoutActions, &quot;Restore 20 options&quot;, function() FlowDropdown:Re
         <td><span class="p-name">SnowEffect</span></td>
         <td><span class="type type-bool">boolean</span></td>
         <td><span class="p-default">false</span></td>
-        <td class="p-desc">Optional ambient snow on the main UI. Pass <code>true</code> to enable; disabled by default in v2.2.</td>
+        <td class="p-desc">Optional ambient snow on the main UI. Pass <code>true</code> to enable; disabled by default.</td>
       </tr>
       <tr>
         <td><span class="p-name">LoadingScreen</span></td>

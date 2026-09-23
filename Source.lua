@@ -1,7 +1,7 @@
 --[[
     ╔══════════════════════════════════════════════════════════════╗
     ║                    HUTAME HUB LIBRARY                        ║
-    ║         Violet Studio · Two-Column · Precision             ║
+    ║        Informant-inspired · Two-Column · Precision         ║
     ╚══════════════════════════════════════════════════════════════╝
 
     loadstring(game:HttpGet("https://raw.githubusercontent.com/hutamev2/HutameHub-Lib/main/Source.lua"))()
@@ -45,29 +45,21 @@ end
 -- Theme
 -- ─────────────────────────────────────────────
 local T = {
-    BG          = Color3.fromRGB(20, 17, 32),
-    Surface     = Color3.fromRGB(28, 23, 43),
-    Card        = Color3.fromRGB(32, 26, 48),
-    Element     = Color3.fromRGB(42, 34, 61),
-    ElementHov  = Color3.fromRGB(55, 44, 76),
-    Border      = Color3.fromRGB(65, 54, 83),
-    BorderLight = Color3.fromRGB(99, 81, 123),
-    Text        = Color3.fromRGB(225, 218, 244),
-    TextDim     = Color3.fromRGB(176, 164, 198),
-    TextMute    = Color3.fromRGB(137, 124, 158),
-    Accent      = Color3.fromRGB(192, 139, 230),
-    AccentDim   = Color3.fromRGB(115, 83, 138),
-    White       = Color3.fromRGB(245, 239, 255),
-    Black       = Color3.fromRGB(10, 8, 16),
+    BG          = Color3.fromRGB(22, 22, 31),
+    Surface     = Color3.fromRGB(24, 25, 37),
+    Card        = Color3.fromRGB(22, 22, 31),
+    Element     = Color3.fromRGB(29, 30, 43),
+    ElementHov  = Color3.fromRGB(39, 40, 56),
+    Border      = Color3.fromRGB(50, 50, 61),
+    BorderLight = Color3.fromRGB(69, 69, 83),
+    Text        = Color3.fromRGB(235, 235, 235),
+    TextDim     = Color3.fromRGB(195, 195, 202),
+    TextMute    = Color3.fromRGB(145, 145, 158),
+    Accent      = Color3.fromRGB(103, 89, 179),
+    AccentDim   = Color3.fromRGB(65, 57, 111),
+    White       = Color3.fromRGB(245, 245, 245),
+    Black       = Color3.fromRGB(10, 10, 13),
 }
-
--- Original Instance-based treatment: crisp frames with a subtle vertical bevel.
-local function shade(surface)
-    local gradient = Instance.new("UIGradient")
-    gradient.Rotation = 90
-    gradient.Color = ColorSequence.new(Color3.new(1, 1, 1), Color3.fromRGB(195, 190, 205))
-    gradient.Parent = surface
-end
 
 -- Lists participate in section layout instead of floating over following rows.
 local function dropdownLayout(container, list, config)
@@ -101,7 +93,7 @@ function Library.new(config)
     local self = setmetatable({}, Library)
 
     self.Title       = config.Title    or "HutameHub"
-    self.Version     = config.Version  or "v2.2"
+    self.Version     = config.Version  or "v2.3"
     self.Accent      = config.Accent   or T.Accent
     self.ToggleKey   = config.ToggleKey or Enum.KeyCode.RightControl
     self.Tabs        = {}
@@ -431,8 +423,8 @@ function Library:_build()
     -- ── Main Frame ──────────────────────────────
     local mf = Instance.new("Frame")
     mf.Name              = "MainFrame"
-    mf.Size              = UDim2.fromOffset(700, 460)
-    mf.Position          = UDim2.new(0.5,-350, 0.5,-230)
+    mf.Size              = UDim2.fromOffset(600, 540)
+    mf.Position          = UDim2.new(0.5,-300, 0.5,-270)
     mf.BackgroundColor3  = T.BG
     mf.BorderSizePixel   = 0
     mf.ClipsDescendants  = false
@@ -440,7 +432,7 @@ function Library:_build()
     Instance.new("UICorner", mf).CornerRadius = UDim.new(0,0)
     local mfStroke = Instance.new("UIStroke", mf)
     mfStroke.Color     = T.Black
-    mfStroke.Thickness = 3
+    mfStroke.Thickness = 2
     local innerBorder = Instance.new("Frame", mf)
     innerBorder.Name = "InsetBorder"
     innerBorder.Position = UDim2.fromOffset(4, 4)
@@ -455,8 +447,8 @@ function Library:_build()
     -- ── Top accent line ──────────────────────────
     local acLine = Instance.new("Frame", mf)
     acLine.Name             = "AccentLine"
-    acLine.Size             = UDim2.new(1,-10,0,2)
-    acLine.Position         = UDim2.fromOffset(5,5)
+    acLine.Size             = UDim2.new(1,-12,0,1)
+    acLine.Position         = UDim2.fromOffset(6,7)
     acLine.BackgroundColor3 = self.Accent
     acLine.BorderSizePixel  = 0
     acLine.ZIndex           = 4
@@ -526,7 +518,6 @@ function Library:_build()
         btn.Text               = char
         btn.AutoButtonColor    = false
         Instance.new("UICorner", btn).CornerRadius = UDim.new(0,0)
-        shade(btn)
         btn.MouseEnter:Connect(function() tw(btn,0.15,{BackgroundColor3=hoverCol, TextColor3=T.White}) end)
         btn.MouseLeave:Connect(function() tw(btn,0.15,{BackgroundColor3=T.Element, TextColor3=T.TextDim}) end)
         btn.MouseButton1Click:Connect(onClick)
@@ -607,7 +598,7 @@ function Library:CreateTab(name)
     btn.Size               = UDim2.new(0,0,1,0)
     btn.AutomaticSize      = Enum.AutomaticSize.X
     btn.BackgroundTransparency = 0
-    btn.BackgroundColor3 = T.Element
+    btn.BackgroundColor3 = T.BG
     btn.BorderSizePixel    = 0
     btn.Font               = Enum.Font.Code
     btn.TextSize           = 12
@@ -615,6 +606,10 @@ function Library:CreateTab(name)
     btn.Text               = "  "..name.."  "
     btn.AutoButtonColor    = false
     btn.ClipsDescendants   = false
+    local tabStroke = Instance.new("UIStroke", btn)
+    tabStroke.Color = T.Border
+    tabStroke.Thickness = 1
+    tabStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
     -- active underline
     local uline = Instance.new("Frame", btn)
@@ -753,7 +748,7 @@ function Library:CreateTab(name)
         for _, t in ipairs(self._lib.Tabs) do t:Deactivate() end
         Tab.Active     = true
         page.Visible   = true
-        tw(btn,   0.15, {TextColor3 = self._lib.Accent, BackgroundColor3 = T.Card})
+        tw(btn,   0.15, {TextColor3 = T.White, BackgroundColor3 = T.Surface})
         tw(uline, 0.15, {BackgroundTransparency = 0, BackgroundColor3 = self._lib.Accent})
         self._lib.ActiveTab = Tab
         Tab._checkMobile()
@@ -762,7 +757,7 @@ function Library:CreateTab(name)
     function Tab:Deactivate()
         Tab.Active   = false
         page.Visible = false
-        tw(btn,   0.15, {TextColor3 = T.TextDim, BackgroundColor3 = T.Element})
+        tw(btn,   0.15, {TextColor3 = T.TextMute, BackgroundColor3 = T.BG})
         tw(uline, 0.15, {BackgroundTransparency = 1})
     end
 
@@ -816,10 +811,18 @@ function Library:_createSection(title, parent)
     hdrBtn.Text                = ""
     hdrBtn.AutoButtonColor     = false
     hdrBtn.LayoutOrder         = 0
+    local headerLine = Instance.new("Frame", hdrBtn)
+    headerLine.Name = "AccentRule"
+    headerLine.Size = UDim2.new(1, 0, 0, 1)
+    headerLine.Position = UDim2.new(0, 0, 0.5, 0)
+    headerLine.BackgroundColor3 = self.Accent
+    headerLine.BorderSizePixel = 0
+    self:_onAccent(function(color) headerLine.BackgroundColor3 = color end)
 
     local hdr = Instance.new("TextLabel", hdrBtn)
-    hdr.Size                  = UDim2.new(1,-20,1,0)
-    hdr.BackgroundTransparency= 1
+    hdr.Size                  = UDim2.fromOffset(math.min(#title * 7 + 20, 230), 18)
+    hdr.Position              = UDim2.fromOffset(7, 0)
+    hdr.BackgroundColor3      = T.Card
     hdr.Font                  = Enum.Font.Code
     hdr.TextSize               = 12
     hdr.TextColor3             = T.Text
@@ -830,7 +833,7 @@ function Library:_createSection(title, parent)
     local colArrow = Instance.new("TextLabel", hdrBtn)
     colArrow.Size                  = UDim2.fromOffset(14,18)
     colArrow.Position              = UDim2.new(1,-14,0,0)
-    colArrow.BackgroundTransparency= 1
+    colArrow.BackgroundColor3      = T.Card
     colArrow.Font                  = Enum.Font.Code
     colArrow.TextSize              = 8
     colArrow.TextColor3            = T.TextMute
@@ -920,7 +923,6 @@ function Library:_createSection(title, parent)
         box.BackgroundColor3 = state and self._lib.Accent or T.Element
         box.BorderSizePixel  = 0
         Instance.new("UICorner", box).CornerRadius = UDim.new(0,0)
-        shade(box)
         local boxStroke = Instance.new("UIStroke", box)
         boxStroke.Color     = state and self._lib.Accent or T.BorderLight
         boxStroke.Thickness = 1
@@ -1044,13 +1046,11 @@ function Library:_createSection(title, parent)
         trackHolder.BorderSizePixel  = 0
         trackHolder.Text             = ""
         trackHolder.AutoButtonColor  = false
-        shade(trackHolder)
 
         local fill = Instance.new("Frame", trackHolder)
         fill.Size             = UDim2.new((default-min)/(max-min),0,1,0)
         fill.BackgroundColor3 = self._lib.Accent
         fill.BorderSizePixel  = 0
-        shade(fill)
 
         local knob = Instance.new("Frame", fill)
         knob.Size             = UDim2.fromOffset(8,8)
@@ -1121,7 +1121,6 @@ function Library:_createSection(title, parent)
         header.AutoButtonColor   = false
         header.ZIndex            = 3
         Instance.new("UICorner", header).CornerRadius = UDim.new(0,0)
-        shade(header)
         local hStroke = Instance.new("UIStroke", header)
         hStroke.Color     = T.Border
         hStroke.Thickness = 1
@@ -1272,7 +1271,6 @@ function Library:_createSection(title, parent)
         inputFrame.BackgroundColor3= T.Element
         inputFrame.BorderSizePixel = 0
         Instance.new("UICorner", inputFrame).CornerRadius = UDim.new(0,0)
-        shade(inputFrame)
         local ifStroke = Instance.new("UIStroke", inputFrame)
         ifStroke.Color     = T.Border
         ifStroke.Thickness = 1
@@ -1337,7 +1335,6 @@ function Library:_createSection(title, parent)
         kBtn.Text              = "["..defK.Name.."]"
         kBtn.AutoButtonColor   = false
         Instance.new("UICorner", kBtn).CornerRadius = UDim.new(0,0)
-        shade(kBtn)
         local kbStroke = Instance.new("UIStroke", kBtn)
         kbStroke.Color     = T.Border
         kbStroke.Thickness = 1
@@ -1555,7 +1552,6 @@ function Library:_createSection(title, parent)
         btn.ClipsDescendants  = true
         btn.LayoutOrder       = nextOrder()
         Instance.new("UICorner", btn).CornerRadius = UDim.new(0,0)
-        shade(btn)
         local bStroke = Instance.new("UIStroke", btn)
         bStroke.Color     = T.Border
         bStroke.Thickness = 1
@@ -1785,7 +1781,6 @@ local function _buildMultiDropdown(Section, card, nextOrder, config)
     header.AutoButtonColor   = false
     header.ZIndex            = 3
     Instance.new("UICorner", header).CornerRadius = UDim.new(0,0)
-        shade(header)
     local hStroke = Instance.new("UIStroke", header)
     hStroke.Color = T.Border; hStroke.Thickness = 1
 
