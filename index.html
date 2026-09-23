@@ -1,775 +1,1877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HutameHub · Documentation</title>
+<meta name="description" content="HutameHub Library — Private Hub Style Roblox Luau UI Framework Documentation">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & Base ─────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  font-size:15px;
+  line-height:1.7;
+  background:#141120;
+  color:#e1e1e1;
+  display:flex;
+  flex-direction:column;
+  min-height:100vh;
+}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#2e2e2e;border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:#3e3e3e}
+a{color:inherit;text-decoration:none}
 
-<!doctype html>
-<html lang="en" class="no-js">
-  <head>
-    
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width,initial-scale=1">
-      
-        <meta name="description" content="Modern, instance-based, TweenService-powered UI framework for Roblox Luau.">
-      
-      
-      
-        <link rel="canonical" href="https://hutamev2.github.io/HutameHub-Lib/">
-      
-      
-      
-        <link rel="next" href="window/">
-      
-      
-        
-      
-      
-      <link rel="icon" href="assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
-    
-    
-      
-        <title>HutameHub v3.0</title>
-      
-    
-    
-      <link rel="stylesheet" href="assets/stylesheets/main.ec1eaa64.min.css">
-      
-        
-        <link rel="stylesheet" href="assets/stylesheets/palette.ab4e12ef.min.css">
-      
-      
+/* ── Tokens ───────────────────────────────────────── */
+:root{
+  --nav-w:     260px;
+  --toc-w:     220px;
+  --header-h:  54px;
+  --bg:        #141120;
+  --bg2:       #1c172b;
+  --bg3:       #201a30;
+  --bg4:       #2a223d;
+  --border:    #413653;
+  --border2:   #63517b;
+  --text:      #e1e1e1;
+  --text2:     #888;
+  --text3:     #555;
+  --acc:       #c08be6;
+  --acc-dim:   rgba(192,139,230,.15);
+  --acc-rgb:   192,139,230;
+  --green:     #3fb950;
+  --blue:      #58a6ff;
+  --orange:    #f0883e;
+  --purple:    #bc8cff;
+  --yellow:    #e3b341;
+}
 
+/* ── Header ───────────────────────────────────────── */
+.topbar{
+  position:fixed;top:0;left:0;right:0;
+  height:var(--header-h);
+  background:rgba(20,17,32,.95);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;
+  justify-content:space-between;
+  padding:0 24px;
+  z-index:200;
+}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-icon{
+  width:30px;height:30px;
+  background:var(--acc);
+  border-radius:6px;
+  display:grid;place-items:center;
+  font-weight:800;font-size:14px;color:#000;
+  box-shadow:0 0 18px rgba(var(--acc-rgb),.35);
+  flex-shrink:0;
+}
+.logo-name{font-weight:700;font-size:15px}
+.logo-name span{color:var(--acc)}
+.logo-ver{
+  font-size:11px;color:var(--text3);
+  background:var(--bg3);
+  padding:2px 7px;border-radius:4px;
+  border:1px solid var(--border);
+}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.gh-link{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:13px;font-weight:500;color:var(--text2);
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:6px;padding:5px 12px;
+  transition:.15s;
+}
+.gh-link:hover{border-color:var(--border2);color:var(--text)}
+.copy-ls-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:13px;font-weight:600;color:#000;
+  background:var(--acc);border:none;border-radius:6px;
+  padding:6px 14px;cursor:pointer;transition:.12s;
+}
+.copy-ls-btn:hover{filter:brightness(1.1)}
+.copy-ls-btn.ok{background:var(--green)}
 
-    
-    
-      
-    
-    
-      
-        
-        
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
-      
-    
-    
-      <link rel="stylesheet" href="stylesheets/extra.css">
-    
-    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
-    
-      
+/* ── Layout ───────────────────────────────────────── */
+.layout{
+  display:flex;
+  margin-top:var(--header-h);
+  min-height:calc(100vh - var(--header-h));
+}
 
-    
-    
-  </head>
-  
-  
-    
-    
-      
-    
-    
-    
-    
-    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="custom">
-  
-    
-    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
-    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
-    <label class="md-overlay" for="__drawer"></label>
-    <div data-md-component="skip">
-      
-        
-        <a href="#getting-started" class="md-skip">
-          Skip to content
-        </a>
-      
-    </div>
-    <div data-md-component="announce">
-      
-    </div>
-    
-    
-      
+/* ── Left Sidebar ─────────────────────────────────── */
+.sidebar{
+  width:var(--nav-w);
+  position:fixed;
+  top:var(--header-h);bottom:0;left:0;
+  background:var(--bg2);
+  border-right:1px solid var(--border);
+  overflow-y:auto;
+  padding:20px 14px 40px;
+  display:flex;flex-direction:column;gap:24px;
+}
+.sb-search{position:relative;margin-bottom:4px}
+.sb-search input{
+  width:100%;
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:7px 10px 7px 32px;
+  color:var(--text);font-size:13px;outline:none;
+  transition:.15s;
+}
+.sb-search input::placeholder{color:var(--text3)}
+.sb-search input:focus{border-color:var(--acc);box-shadow:0 0 0 2px rgba(var(--acc-rgb),.12)}
+.sb-search-ic{
+  position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  color:var(--text3);font-size:13px;pointer-events:none;
+}
+.sb-group{}
+.sb-group-title{
+  font-size:11px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--text3);
+  padding:0 8px;margin-bottom:4px;
+}
+.sb-links{list-style:none;display:flex;flex-direction:column;gap:1px}
+.sb-links a{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:6px 10px;border-radius:6px;
+  font-size:13.5px;font-weight:500;color:var(--text2);
+  transition:.12s;
+}
+.sb-links a:hover{color:var(--text);background:var(--bg3)}
+.sb-links a.active{
+  color:var(--text);background:rgba(var(--acc-rgb),.1);
+  border-left:2px solid var(--acc);padding-left:8px;
+}
+.sb-badge{
+  font-size:10px;padding:1px 6px;border-radius:4px;
+  background:var(--bg4);border:1px solid var(--border);
+  color:var(--text3);flex-shrink:0;
+}
+.sb-badge.new-badge{
+  background:rgba(var(--acc-rgb),.15);
+  border-color:rgba(var(--acc-rgb),.3);
+  color:var(--acc);
+}
 
-<header class="md-header" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="." title="HutameHub v3.0" class="md-header__button md-logo" aria-label="HutameHub v3.0" data-md-component="logo">
-      
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+/* ── Main Content ─────────────────────────────────── */
+.content{
+  margin-left:var(--nav-w);
+  flex:1;
+  padding:48px 64px 100px;
+  max-width:860px;
+}
 
+/* ── Page Hero ────────────────────────────────────── */
+.page-hero{
+  padding-bottom:40px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:48px;
+}
+.page-hero-eyebrow{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:12px;font-weight:600;
+  color:var(--acc);
+  background:rgba(var(--acc-rgb),.1);
+  padding:3px 10px;border-radius:20px;
+  border:1px solid rgba(var(--acc-rgb),.2);
+  margin-bottom:14px;
+}
+.page-hero h1{
+  font-size:36px;font-weight:800;
+  letter-spacing:-.03em;line-height:1.15;
+  margin-bottom:14px;
+  color:#fff;
+}
+.page-hero p{
+  font-size:16px;color:var(--text2);
+  max-width:600px;line-height:1.8;
+  margin-bottom:28px;
+}
+.feat-grid{
+  display:flex;flex-wrap:wrap;gap:8px;
+  margin-bottom:32px;
+}
+.feat-chip{
+  display:flex;align-items:center;gap:6px;
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:5px 12px;font-size:13px;color:var(--text2);
+}
+.feat-chip .dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--acc);flex-shrink:0;
+}
+
+/* ── Callout box ──────────────────────────────────── */
+.callout{
+  display:flex;align-items:flex-start;gap:12px;
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-left:3px solid var(--acc);
+  border-radius:8px;
+  padding:14px 16px;
+  margin:20px 0;
+  font-size:13.5px;color:var(--text2);
+}
+.callout.green{border-left-color:var(--green)}
+.callout.blue{border-left-color:var(--blue)}
+.callout.orange{border-left-color:var(--orange)}
+.callout-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+
+/* ── Section divider ──────────────────────────────── */
+.doc-section{
+  padding:48px 0 40px;
+  border-bottom:1px solid var(--border);
+}
+.doc-section:last-child{border-bottom:none}
+
+/* ── Method header ────────────────────────────────── */
+.method-header{margin-bottom:10px}
+.method-label{
+  font-size:11px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--text3);margin-bottom:8px;
+}
+.method-title{
+  font-size:22px;font-weight:700;
+  color:#fff;letter-spacing:-.02em;
+  display:flex;align-items:center;gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:8px;
+}
+.method-title code{
+  font-family:'Fira Code',monospace;
+  font-size:18px;
+  color:#e2e8f0;
+  background:#1a1a1f;
+  border:1px solid var(--border2);
+  padding:2px 10px;border-radius:5px;
+}
+.method-desc{
+  font-size:14.5px;color:var(--text2);
+  max-width:680px;line-height:1.75;
+  margin-bottom:20px;
+}
+
+/* ── Return badge ─────────────────────────────────── */
+.returns{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:6px 14px;
+  font-size:13px;
+  margin-bottom:20px;
+}
+.returns-label{color:var(--text3);font-weight:500}
+.returns-type{
+  font-family:'Fira Code',monospace;
+  font-size:12px;color:var(--green);
+}
+
+/* ── Params table ─────────────────────────────────── */
+.params-title{
+  font-size:12px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.07em;
+  color:var(--text3);margin-bottom:8px;
+}
+.params-table{
+  width:100%;border-collapse:collapse;
+  border:1px solid var(--border);
+  border-radius:8px;overflow:hidden;
+  margin-bottom:24px;font-size:13.5px;
+}
+.params-table th{
+  background:var(--bg3);
+  color:var(--text2);font-weight:600;
+  text-align:left;padding:9px 14px;
+  border-bottom:1px solid var(--border);
+  font-size:12px;text-transform:uppercase;letter-spacing:.05em;
+}
+.params-table td{
+  padding:9px 14px;
+  border-bottom:1px solid var(--border);
+  vertical-align:top;
+}
+.params-table tr:last-child td{border-bottom:none}
+.params-table tr:hover td{background:rgba(255,255,255,.02)}
+/* param name */
+.p-name{
+  font-family:'Fira Code',monospace;
+  font-size:13px;color:#e2e8f0;font-weight:500;
+}
+.p-req{
+  font-size:10px;color:var(--acc);
+  background:rgba(var(--acc-rgb),.1);
+  padding:1px 5px;border-radius:3px;
+  margin-left:4px;font-weight:600;
+  vertical-align:middle;
+}
+/* type badges */
+.type{
+  display:inline-block;
+  font-family:'Fira Code',monospace;
+  font-size:11.5px;font-weight:500;
+  padding:1px 7px;border-radius:4px;
+  white-space:nowrap;
+}
+.type-str   {background:rgba(88,166,255,.12);color:#58a6ff}
+.type-num   {background:rgba(63,185,80,.12);color:#3fb950}
+.type-bool  {background:rgba(224,48,48,.12);color:#ff7b72}
+.type-fn    {background:rgba(188,140,255,.12);color:#bc8cff}
+.type-tbl   {background:rgba(245,158,11,.12);color:#f0883e}
+.type-kc    {background:rgba(188,140,255,.12);color:#bc8cff}
+.type-c3    {background:rgba(63,185,80,.12);color:#3fb950}
+.type-any   {background:var(--bg4);color:var(--text3)}
+/* default */
+.p-default{
+  font-family:'Fira Code',monospace;
+  font-size:12px;color:var(--text3);
+}
+/* description */
+.p-desc{color:var(--text2);font-size:13.5px}
+.p-desc code{
+  font-family:'Fira Code',monospace;
+  font-size:12px;background:var(--bg4);
+  padding:1px 5px;border-radius:3px;
+  border:1px solid var(--border2);color:#e2e8f0;
+}
+
+/* ── Code block ───────────────────────────────────── */
+.code-block{
+  background:#0a0a0c;
+  border:1px solid var(--border);
+  border-radius:8px;
+  overflow:hidden;
+  margin:16px 0 8px;
+}
+.code-block-header{
+  display:flex;align-items:center;justify-content:space-between;
+  background:#101014;
+  border-bottom:1px solid var(--border);
+  padding:8px 16px;
+}
+.code-block-lang{
+  font-size:11px;font-family:'Fira Code',monospace;
+  color:var(--text3);text-transform:uppercase;
+  display:flex;align-items:center;gap:6px;
+}
+.code-block-lang::before{
+  content:'';width:8px;height:8px;border-radius:50%;
+  background:var(--acc);display:inline-block;
+}
+.copy-code{
+  background:transparent;border:1px solid var(--border);
+  border-radius:4px;padding:3px 10px;
+  color:var(--text3);font-size:12px;cursor:pointer;
+  display:flex;align-items:center;gap:5px;transition:.12s;
+}
+.copy-code:hover{color:var(--text);border-color:var(--border2)}
+.copy-code.ok{color:var(--green);border-color:var(--green)}
+pre{
+  padding:18px 20px;
+  overflow-x:auto;
+  font-family:'Fira Code',monospace;
+  font-size:13px;line-height:1.7;
+  color:#c9d1d9;
+}
+/* syntax */
+.kw {color:#ff7b72;font-weight:600}
+.fn {color:#d2a8ff}
+.str{color:#a5d6ff}
+.num{color:#79c0ff}
+.cmt{color:#484f58;font-style:italic}
+.vr {color:#7ee787}
+.op {color:#e2e8f0}
+.pn {color:#e2e8f0}
+
+/* ── Steps ────────────────────────────────────────── */
+.steps{display:flex;flex-direction:column;gap:0;margin:20px 0}
+.step{display:flex;gap:16px;position:relative;padding-bottom:24px}
+.step:last-child{padding-bottom:0}
+.step-num{
+  width:28px;height:28px;border-radius:50%;
+  background:rgba(var(--acc-rgb),.15);
+  border:1px solid rgba(var(--acc-rgb),.3);
+  color:var(--acc);font-weight:700;font-size:13px;
+  display:grid;place-items:center;flex-shrink:0;
+  position:relative;z-index:1;
+}
+.step-line{
+  position:absolute;left:13px;top:28px;bottom:0;
+  width:1px;background:var(--border);
+}
+.step:last-child .step-line{display:none}
+.step-body{flex:1;padding-top:3px}
+.step-title{font-weight:600;font-size:14px;color:#fff;margin-bottom:4px}
+.step-desc{font-size:13.5px;color:var(--text2)}
+
+/* ── Inline code ──────────────────────────────────── */
+p code, li code, td code{
+  font-family:'Fira Code',monospace;
+  font-size:12.5px;
+  background:var(--bg4);
+  padding:1px 5px;border-radius:3px;
+  border:1px solid var(--border2);
+  color:#e2e8f0;
+}
+
+/* ── Notification demo ────────────────────────────── */
+.notify-demo{
+  display:flex;flex-wrap:wrap;gap:8px;margin:16px 0;
+}
+.toast-chip{
+  display:flex;align-items:center;gap:8px;
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:6px;padding:7px 13px;
+  font-size:13px;
+}
+.toast-chip .ti{font-size:15px}
+.toast-chip.s{border-left:3px solid var(--green)}
+.toast-chip.e{border-left:3px solid var(--acc)}
+.toast-chip.w{border-left:3px solid var(--orange)}
+.toast-chip.i{border-left:3px solid var(--blue)}
+
+/* ── Watermark demo ───────────────────────────────── */
+.wm-preview{
+  background:#0a0a0c;border:1px solid var(--border);
+  border-radius:8px;padding:20px;
+  display:flex;justify-content:flex-end;
+  font-family:'Fira Code',monospace;
+  font-size:12px;margin:12px 0;
+}
+.wm-chip{
+  background:rgba(20,20,20,.85);
+  border:1px solid var(--border);
+  border-radius:5px;padding:4px 10px;
+  color:var(--text2);
+}
+.wm-chip .fps{color:var(--green)}
+
+/* ── Responsive ───────────────────────────────────── */
+@media(max-width:900px){
+  .sidebar{display:none}
+  .content{margin-left:0;padding:24px 18px 80px}
+  .page-hero h1{font-size:28px}
+}
+</style>
+<link rel="stylesheet" href="reading.css">
+</head>
+<body><a class="skip-link" href="#content">Skip to content</a>
+
+<!-- ── Topbar ──────────────────────────────────── -->
+<header class="topbar"><button class="menu-toggle" aria-controls="docs-navigation" aria-expanded="false">Menu</button>
+  <div class="logo">
+    <div class="logo-icon">H</div>
+    <span class="logo-name">Hutame<span>Hub</span></span>
+    <span class="logo-ver">Docs</span>
+  </div>
+  <div class="topbar-right">
+    <a class="gh-link" href="https://github.com/hutamev2/HutameHub-Lib" target="_blank">
+      ⭐ GitHub
     </a>
-    <label class="md-header__button md-icon" for="__drawer">
-      
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
-    </label>
-    <div class="md-header__title" data-md-component="header-title">
-      <div class="md-header__ellipsis">
-        <div class="md-header__topic">
-          <span class="md-ellipsis">
-            HutameHub v3.0
-          </span>
-        </div>
-        <div class="md-header__topic" data-md-component="header-topic">
-          <span class="md-ellipsis">
-            
-              Getting Started
-            
-          </span>
-        </div>
-      </div>
-    </div>
-    
-      
-        <form class="md-header__option" data-md-component="palette">
-  
-    
-    
-    
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
-    
-      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
-      </label>
-    
-  
-    
-    
-    
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
-    
-      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
-      </label>
-    
-  
-</form>
-      
-    
-    
-      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
-    
-    
-    
-      
-      
-        <label class="md-header__button md-icon" for="__search">
-          
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
-        </label>
-        <div class="md-search" data-md-component="search" role="dialog">
-  <label class="md-search__overlay" for="__search"></label>
-  <div class="md-search__inner" role="search">
-    <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
-      <label class="md-search__icon md-icon" for="__search">
-        
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
-        
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
-      </label>
-      <nav class="md-search__options" aria-label="Search">
-        
-        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
-          
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-        </button>
-      </nav>
-      
-        <div class="md-search__suggest" data-md-component="search-suggest"></div>
-      
-    </form>
-    <div class="md-search__output">
-      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
-        <div class="md-search-result" data-md-component="search-result">
-          <div class="md-search-result__meta">
-            Initializing search
-          </div>
-          <ol class="md-search-result__list" role="presentation"></ol>
-        </div>
-      </div>
-    </div>
+    <button class="copy-ls-btn" id="copyLsBtn" onclick="copyLoadstring()">
+      Copy Loadstring
+    </button>
   </div>
-</div>
-      
-    
-    
-      <div class="md-header__source">
-        <a href="https://github.com/hutamev2/HutameHub-Lib" title="Go to repository" class="md-source" data-md-component="source">
-  <div class="md-source__icon md-icon">
-    
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
-  </div>
-  <div class="md-source__repository">
-    hutamev2/HutameHub-Lib
-  </div>
-</a>
-      </div>
-    
-  </nav>
-  
 </header>
-    
-    <div class="md-container" data-md-component="container">
-      
-      
-        
-          
-            
-<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
-  <div class="md-grid">
-    <ul class="md-tabs__list">
-      
-        
-  
-  
-  
-    
-  
-  
-    <li class="md-tabs__item md-tabs__item--active">
-      <a href="." class="md-tabs__link">
-        
-  
-  
-    
-  
-  Getting Started
 
-      </a>
-    </li>
-  
+<div class="layout">
 
-      
-        
-  
-  
-  
-  
-    
-    
-      <li class="md-tabs__item">
-        <a href="window/" class="md-tabs__link">
-          
-  
-  
-  Core API
+<!-- ── Left Sidebar ───────────────────────────── -->
+<nav class="sidebar" id="docs-navigation" aria-label="Documentation">
+  <div class="sb-search">
+    <span class="sb-search-ic">🔍</span>
+    <input type="text" id="sbSearch" aria-label="Search documentation" placeholder="Search docs… Ctrl K" oninput="filterNav()">
+  </div>
 
-        </a>
-      </li>
-    
-  
-
-      
-        
-  
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="elements/" class="md-tabs__link">
-        
-  
-  
-    
-  
-  UI Elements
-
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="systems/" class="md-tabs__link">
-        
-  
-  
-    
-  
-  Core Systems
-
-      </a>
-    </li>
-  
-
-      
+  <div class="sb-group">
+    <div class="sb-group-title">Getting Started</div>
+    <ul class="sb-links">
+      <li><a href="#intro" class="active">Introduction</a></li>
+      <li><a href="#quickstart">Quick Start</a></li>
+      <li><a href="#s-types">Type Check</a></li>
+      <li><a href="#s-fullexample">Full Example <span class="sb-badge new-badge">New</span></a></li>
     </ul>
   </div>
-</nav>
-          
-        
-      
-      <main class="md-main" data-md-component="main">
-        <div class="md-main__inner md-grid">
-          
-            
-              
-              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    
 
-
-  
-
-
-<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
-  <label class="md-nav__title" for="__drawer">
-    <a href="." title="HutameHub v3.0" class="md-nav__button md-logo" aria-label="HutameHub v3.0" data-md-component="logo">
-      
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
-
-    </a>
-    HutameHub v3.0
-  </label>
-  
-    <div class="md-nav__source">
-      <a href="https://github.com/hutamev2/HutameHub-Lib" title="Go to repository" class="md-source" data-md-component="source">
-  <div class="md-source__icon md-icon">
-    
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
-  </div>
-  <div class="md-source__repository">
-    hutamev2/HutameHub-Lib
-  </div>
-</a>
-    </div>
-  
-  <ul class="md-nav__list" data-md-scrollfix>
-    
-      
-      
-  
-  
-    
-  
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Getting Started
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="." class="md-nav__link md-nav__link--active">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Getting Started
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#booting-the-library" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Booting the Library
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#example-layout" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Example Layout
-      
-    </span>
-  </a>
-  
-</li>
-      
+  <div class="sb-group">
+    <div class="sb-group-title">Window & Tabs</div>
+    <ul class="sb-links">
+      <li><a href="#s-window">Library.new <span class="sb-badge">Window</span></a></li>
+      <li><a href="#s-tab">CreateTab <span class="sb-badge">Tab</span></a></li>
+      <li><a href="#s-section">CreateSection <span class="sb-badge">Section</span></a></li>
     </ul>
-  
-</nav>
-      
-    </li>
-  
+  </div>
 
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
-        
-          
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Core API
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Core API
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="window/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Window & Initialization
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="layout/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tabs & Sections
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="elements/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    UI Elements
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="systems/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Core Systems
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-  </ul>
-</nav>
-                  </div>
-                </div>
-              </div>
-            
-            
-              
-              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#booting-the-library" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Booting the Library
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#example-layout" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Example Layout
-      
-    </span>
-  </a>
-  
-</li>
-      
+  <div class="sb-group">
+    <div class="sb-group-title">Elements</div>
+    <ul class="sb-links">
+      <li><a href="#s-toggle">CreateToggle <span class="sb-badge">Bool</span></a></li>
+      <li><a href="#s-slider">CreateSlider <span class="sb-badge">Number</span></a></li>
+      <li><a href="#s-dropdown">CreateDropdown <span class="sb-badge">String</span></a></li>
+      <li><a href="#s-multidd">CreateMultiDropdown <span class="sb-badge">Table</span></a></li>
+      <li><a href="#s-textbox">CreateTextbox <span class="sb-badge">Input</span></a></li>
+      <li><a href="#s-keybind">CreateKeybind <span class="sb-badge">Key</span></a></li>
+      <li><a href="#s-color">CreateColorPicker <span class="sb-badge">Color</span></a></li>
+      <li><a href="#s-button">CreateButton <span class="sb-badge">Action</span></a></li>
     </ul>
-  
-</nav>
-                  </div>
-                </div>
-              </div>
-            
-          
-          
-            <div class="md-content" data-md-component="content">
-              
-              <article class="md-content__inner md-typeset">
-                
-                  
+  </div>
 
+  <div class="sb-group">
+    <div class="sb-group-title">Visual FX</div>
+    <ul class="sb-links">
+      <li><a href="#s-tooltip">Tooltip <span class="sb-badge new-badge">New</span></a></li>
+      <li><a href="#s-snow">Snow Effect <span class="sb-badge new-badge">New</span></a></li>
+    </ul>
+  </div>
 
-  
-  
+  <div class="sb-group">
+    <div class="sb-group-title">Hub Features</div>
+    <ul class="sb-links">
+      <li><a href="#s-notify">Notify <span class="sb-badge">Toast</span></a></li>
+      <li><a href="#s-watermark">SetWatermark <span class="sb-badge">HUD</span></a></li>
+      <li><a href="#s-utilities">Profiles &amp; control utilities</a></li>
+      <li><a href="#s-config">SaveConfig / LoadConfig <span class="sb-badge">Persist</span></a></li>
+      <li><a href="#s-loading">Loading Screen <span class="sb-badge">Splash</span></a></li>
+    </ul>
+  </div>
 
+  <div class="sb-group">
+    <div class="sb-group-title">UI Behaviour</div>
+    <ul class="sb-links">
+      <li><a href="#s-collapse">Section Collapse <span class="sb-badge">Toggle</span></a></li>
+      <li><a href="#s-badge">Tab Badge <span class="sb-badge">Counter</span></a></li>
+      <li><a href="#s-mobile">Mobile Layout <span class="sb-badge">Responsive</span></a></li>
+    </ul>
+  </div>
+<p class="search-empty" hidden>No matching topics. Try another keyword.</p></nav>
 
-<h1 id="getting-started">Getting Started</h1>
-<p>Welcome to <strong>HutameHub v3.0</strong>, a modern, instance-based, TweenService-powered UI framework for Roblox Luau.</p>
-<h2 id="booting-the-library">Booting the Library</h2>
-<p>You can load the library into your script by requiring the remote GitHub source:</p>
-<div class="language-lua highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kd">local</span><span class="w"> </span><span class="nv">HutameHub</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">loadstring</span><span class="p">(</span><span class="nv">game</span><span class="p">:</span><span class="nf">HttpGet</span><span class="p">(</span><span class="s2">"https://raw.githubusercontent.com/hutamev2/HutameHub-Lib/main/Source.lua"</span><span class="p">))()</span>
-</span></code></pre></div>
-<p>This returns the <code>Library</code> class, which you can use to initialize your Hub window.</p>
-<h2 id="example-layout">Example Layout</h2>
-<p>Here is a quick snippet to get a basic script running:</p>
-<div class="language-lua highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kd">local</span><span class="w"> </span><span class="nv">HutameHub</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">loadstring</span><span class="p">(</span><span class="nv">game</span><span class="p">:</span><span class="nf">HttpGet</span><span class="p">(</span><span class="s2">"https://raw.githubusercontent.com/hutamev2/HutameHub-Lib/main/Source.lua"</span><span class="p">))()</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="c1">-- Create Window</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="kd">local</span><span class="w"> </span><span class="nv">Hub</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">HutameHub</span><span class="p">.</span><span class="nf">new</span><span class="p">({</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="nv">Title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"My Aimbot Script"</span><span class="p">,</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="nv">Version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"v1.0"</span><span class="p">,</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="nv">Theme</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Midnight"</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="p">})</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="c1">-- Create Tab</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="kd">local</span><span class="w"> </span><span class="nv">MainTab</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">Hub</span><span class="p">:</span><span class="nf">CreateTab</span><span class="p">(</span><span class="s2">"Main"</span><span class="p">,</span><span class="w"> </span><span class="s2">"rbxassetid://10723396662"</span><span class="p">)</span>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="c1">-- Create Section</span>
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="kd">local</span><span class="w"> </span><span class="nv">AimbotSection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">MainTab</span><span class="p">:</span><span class="nf">CreateSection</span><span class="p">(</span><span class="s2">"Aimbot Settings"</span><span class="p">,</span><span class="w"> </span><span class="s2">"left"</span><span class="p">)</span>
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>
-</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="c1">-- Create Elements</span>
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="nv">AimbotSection</span><span class="p">:</span><span class="nf">CreateToggle</span><span class="p">({</span>
-</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">    </span><span class="nv">Title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Enable Aimbot"</span><span class="p">,</span>
-</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="w">    </span><span class="nv">Flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Aimbot"</span><span class="p">,</span>
-</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="w">    </span><span class="nv">Default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
-</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="p">})</span>
-</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>
-</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="c1">-- Load Config (Optional, but recommended)</span>
-</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="nv">Hub</span><span class="p">:</span><span class="nf">LoadConfig</span><span class="p">(</span><span class="s2">"my_script_cfg"</span><span class="p">)</span>
-</span></code></pre></div>
+<!-- ── Main Content ────────────────────────────── -->
+<main class="content" id="content">
 
+<!-- ════ INTRODUCTION ════ -->
+<section class="page-hero" id="intro">
+  <div class="page-hero-eyebrow">⚡ Private Hub Style · Luau</div>
+  <h1>HutameHub Library</h1>
+  <p>A compact, two-column Roblox Luau UI framework inspired by the best private hubs. Horizontal tab bar, checkbox toggles, thin sliders — built entirely with Roblox's native API. Now featuring a <strong>hover Tooltip system</strong> and a <strong>Snow Effect</strong> on the loading screen.</p>
 
+  <div class="feat-grid">
+    <div class="feat-chip"><span class="dot"></span>Horizontal Tab Bar</div>
+    <div class="feat-chip"><span class="dot"></span>Two-Column Layout</div>
+    <div class="feat-chip"><span class="dot"></span>Checkbox Toggles</div>
+    <div class="feat-chip"><span class="dot"></span>Thin Slider Bars</div>
+    <div class="feat-chip"><span class="dot"></span>Toast Notifications</div>
+    <div class="feat-chip"><span class="dot"></span>Config Save / Load</div>
+    <div class="feat-chip"><span class="dot"></span>FPS Watermark</div>
+    <div class="feat-chip"><span class="dot"></span>Loading Screen</div>
+    <div class="feat-chip"><span class="dot"></span>Section Collapse</div>
+    <div class="feat-chip"><span class="dot"></span>Tab Badge Counter</div>
+    <div class="feat-chip"><span class="dot"></span>Keybind Toggle Bind</div>
+    <div class="feat-chip"><span class="dot"></span>Mobile Layout</div>
+    <div class="feat-chip"><span class="dot"></span>Tooltip System</div>
+    <div class="feat-chip"><span class="dot"></span>Snow Effect</div>
+  </div>
 
+  <div class="callout blue">
+    <span class="callout-icon">💡</span>
+    <span>Every parameter in every element is <strong>optional</strong> unless marked <code>required</code>. Defaults are listed in each table below.</span>
+  </div>
+</section>
 
+<!-- ════ QUICK START ════ -->
+<section class="doc-section" id="quickstart">
+  <div class="method-header">
+    <div class="method-label">Getting Started</div>
+    <div class="method-title">Quick Start</div>
+    <p class="method-desc">Load the library, create a window, add tabs and sections, then fill them with elements. That's the whole model.</p>
+  </div>
 
-
-
-
-
-
-
-
-                
-              </article>
-            </div>
-          
-          
-<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
-        </div>
-        
-          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
-  Back to top
-</button>
-        
-      </main>
-      
-        <footer class="md-footer">
-  
-  <div class="md-footer-meta md-typeset">
-    <div class="md-footer-meta__inner md-grid">
-      <div class="md-copyright">
-  
-  
-    Made with
-    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
-      Material for MkDocs
-    </a>
-  
-</div>
-      
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-line"></div>
+      <div class="step-body">
+        <div class="step-title">Load the library</div>
+        <div class="step-desc">Paste this at the top of your script. The <code>loadstring</code> call fetches and executes the latest version.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-line"></div>
+      <div class="step-body">
+        <div class="step-title">Create a window</div>
+        <div class="step-desc">Call <code>Library.new()</code> with your title and accent color. This builds the full UI frame.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-line"></div>
+      <div class="step-body">
+        <div class="step-title">Add tabs → sections → elements</div>
+        <div class="step-desc">Tabs go on the horizontal bar. Each tab has a left and right column. Sections are cards inside columns.</div>
+      </div>
     </div>
   </div>
-</footer>
-      
+
+  <div class="code-block">
+    <div class="code-block-header">
+      <span class="code-block-lang">luau</span>
+      <button class="copy-code" onclick="copyCode(this,'qs')">Copy</button>
     </div>
-    <div class="md-dialog" data-md-component="dialog">
-      <div class="md-dialog__inner md-typeset"></div>
+    <pre id="qs"><code><span class="kw">local</span> <span class="vr">Library</span> = <span class="fn">loadstring</span>(game:<span class="fn">HttpGet</span>(
+    <span class="str">"https://raw.githubusercontent.com/hutamev2/HutameHub-Lib/main/Source.lua"</span>
+))()
+
+<span class="cmt">-- 1. Create the window</span>
+<span class="kw">local</span> <span class="vr">Hub</span> = <span class="vr">Library</span>.<span class="fn">new</span>({
+    <span class="vr">Title</span>     = <span class="str">"MyHub"</span>,
+    <span class="vr">Version</span>   = <span class="str">"v2.2"</span>,
+    <span class="vr">Accent</span>    = Color3.<span class="fn">fromRGB</span>(<span class="num">192</span>, <span class="num">139</span>, <span class="num">230</span>),
+    <span class="vr">ToggleKey</span> = Enum.KeyCode.RightControl
+})
+
+<span class="cmt">-- 2. Add a tab</span>
+<span class="kw">local</span> <span class="vr">CombatTab</span> = <span class="vr">Hub</span>:<span class="fn">CreateTab</span>(<span class="str">"Combat"</span>)
+
+<span class="cmt">-- 3. Create sections (left column by default, pass "right" for right column)</span>
+<span class="kw">local</span> <span class="vr">AimSection</span>    = <span class="vr">CombatTab</span>:<span class="fn">CreateSection</span>(<span class="str">"Silent Aim"</span>)
+<span class="kw">local</span> <span class="vr">ExtrasSection</span> = <span class="vr">CombatTab</span>:<span class="fn">CreateSection</span>(<span class="str">"Extras"</span>, <span class="str">"right"</span>)
+
+<span class="cmt">-- 4. Fill with elements</span>
+<span class="vr">AimSection</span>:<span class="fn">CreateToggle</span>({
+    <span class="vr">Title</span>    = <span class="str">"Enable Silent Aim"</span>,
+    <span class="vr">Default</span>  = <span class="kw">false</span>,
+    <span class="vr">Callback</span> = <span class="kw">function</span>(<span class="vr">enabled</span>)
+        <span class="fn">print</span>(<span class="str">"Silent Aim:"</span>, <span class="vr">enabled</span>)
+    <span class="kw">end</span>
+})
+
+<span class="vr">AimSection</span>:<span class="fn">CreateSlider</span>({
+    <span class="vr">Title</span>    = <span class="str">"FOV Radius"</span>,
+    <span class="vr">Min</span>      = <span class="num">10</span>,
+    <span class="vr">Max</span>      = <span class="num">500</span>,
+    <span class="vr">Default</span>  = <span class="num">150</span>,
+    <span class="vr">Suffix</span>   = <span class="str">" px"</span>,
+    <span class="vr">Callback</span> = <span class="kw">function</span>(<span class="vr">value</span>)
+        <span class="fn">print</span>(<span class="str">"FOV:"</span>, <span class="vr">value</span>)
+    <span class="kw">end</span>
+})
+
+<span class="vr">ExtrasSection</span>:<span class="fn">CreateDropdown</span>({
+    <span class="vr">Title</span>    = <span class="str">"Aim Part"</span>,
+    <span class="vr">Options</span>  = {<span class="str">"Head"</span>, <span class="str">"Torso"</span>, <span class="str">"HumanoidRootPart"</span>},
+    <span class="vr">Default</span>  = <span class="str">"Head"</span>,
+    <span class="vr">Callback</span> = <span class="kw">function</span>(<span class="vr">selected</span>)
+        <span class="fn">print</span>(<span class="str">"Aim part:"</span>, <span class="vr">selected</span>)
+    <span class="kw">end</span>
+})</code></pre>
+  </div>
+</section>
+
+<!-- ════ FULL EXAMPLE ════ -->
+<section class="doc-section" id="s-types"><div class="method-header"><div class="method-label">Getting Started</div><h1 class="method-title">Type Check</h1><p class="method-desc">Copy these Luau aliases above your loader for editor type checking and autocomplete. They describe the actual Source.lua API: use <code>Title</code>, not <code>Name</code>. Constructors return control handles, and buttons return TextButton. Types do not validate runtime input.</p></div><p class="method-desc"><a href="examples/types.luau" download>Download types.luau</a> · Includes profiles, conditions, reset, confirmation and all value controls. Requires Roblox/Luau type definitions; plain Lua does not support type aliases.</p><div class="code-block"><div class="code-block-header"><span class="code-block-lang">Luau types</span><button class="copy-code" onclick="copyCode(this,'ex-types')">Copy types</button></div><pre id="ex-types"><code>-- Paste these aliases above your loader in Roblox Studio / a Luau-aware editor.
+-- This describes Source.lua; it does not perform runtime validation.
+type ControlOptions = {
+    Title: string?, Tooltip: string?, ConfigKey: string?,
+    VisibleWhen: (() -&gt; boolean)?, EnabledWhen: (() -&gt; boolean)?,
+}
+type ToggleOptions = ControlOptions &amp; {Default: boolean?, Keybind: Enum.KeyCode?, Callback: ((boolean) -&gt; ())?}
+type SliderOptions = ControlOptions &amp; {Min: number?, Max: number?, Default: number?, Decimals: number?, Suffix: string?, Callback: ((number) -&gt; ())?}
+type DropdownOptions = ControlOptions &amp; {Options: {string}?, Default: string?, MaxVisibleItems: number?, Callback: ((string) -&gt; ())?}
+type MultiDropdownOptions = ControlOptions &amp; {Options: {string}?, Default: {string}?, MaxShow: number?, MaxVisibleItems: number?, Callback: (({string}) -&gt; ())?}
+type TextboxOptions = ControlOptions &amp; {Default: string?, Placeholder: string?, Callback: ((string, boolean) -&gt; ())?}
+type KeybindOptions = ControlOptions &amp; {Default: Enum.KeyCode?, Callback: ((Enum.KeyCode) -&gt; ())?}
+type ColorPickerOptions = ControlOptions &amp; {Default: Color3?, Callback: ((Color3) -&gt; ())?}
+type ButtonOptions = {Title: string?, Tooltip: string?, Desc: string?, Callback: (() -&gt; ())?, VisibleWhen: (() -&gt; boolean)?, EnabledWhen: (() -&gt; boolean)?}
+
+type ToggleControl = {State: boolean, Set: (self: ToggleControl, value: boolean) -&gt; (), Reset: (self: ToggleControl) -&gt; ()}
+type SliderControl = {Value: number, Set: (self: SliderControl, value: number) -&gt; (), Reset: (self: SliderControl) -&gt; ()}
+type DropdownControl = {
+    Selected: string, Options: {string}, Opened: boolean,
+    Set: (self: DropdownControl, value: string) -&gt; (), Reset: (self: DropdownControl) -&gt; (),
+    Open: (self: DropdownControl) -&gt; (), Close: (self: DropdownControl) -&gt; (),
+    Refresh: (self: DropdownControl, options: {string}?) -&gt; (),
+}
+type MultiDropdownControl = {
+    Options: {string}, Opened: boolean,
+    Set: (self: MultiDropdownControl, values: {string}) -&gt; (), Reset: (self: MultiDropdownControl) -&gt; (),
+    GetSelected: (self: MultiDropdownControl) -&gt; {string},
+    Open: (self: MultiDropdownControl) -&gt; (), Close: (self: MultiDropdownControl) -&gt; (),
+    Refresh: (self: MultiDropdownControl, options: {string}?) -&gt; (),
+}
+type TextboxControl = {Text: string, Set: (self: TextboxControl, text: string) -&gt; (), Reset: (self: TextboxControl) -&gt; ()}
+type KeybindControl = {Key: Enum.KeyCode, Listening: boolean, Set: (self: KeybindControl, key: Enum.KeyCode) -&gt; (), Reset: (self: KeybindControl) -&gt; ()}
+type ColorPickerControl = {Color: Color3, Opened: boolean, Set: (self: ColorPickerControl, color: Color3) -&gt; (), Toggle: (self: ColorPickerControl) -&gt; (), Reset: (self: ColorPickerControl) -&gt; ()}
+type HutameControl = ToggleControl | SliderControl | DropdownControl | MultiDropdownControl | TextboxControl | KeybindControl | ColorPickerControl | TextButton
+type HutameSection = {
+    CreateToggle: (self: HutameSection, options: ToggleOptions?) -&gt; ToggleControl,
+    CreateSlider: (self: HutameSection, options: SliderOptions?) -&gt; SliderControl,
+    CreateDropdown: (self: HutameSection, options: DropdownOptions?) -&gt; DropdownControl,
+    CreateMultiDropdown: (self: HutameSection, options: MultiDropdownOptions?) -&gt; MultiDropdownControl,
+    CreateTextbox: (self: HutameSection, options: TextboxOptions?) -&gt; TextboxControl,
+    CreateKeybind: (self: HutameSection, options: KeybindOptions?) -&gt; KeybindControl,
+    CreateColorPicker: (self: HutameSection, options: ColorPickerOptions?) -&gt; ColorPickerControl,
+    CreateButton: (self: HutameSection, options: ButtonOptions?) -&gt; TextButton,
+    CreateLabel: (self: HutameSection, text: string, color: Color3?) -&gt; TextLabel,
+    CreateSeparator: (self: HutameSection) -&gt; (),
+    Collapse: (self: HutameSection) -&gt; (), Expand: (self: HutameSection) -&gt; (),
+}
+type HutameTab = {
+    Name: string, Active: boolean,
+    CreateSection: (self: HutameTab, title: string, side: (&quot;left&quot; | &quot;right&quot;)?) -&gt; HutameSection,
+    Activate: (self: HutameTab) -&gt; (), Deactivate: (self: HutameTab) -&gt; (),
+    SetBadge: (self: HutameTab, count: number?) -&gt; (), ClearBadge: (self: HutameTab) -&gt; (),
+}
+type NotificationOptions = {Title: string?, Text: string?, Type: (&quot;info&quot; | &quot;success&quot; | &quot;warning&quot; | &quot;error&quot;)?, Duration: number?}
+type WatermarkOptions = {Format: string?, Position: (&quot;TopLeft&quot; | &quot;TopRight&quot; | &quot;BottomLeft&quot; | &quot;BottomRight&quot;)?, BgAlpha: number?}
+type ConfirmOptions = {Title: string?, Text: string?, ConfirmText: string?, CancelText: string?, OnConfirm: (() -&gt; ())?, OnCancel: (() -&gt; ())?}
+type HutameWindow = {
+    Title: string, Version: string, Accent: Color3, ToggleKey: Enum.KeyCode,
+    CreateTab: (self: HutameWindow, title: string) -&gt; HutameTab,
+    SetAccent: (self: HutameWindow, color: Color3) -&gt; (),
+    SetTitle: (self: HutameWindow, title: string?, version: string?) -&gt; (),
+    Destroy: (self: HutameWindow) -&gt; (), Notify: (self: HutameWindow, options: NotificationOptions?) -&gt; (),
+    SetWatermark: (self: HutameWindow, options: WatermarkOptions?) -&gt; (),
+    UpdateWatermark: (self: HutameWindow, format: string) -&gt; (), RemoveWatermark: (self: HutameWindow) -&gt; (),
+    SaveConfig: (self: HutameWindow, name: string?) -&gt; (), LoadConfig: (self: HutameWindow, name: string?) -&gt; (),
+    ListProfiles: (self: HutameWindow) -&gt; {string},
+    SaveProfile: (self: HutameWindow, name: string) -&gt; (boolean, any),
+    LoadProfile: (self: HutameWindow, name: string) -&gt; (boolean, any),
+    RenameProfile: (self: HutameWindow, oldName: string, newName: string) -&gt; (boolean, any),
+    DeleteProfile: (self: HutameWindow, name: string) -&gt; (boolean, any),
+    SetDefaultProfile: (self: HutameWindow, name: string?) -&gt; (boolean, any),
+    LoadDefaultProfile: (self: HutameWindow) -&gt; (boolean, any),
+    ResetValues: (self: HutameWindow) -&gt; (), RefreshConditions: (self: HutameWindow) -&gt; (),
+    SetCondition: (self: HutameWindow, control: HutameControl, predicate: () -&gt; boolean, mode: (&quot;hide&quot; | &quot;disable&quot;)?) -&gt; (),
+    Confirm: (self: HutameWindow, options: ConfirmOptions?) -&gt; {Cancel: () -&gt; ()},
+}
+type WindowOptions = {Title: string?, Version: string?, Accent: Color3?, ToggleKey: Enum.KeyCode?, LoadingScreen: boolean?, LoadingDuration: number?, SnowEffect: boolean?, MobileToggle: boolean?}
+type HutameLibrary = {new: (options: WindowOptions?) -&gt; HutameWindow}
+
+-- After these aliases, annotate your loader:
+-- local Library: HutameLibrary = loadstring(game:HttpGet(&quot;https://raw.githubusercontent.com/hutamev2/HutameHub-Lib/main/Source.lua&quot;))()
+-- local Hub = Library.new({Title = &quot;Typed Hub&quot;})
+-- local Section = Hub:CreateTab(&quot;Home&quot;):CreateSection(&quot;Settings&quot;)
+-- local Enabled = Section:CreateToggle({Title = &quot;Enabled&quot;, Default = false})
+-- Enabled:Set(true)
+</code></pre></div></section>
+<section class="doc-section" id="s-fullexample">
+<div class="callout blue"><span class="callout-icon">↕</span><span><strong>Dropdown layout fix:</strong> lists now expand their section and push following buttons down. Long lists scroll internally; closing restores the row height. Section collapse/expand uses a cancellable 0.2 s tween, so rapid clicks follow the latest state. Try the <strong>Layout</strong> tab in Full Example.</span></div>
+  <div class="callout blue"><span class="callout-icon">+</span><span><strong>Profiles &amp; control utilities</strong> — create, load, rename, delete and select a default profile; draggable mobile toggle; per-control and global reset; key conflict warnings; confirmation dialogs; conditional visibility and input. <a href="features.html">Read the complete API guide</a> or try the Profiles tab in the example below.</span></div>
+  <div class="callout blue"><span class="callout-icon">◇</span><span><strong>v2.2 · Violet Studio</strong> — dark violet panels, lilac accents, square corners, fine inset borders and compact monospace typography. The two-column layout and public API stay familiar. Buttons and input surfaces now use subtle vertical shading; active tabs and values carry the accent. Main-window snow is opt-in.</span></div>
+  <p class="method-desc">Visual direction studied from <a href="https://github.com/ro0ti/Roblox-Scripting-UI/tree/main/Akiri%20Lib">Akiri Lib</a>; implemented independently with Roblox Instances, without importing its code, assets or Drawing API. Run <a href="#s-fullexample">Full Example</a> to inspect all controls in the new theme. Runtime visual verification in Roblox remains pending.</p>
+  <div class="method-header">
+    <div class="method-label">Getting Started</div>
+    <div class="method-title">Full Example</div>
+    <p class="method-desc">Interactive UI test using the actual Source.lua API. Try every component, setters, dropdown refresh, notifications, section collapse, badges, watermark and config save/load. Callback values appear in Output / the client console.</p>
+  </div>
+
+  <div class="callout blue">
+    <span class="callout-icon">💡</span>
+    <span>Press <strong>RightControl</strong> or <strong>Minus (-)</strong> to hide/show the entire window and <strong>F</strong> to test the checkbox binding. Hover controls for 0.4 s for tooltips. Use the <strong>Features</strong> tab for feature tests; test Destroy last.</span>
+  </div>
+
+  <div class="code-block">
+    <div class="code-block-header">
+      <span class="code-block-lang">luau</span>
+      <button class="copy-code" onclick="copyCode(this,'ex-full')">Copy</button>
     </div>
-    
-    
-    
-      
-      
-      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
-    
-    
-      <script src="assets/javascripts/bundle.d7400e89.min.js"></script>
-      
-    
-  </body>
+    <p class="method-desc"><a href="examples/ui-test.lua" download>Download ui-test.lua</a> · The loader needs a compatible client environment; config tests also need <code>writefile</code>/<code>readfile</code>. Save, change registered controls, then load and inspect their values. All seven value-control types support ConfigKey. The Profiles tab tests profile management, reset and conditional controls.</p>
+    <p class="method-desc">Manual checks: drag the title bar, minimize/restore, resize below and above 600 px, and inspect both columns. Compare startup effects in fresh sessions using <code>LoadingScreen</code> and <code>SnowEffect</code>; the latter controls main-window snow only. <code>CreateKeybind</code> reports binding changes, not key presses. This example was checked against source; it has not been run in Roblox.</p>
+    <pre id="ex-full"><code>-- HutameHub: manual UI feature test (Source.lua API)
+-- Run in a client environment that supports the loader below.
+-- Config tests additionally require writefile/readfile.
+local Library = loadstring(game:HttpGet(
+    &quot;https://raw.githubusercontent.com/hutamev2/HutameHub-Lib/main/Source.lua&quot;
+))()
+
+local Hub = Library.new({
+    Title = &quot;HutameHub UI Test&quot;,
+    Version = &quot;v2.2&quot;,
+    Accent = Color3.fromRGB(192, 139, 230),
+    ToggleKey = Enum.KeyCode.RightControl,
+    MobileToggle = true, -- Also show the draggable 48px button on desktop for testing.
+    LoadingScreen = true,
+    LoadingDuration = 1.8,
+    SnowEffect = false,
+})
+
+local function report(name, value)
+    print(&quot;[UI Test] &quot; .. name, value)
+end
+
+local Controls = Hub:CreateTab(&quot;Controls&quot;)
+local Features = Hub:CreateTab(&quot;Features&quot;)
+Features:SetBadge(3)
+local Inputs = Controls:CreateSection(&quot;Inputs&quot;, &quot;left&quot;)
+local Selection = Controls:CreateSection(&quot;Selection&quot;, &quot;right&quot;)
+local Actions = Features:CreateSection(&quot;Actions&quot;, &quot;left&quot;)
+local Preview = Features:CreateSection(&quot;Collapse target&quot;, &quot;right&quot;)
+Preview:CreateLabel(&quot;Collapse and expand this section.&quot;)
+Preview:CreateSeparator()
+Preview:CreateLabel(&quot;Drag the top bar; resize the viewport.&quot;)
+
+local Toggle = Inputs:CreateToggle({
+    Title = &quot;Test toggle&quot;, Default = false, Keybind = Enum.KeyCode.F,
+    ConfigKey = &quot;test_toggle&quot;, Tooltip = &quot;Click or press F outside a textbox.&quot;,
+    Callback = function(value) report(&quot;Toggle&quot;, value) end,
+})
+local Slider = Inputs:CreateSlider({
+    Title = &quot;Test slider&quot;, Min = 0, Max = 100, Default = 25,
+    Decimals = 1, Suffix = &quot;%&quot;, ConfigKey = &quot;test_slider&quot;,
+    Tooltip = &quot;Drag with mouse or touch; watch Output.&quot;,
+    Callback = function(value) report(&quot;Slider&quot;, value) end,
+})
+local Textbox = Inputs:CreateTextbox({
+    Title = &quot;Test text&quot;, Default = &quot;Hello&quot;, Placeholder = &quot;Type here&quot;, ConfigKey = &quot;test_text&quot;,
+    Tooltip = &quot;Callback runs when focus is lost.&quot;,
+    Callback = function(text, enterPressed)
+        report(&quot;Text&quot;, text)
+        report(&quot;Enter pressed&quot;, enterPressed)
+    end,
+})
+local Keybind = Inputs:CreateKeybind({
+    Title = &quot;Select a key&quot;, Default = Enum.KeyCode.G, ConfigKey = &quot;test_key&quot;,
+    Tooltip = &quot;Click then press a key; Backspace clears it.&quot;,
+    -- This callback reports a NEW binding, not each key press.
+    Callback = function(key) report(&quot;Selected key&quot;, key.Name) end,
+})
+local Color = Inputs:CreateColorPicker({
+    Title = &quot;Accent&quot;, Default = Color3.fromRGB(192, 139, 230), ConfigKey = &quot;test_color&quot;,
+    Tooltip = &quot;Open the RGB sliders and change the accent.&quot;,
+    Callback = function(value) Hub:SetAccent(value) end,
+})
+local Dropdown = Selection:CreateDropdown({
+    Title = &quot;Single choice&quot;, Options = {&quot;Alpha&quot;, &quot;Beta&quot;, &quot;Gamma&quot;},
+    Default = &quot;Alpha&quot;, ConfigKey = &quot;test_dropdown&quot;,
+    Tooltip = &quot;Choose one item.&quot;,
+    Callback = function(value) report(&quot;Dropdown&quot;, value) end,
+})
+local Multi = Selection:CreateMultiDropdown({
+    Title = &quot;Multiple choices&quot;, Options = {&quot;Red&quot;, &quot;Green&quot;, &quot;Blue&quot;},
+    Default = {&quot;Red&quot;}, MaxShow = 2, ConfigKey = &quot;test_multi&quot;,
+    Tooltip = &quot;Select several items; selection stays open.&quot;,
+    Callback = function(values) report(&quot;Multi&quot;, table.concat(values, &quot;, &quot;)) end,
+})
+
+-- Helper belongs to this example, not the library.
+local function button(section, title, callback)
+    section:CreateButton({Title = title, Tooltip = title, Callback = function()
+        local ok, err = pcall(callback)
+        if not ok then warn(&quot;[UI Test] &quot; .. title .. &quot;: &quot; .. tostring(err)) end
+    end})
+end
+
+button(Inputs, &quot;Set values from code&quot;, function()
+    Toggle:Set(true)
+    Slider:Set(75.5)
+    Textbox:Set(&quot;Set() worked&quot;) -- Does not invoke the textbox callback.
+    Keybind:Set(Enum.KeyCode.H) -- Does not invoke the keybind callback.
+    Color:Set(Color3.fromRGB(80, 160, 255))
+    report(&quot;Textbox.Text&quot;, Textbox.Text)
+    report(&quot;Keybind.Key&quot;, Keybind.Key.Name)
+end)
+button(Inputs, &quot;Toggle RGB panel&quot;, function() Color:Toggle() end)
+button(Selection, &quot;Set selections&quot;, function()
+    Dropdown:Set(&quot;Beta&quot;)
+    Multi:Set({&quot;Green&quot;, &quot;Blue&quot;})
+    report(&quot;GetSelected&quot;, table.concat(Multi:GetSelected(), &quot;, &quot;))
+end)
+button(Selection, &quot;Refresh options&quot;, function()
+    Dropdown:Refresh({&quot;Alpha&quot;, &quot;Beta&quot;, &quot;Gamma&quot;, &quot;Delta&quot;})
+    Multi:Refresh({&quot;Red&quot;, &quot;Green&quot;, &quot;Blue&quot;, &quot;Yellow&quot;})
+end)
+button(Selection, &quot;Open single choice&quot;, function() Dropdown:Open() end)
+button(Selection, &quot;Close single choice&quot;, function() Dropdown:Close() end)
+button(Selection, &quot;Open multiple choices&quot;, function() Multi:Open() end)
+button(Selection, &quot;Close multiple choices&quot;, function() Multi:Close() end)
+button(Selection, &quot;Go to Features&quot;, function() Features:Activate() end)
+
+for _, kind in ipairs({&quot;info&quot;, &quot;success&quot;, &quot;warning&quot;, &quot;error&quot;}) do
+    local notificationType = kind
+    button(Actions, &quot;Notify: &quot; .. notificationType, function()
+        Hub:Notify({Title = &quot;UI Test&quot;, Text = notificationType,
+            Type = notificationType, Duration = 3})
+    end)
+end
+button(Actions, &quot;Collapse target&quot;, function() Preview:Collapse() end)
+button(Actions, &quot;Expand target&quot;, function() Preview:Expand() end)
+button(Actions, &quot;Badge = 7&quot;, function() Features:SetBadge(7) end)
+button(Actions, &quot;Clear badge&quot;, function() Features:ClearBadge() end)
+button(Actions, &quot;Show watermark&quot;, function()
+    Hub:SetWatermark({Format = &quot;{player} | {fps} fps | {ping} ms | {time}&quot;,
+        Position = &quot;BottomRight&quot;, BgAlpha = 0.45})
+end)
+button(Actions, &quot;Update watermark&quot;, function()
+    Hub:UpdateWatermark(&quot;{game} | {fps} fps&quot;)
+end)
+button(Actions, &quot;Remove watermark&quot;, function() Hub:RemoveWatermark() end)
+button(Actions, &quot;Save test config&quot;, function() Hub:SaveConfig(&quot;ui_test&quot;) end)
+button(Actions, &quot;Load test config&quot;, function() Hub:LoadConfig(&quot;ui_test&quot;) end)
+button(Actions, &quot;Read current values&quot;, function()
+    report(&quot;Toggle.State&quot;, Toggle.State)
+    report(&quot;Slider.Value&quot;, Slider.Value)
+    report(&quot;Dropdown.Selected&quot;, Dropdown.Selected)
+    report(&quot;Multi:GetSelected()&quot;, table.concat(Multi:GetSelected(), &quot;, &quot;))
+    report(&quot;Color.Color&quot;, Color.Color)
+end)
+button(Actions, &quot;Back to Controls&quot;, function() Controls:Activate() end)
+button(Actions, &quot;Destroy UI (test last)&quot;, function() Hub:Destroy() end)
+
+-- Save -&gt; change controls -&gt; Load -&gt; inspect all seven registered value types.
+local Profiles = Hub:CreateTab(&quot;Profiles&quot;)
+local Manager = Profiles:CreateSection(&quot;Profile manager&quot;, &quot;left&quot;)
+local Conditional = Profiles:CreateSection(&quot;Conditions and reset&quot;, &quot;right&quot;)
+local ProfileName = Manager:CreateTextbox({Title=&quot;Profile name&quot;, Default=&quot;demo&quot;})
+local RenameTo = Manager:CreateTextbox({Title=&quot;Rename to&quot;, Default=&quot;demo_copy&quot;})
+local ProfileList = Manager:CreateDropdown({Title=&quot;Saved profiles&quot;, Options=Hub:ListProfiles(),
+    Callback=function(name) ProfileName:Set(name) end})
+local function refreshProfiles() ProfileList:Refresh(Hub:ListProfiles()) end
+local function result(ok, err)
+    if not ok then Hub:Notify({Title=&quot;Profile error&quot;, Text=tostring(err), Type=&quot;error&quot;}) end
+    refreshProfiles()
+end
+button(Manager, &quot;Create / save profile&quot;, function()
+    Hub:Confirm({Title=&quot;Save profile&quot;, Text=&quot;Save current values? An existing profile will be overwritten.&quot;,
+        OnConfirm=function() result(Hub:SaveProfile(ProfileName.Text)) end})
+end)
+button(Manager, &quot;Load selected profile&quot;, function() result(Hub:LoadProfile(ProfileName.Text)) end)
+button(Manager, &quot;Rename profile&quot;, function() result(Hub:RenameProfile(ProfileName.Text, RenameTo.Text)) end)
+button(Manager, &quot;Set default profile&quot;, function() result(Hub:SetDefaultProfile(ProfileName.Text)) end)
+button(Manager, &quot;Load default profile&quot;, function() result(Hub:LoadDefaultProfile()) end)
+button(Manager, &quot;Delete profile&quot;, function()
+    local name = ProfileName.Text
+    Hub:Confirm({Title=&quot;Delete profile&quot;, Text=&quot;Permanently delete &quot; .. name .. &quot;?&quot;,
+        OnConfirm=function() result(Hub:DeleteProfile(name)) end})
+end)
+local Advanced = Conditional:CreateToggle({Title=&quot;Show advanced controls&quot;, Default=false})
+Conditional:CreateSlider({Title=&quot;Conditional slider&quot;, Min=0, Max=100, Default=50,
+    VisibleWhen=function() return Advanced.State end})
+Conditional:CreateButton({Title=&quot;Enabled when toggle is on&quot;,
+    EnabledWhen=function() return Advanced.State end,
+    Callback=function() report(&quot;Conditional button&quot;, &quot;clicked&quot;) end})
+button(Conditional, &quot;Reset slider only&quot;, function() Slider:Reset() end)
+button(Conditional, &quot;Reset all values&quot;, function()
+    Hub:Confirm({Title=&quot;Reset values&quot;, Text=&quot;Restore every control to its creation default?&quot;,
+        OnConfirm=function() Hub:ResetValues() end})
+end)
+Conditional:CreateLabel(&quot;Bind Select a key to F or Minus for a warning.&quot;)
+-- For automatic startup restore, call Hub:LoadDefaultProfile() HERE after creation.
+local LayoutTests = Hub:CreateTab(&quot;Layout&quot;)
+local Flow = LayoutTests:CreateSection(&quot;Dropdown followed by button&quot;, &quot;left&quot;)
+local LongOptions = {}
+for i = 1, 20 do LongOptions[i] = &quot;Option &quot; .. i end
+local FlowDropdown = Flow:CreateDropdown({Title=&quot;Scrollable single&quot;, Options=LongOptions, MaxVisibleItems=4})
+button(Flow, &quot;Button below single list&quot;, function() report(&quot;Flow&quot;, &quot;Single button clicked&quot;) end)
+local FlowMulti = Flow:CreateMultiDropdown({Title=&quot;Scrollable multi&quot;, Options=LongOptions, MaxVisibleItems=4})
+button(Flow, &quot;Button below multi list&quot;, function() report(&quot;Flow&quot;, &quot;Multi button clicked&quot;) end)
+local LayoutActions = LayoutTests:CreateSection(&quot;Animation checks&quot;, &quot;right&quot;)
+button(LayoutActions, &quot;Collapse left section&quot;, function() Flow:Collapse() end)
+button(LayoutActions, &quot;Expand left section&quot;, function() Flow:Expand() end)
+button(LayoutActions, &quot;Shorten open list&quot;, function() FlowDropdown:Refresh({&quot;One&quot;, &quot;Two&quot;}) end)
+button(LayoutActions, &quot;Restore 20 options&quot;, function() FlowDropdown:Refresh(LongOptions) end)
+-- Open both lists: buttons must move DOWN, and every item must be scrollable.
+-- Close lists: section shrinks. Rapidly alternate Collapse/Expand: last click wins.
+-- RightControl or Minus (-) hides/shows the entire window; F toggles the checkbox.
+-- Type a minus in the textbox: the UI must stay visible while typing.
+-- Hover a control for 0.4 seconds to inspect its tooltip.
+-- To compare startup effects, change LoadingScreen/SnowEffect above and run
+-- in a fresh session. SnowEffect controls main-window snow only.
+</code></pre>
+  </div>
+</section>
+
+<!-- ════ LIBRARY.NEW ════ -->
+<section class="doc-section" id="s-window">
+  <div class="method-header">
+    <div class="method-label">Window</div>
+    <div class="method-title"><code>Library.new(config)</code></div>
+    <p class="method-desc">Creates the hub window. Returns a <strong>Hub</strong> object that all tabs, sections and features attach to. Call this once at the top of your script.</p>
+  </div>
+
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">Hub</span>
+  </div>
+
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="p-name">Title</span></td>
+        <td><span class="type type-str">string</span></td>
+        <td><span class="p-default">"HutameHub"</span></td>
+        <td class="p-desc">Name shown in the topbar next to the version tag.</td>
+      </tr>
+      <tr>
+        <td><span class="p-name">Version</span></td>
+        <td><span class="type type-str">string</span></td>
+        <td><span class="p-default">"v2.2"</span></td>
+        <td class="p-desc">Version string shown dimmed beside the title.</td>
+      </tr>
+      <tr>
+        <td><span class="p-name">Accent</span></td>
+        <td><span class="type type-c3">Color3</span></td>
+        <td><span class="p-default">RGB(192,139,230)</span></td>
+        <td class="p-desc">Accent color applied to tab underlines, slider fills, active checkboxes, and button ripples.</td>
+      </tr>
+      <tr>
+        <td><span class="p-name">ToggleKey</span></td>
+        <td><span class="type type-kc">KeyCode</span></td>
+        <td><span class="p-default">RightControl</span></td>
+        <td class="p-desc">Keyboard key to show/hide the entire window. Minus (-) is always an additional shortcut, even with a custom ToggleKey. Shortcuts are ignored while typing in a textbox or when input is already processed.</td>
+      </tr>
+      <tr>
+        <td><span class="p-name">SnowEffect</span></td>
+        <td><span class="type type-bool">boolean</span></td>
+        <td><span class="p-default">false</span></td>
+        <td class="p-desc">Optional ambient snow on the main UI. Pass <code>true</code> to enable; disabled by default in v2.2.</td>
+      </tr>
+      <tr>
+        <td><span class="p-name">LoadingScreen</span></td>
+        <td><span class="type type-bool">boolean</span></td>
+        <td><span class="p-default">true</span></td>
+        <td class="p-desc">Full-screen animated splash on startup. Pass <code>false</code> to skip.</td>
+      </tr>
+      <tr>
+        <td><span class="p-name">LoadingDuration</span></td>
+        <td><span class="type type-num">number</span></td>
+        <td><span class="p-default">1.8</span></td>
+        <td class="p-desc">Seconds the loading bar takes to fill before revealing the main window.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="params-title">Methods</div>
+  <table class="params-table">
+    <thead><tr><th>Method</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="p-name">Hub:SetAccent(Color3)</span></td>
+        <td class="p-desc">Changes the accent color at runtime. All subscribed elements update instantly.</td>
+      </tr>
+      <tr>
+        <td><span class="p-name">Hub:Destroy()</span></td>
+        <td class="p-desc">Removes the UI and cleans up all connections.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════ CREATETAB ════ -->
+<section class="doc-section" id="s-tab">
+  <div class="method-header">
+    <div class="method-label">Tab</div>
+    <div class="method-title"><code>Hub:CreateTab(name)</code></div>
+    <p class="method-desc">Adds a button to the horizontal tab bar. Each tab contains an independent left and right scroll column. The first tab created is automatically activated.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">Tab</span>
+  </div>
+  <div class="params-title">Parameters</div>
+  <table class="params-table">
+    <thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="p-name">name<span class="p-req">required</span></span></td>
+        <td><span class="type type-str">string</span></td>
+        <td class="p-desc">Text shown on the tab button (e.g. <code>"Combat"</code>, <code>"ESP"</code>, <code>"Settings"</code>).</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════ CREATESECTION ════ -->
+<section class="doc-section" id="s-section">
+  <div class="method-header">
+    <div class="method-label">Section</div>
+    <div class="method-title"><code>Tab:CreateSection(title, col?)</code></div>
+    <p class="method-desc">Adds a card container to either the left or right scroll column of the tab. Sections group related elements under a header label.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">Section</span>
+  </div>
+  <div class="params-title">Parameters</div>
+  <table class="params-table">
+    <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="p-name">title<span class="p-req">required</span></span></td>
+        <td><span class="type type-str">string</span></td>
+        <td>—</td>
+        <td class="p-desc">Uppercase label shown at the top of the card.</td>
+      </tr>
+      <tr>
+        <td><span class="p-name">col</span></td>
+        <td><span class="type type-str">string</span></td>
+        <td><span class="p-default">"left"</span></td>
+        <td class="p-desc">Which column to place the section in. Pass <code>"right"</code> for the right column.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <span class="callout-icon">📐</span>
+    <span>Sections in the <strong>left</strong> and <strong>right</strong> columns scroll independently, so you can pack each side with as many elements as you need.</span>
+  </div>
+</section>
+
+<!-- ════ TOGGLE ════ -->
+<section class="doc-section" id="s-toggle">
+  <div class="method-header">
+    <div class="method-label">Element</div>
+    <div class="method-title"><code>Section:CreateToggle(config)</code></div>
+    <p class="method-desc">A compact checkbox-style toggle. The box fills with the accent color and shows a checkmark when active. Clicking the row anywhere toggles the state.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">{ State: bool,  Set(bool) }</span>
+  </div>
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="p-name">Title</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"Toggle"</span></td><td class="p-desc">Label shown next to the checkbox.</td></tr>
+      <tr><td><span class="p-name">Default</span></td><td><span class="type type-bool">boolean</span></td><td><span class="p-default">false</span></td><td class="p-desc">Initial on/off state.</td></tr>
+      <tr><td><span class="p-name">ConfigKey</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Unique key for <a href="#s-config" style="color:var(--acc)">Config Save/Load</a>.</td></tr>
+      <tr><td><span class="p-name">Keybind</span></td><td><span class="type type-kc">KeyCode</span></td><td><span class="p-default">nil</span></td><td class="p-desc">When set, pressing this key anywhere toggles the state automatically. The bound key is shown dimmed on the right side of the row.</td></tr>
+      <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function(bool)</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Called every time the state changes. Receives the new boolean value.</td></tr>
+      <tr><td><span class="p-name">Tooltip</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Short description shown in a floating tooltip on hover (0.4 s delay, fade-in animation).</td></tr>
+    </tbody>
+  </table>
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-toggle')">Copy</button></div>
+    <pre id="ex-toggle"><code><span class="kw">local</span> <span class="vr">silentAim</span> = <span class="vr">Section</span>:<span class="fn">CreateToggle</span>({
+    <span class="vr">Title</span>     = <span class="str">"Enable Silent Aim"</span>,
+    <span class="vr">Default</span>   = <span class="kw">false</span>,
+    <span class="vr">ConfigKey</span> = <span class="str">"silent_aim"</span>,
+    <span class="vr">Keybind</span>   = Enum.KeyCode.F,  <span class="cmt">-- press F anywhere to toggle</span>
+    <span class="vr">Callback</span>  = <span class="kw">function</span>(<span class="vr">enabled</span>)
+        <span class="fn">print</span>(<span class="str">"Silent Aim:"</span>, <span class="vr">enabled</span>)
+    <span class="kw">end</span>
+})
+
+<span class="cmt">-- Read current state</span>
+<span class="fn">print</span>(<span class="vr">silentAim</span>.State)
+
+<span class="cmt">-- Set programmatically</span>
+<span class="vr">silentAim</span>:<span class="fn">Set</span>(<span class="kw">true</span>)</code></pre>
+  </div>
+</section>
+
+<!-- ════ SLIDER ════ -->
+<section class="doc-section" id="s-slider">
+  <div class="method-header">
+    <div class="method-label">Element</div>
+    <div class="method-title"><code>Section:CreateSlider(config)</code></div>
+    <p class="method-desc">A thin draggable bar. The current value is shown as <code>value/max</code> on the right. Supports decimal precision and a custom suffix unit.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">{ Value: number,  Set(number) }</span>
+  </div>
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="p-name">Title</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"Slider"</span></td><td class="p-desc">Label shown above the track.</td></tr>
+      <tr><td><span class="p-name">Min</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">0</span></td><td class="p-desc">Minimum value.</td></tr>
+      <tr><td><span class="p-name">Max</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">100</span></td><td class="p-desc">Maximum value.</td></tr>
+      <tr><td><span class="p-name">Default</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">Min</span></td><td class="p-desc">Starting value.</td></tr>
+      <tr><td><span class="p-name">Decimals</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">0</span></td><td class="p-desc">Decimal places — <code>0</code> for integers, <code>1</code> or <code>2</code> for floats.</td></tr>
+      <tr><td><span class="p-name">Suffix</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">""</span></td><td class="p-desc">Appended to the value label, e.g. <code>" px"</code>, <code>" ms"</code>, <code>"%"</code>.</td></tr>
+      <tr><td><span class="p-name">ConfigKey</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Key for Config Save/Load.</td></tr>
+      <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function(number)</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Fires continuously as the slider moves.</td></tr>
+      <tr><td><span class="p-name">Tooltip</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Floating tooltip text shown on hover.</td></tr>
+    </tbody>
+  </table>
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-slider')">Copy</button></div>
+    <pre id="ex-slider"><code><span class="kw">local</span> <span class="vr">fovSlider</span> = <span class="vr">Section</span>:<span class="fn">CreateSlider</span>({
+    <span class="vr">Title</span>     = <span class="str">"FOV Radius"</span>,
+    <span class="vr">Min</span>       = <span class="num">10</span>,
+    <span class="vr">Max</span>       = <span class="num">500</span>,
+    <span class="vr">Default</span>   = <span class="num">150</span>,
+    <span class="vr">Suffix</span>    = <span class="str">" px"</span>,
+    <span class="vr">ConfigKey</span> = <span class="str">"fov"</span>,
+    <span class="vr">Callback</span>  = <span class="kw">function</span>(<span class="vr">value</span>)
+        <span class="fn">print</span>(<span class="str">"FOV:"</span>, <span class="vr">value</span>)
+    <span class="kw">end</span>
+})
+
+<span class="cmt">-- Read current value</span>
+<span class="fn">print</span>(<span class="vr">fovSlider</span>.Value)
+
+<span class="cmt">-- Set programmatically</span>
+<span class="vr">fovSlider</span>:<span class="fn">Set</span>(<span class="num">200</span>)</code></pre>
+  </div>
+</section>
+
+<!-- ════ DROPDOWN ════ -->
+<section class="doc-section" id="s-dropdown">
+  <div class="method-header">
+    <div class="method-label">Element</div>
+    <div class="method-title"><code>Section:CreateDropdown(config)</code></div>
+    <p class="method-desc">A compact inline dropdown. Clicking opens a list of options; the selected value is shown on the right side of the header row.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">{ Selected: string,  Set(string),  Refresh(table) }</span>
+  </div>
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+<tr><td><span class="p-name">MaxVisibleItems</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">6</span></td><td class="p-desc">Visible list rows before internal scrolling (1–20). The dropdown reserves its full header + visible list height, moving following controls down.</td></tr>
+      <tr><td><span class="p-name">Title</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"Dropdown"</span></td><td class="p-desc">Left-side label.</td></tr>
+      <tr><td><span class="p-name">Options</span></td><td><span class="type type-tbl">table</span></td><td><span class="p-default">{}</span></td><td class="p-desc">Array of option strings: <code>{"Head","Torso","HRP"}</code>.</td></tr>
+      <tr><td><span class="p-name">Default</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">Options[1]</span></td><td class="p-desc">Initially selected option.</td></tr>
+      <tr><td><span class="p-name">ConfigKey</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Key for Config Save/Load.</td></tr>
+      <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function(string)</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Fires when the user picks a new option.</td></tr>
+      <tr><td><span class="p-name">Tooltip</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Floating tooltip text shown on hover.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════ MULTIDROPDOWN ════ -->
+<section class="doc-section" id="s-multidd">
+  <div class="method-header">
+    <div class="method-label">Element</div>
+    <div class="method-title"><code>Section:CreateMultiDropdown(config)</code></div>
+    <p class="method-desc">Like <code>CreateDropdown</code>, but allows selecting multiple options simultaneously. Each option shows a checkmark when selected. The header summarises the selection inline (e.g. <code>Head, +2</code>).</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">{ Selected: table,  Set(table),  GetSelected(),  Refresh(table) }</span>
+  </div>
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+<tr><td><span class="p-name">MaxVisibleItems</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">6</span></td><td class="p-desc">Visible list rows before internal scrolling (1–20). The dropdown reserves its full header + visible list height, moving following controls down.</td></tr>
+      <tr><td><span class="p-name">Title</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"MultiDropdown"</span></td><td class="p-desc">Left-side label.</td></tr>
+      <tr><td><span class="p-name">Options</span></td><td><span class="type type-tbl">table</span></td><td><span class="p-default">{}</span></td><td class="p-desc">Array of option strings.</td></tr>
+      <tr><td><span class="p-name">Default</span></td><td><span class="type type-tbl">table</span></td><td><span class="p-default">{}</span></td><td class="p-desc">Array of pre-selected values: <code>{"Head"}</code>.</td></tr>
+      <tr><td><span class="p-name">MaxShow</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">2</span></td><td class="p-desc">Max labels to show inline before collapsing to <code>+N</code>.</td></tr>
+      <tr><td><span class="p-name">ConfigKey</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Key for Config Save/Load.</td></tr>
+      <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function(table)</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Fires on every change. Receives a sorted array of selected strings.</td></tr>
+      <tr><td><span class="p-name">Tooltip</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Floating tooltip text shown on hover.</td></tr>
+    </tbody>
+  </table>
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-mdd')">Copy</button></div>
+    <pre id="ex-mdd"><code><span class="kw">local</span> <span class="vr">parts</span> = <span class="vr">Section</span>:<span class="fn">CreateMultiDropdown</span>({
+    <span class="vr">Title</span>     = <span class="str">"Hitbox Parts"</span>,
+    <span class="vr">Options</span>   = {<span class="str">"Head"</span>, <span class="str">"Torso"</span>, <span class="str">"HumanoidRootPart"</span>, <span class="str">"LeftArm"</span>, <span class="str">"RightArm"</span>},
+    <span class="vr">Default</span>   = {<span class="str">"Head"</span>},
+    <span class="vr">MaxShow</span>   = <span class="num">2</span>,
+    <span class="vr">ConfigKey</span> = <span class="str">"hitbox_parts"</span>,
+    <span class="vr">Callback</span>  = <span class="kw">function</span>(<span class="vr">selected</span>)
+        <span class="cmt">-- selected is a sorted table, e.g. {"Head", "Torso"}</span>
+        <span class="fn">print</span>(<span class="fn">table.concat</span>(<span class="vr">selected</span>, <span class="str">", "</span>))
+    <span class="kw">end</span>
+})
+
+<span class="vr">parts</span>:<span class="fn">Set</span>({<span class="str">"Head"</span>, <span class="str">"Torso"</span>})       <span class="cmt">-- override selection</span>
+<span class="vr">parts</span>:<span class="fn">GetSelected</span>()                <span class="cmt">-- returns current selection table</span>
+<span class="vr">parts</span>:<span class="fn">Refresh</span>({<span class="str">"A"</span>, <span class="str">"B"</span>, <span class="str">"C"</span>})    <span class="cmt">-- swap options list at runtime</span></code></pre>
+  </div>
+</section>
+
+<!-- ════ TEXTBOX ════ -->
+<section class="doc-section" id="s-textbox">
+  <div class="method-header">
+    <div class="method-label">Element</div>
+    <div class="method-title"><code>Section:CreateTextbox(config)</code></div>
+    <p class="method-desc">An inline text input. The border highlights with the accent color on focus. Callback fires on focus-lost or when Enter is pressed.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">{ Text: string,  Set(string) }</span>
+  </div>
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="p-name">Title</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"Textbox"</span></td><td class="p-desc">Label on the left.</td></tr>
+      <tr><td><span class="p-name">Placeholder</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"..."</span></td><td class="p-desc">Greyed hint text when empty.</td></tr>
+      <tr><td><span class="p-name">Default</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">""</span></td><td class="p-desc">Pre-filled value.</td></tr>
+      <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function(text, enterPressed)</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Fires when focus is lost. <code>enterPressed</code> is true if the user pressed Enter.</td></tr>
+      <tr><td><span class="p-name">Tooltip</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Floating tooltip text shown on hover.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════ KEYBIND ════ -->
+<section class="doc-section" id="s-keybind">
+  <div class="method-header">
+    <div class="method-label">Element</div>
+    <div class="method-title"><code>Section:CreateKeybind(config)</code></div>
+    <p class="method-desc">A key-capture button. Clicking puts it into listening mode (<code>[...]</code>); the next key pressed is saved as the binding. Press <kbd>Backspace</kbd> while listening to clear it.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">{ Key: KeyCode,  Set(KeyCode) }</span>
+  </div>
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="p-name">Title</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"Keybind"</span></td><td class="p-desc">Label on the left.</td></tr>
+      <tr><td><span class="p-name">Default</span></td><td><span class="type type-kc">KeyCode</span></td><td><span class="p-default">KeyCode.None</span></td><td class="p-desc">The initial bound key.</td></tr>
+      <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function(KeyCode)</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Fires when a new key is assigned.</td></tr>
+      <tr><td><span class="p-name">Tooltip</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Floating tooltip text shown on hover.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════ COLORPICKER ════ -->
+<section class="doc-section" id="s-color">
+  <div class="method-header">
+    <div class="method-label">Element</div>
+    <div class="method-title"><code>Section:CreateColorPicker(config)</code></div>
+    <p class="method-desc">A compact color swatch that expands into three RGB sliders when clicked. The live preview square updates as you drag.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">{ Color: Color3,  Set(Color3) }</span>
+  </div>
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="p-name">Title</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"Color"</span></td><td class="p-desc">Label on the left.</td></tr>
+      <tr><td><span class="p-name">Default</span></td><td><span class="type type-c3">Color3</span></td><td><span class="p-default">RGB(255,255,255)</span></td><td class="p-desc">Starting color.</td></tr>
+      <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function(Color3)</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Fires continuously as any RGB channel changes.</td></tr>
+      <tr><td><span class="p-name">Tooltip</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Floating tooltip text shown on hover.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════ BUTTON ════ -->
+<section class="doc-section" id="s-button">
+  <div class="method-header">
+    <div class="method-label">Element</div>
+    <div class="method-title"><code>Section:CreateButton(config)</code></div>
+    <p class="method-desc">A clickable button with a ripple effect on press. Background flashes to the accent color and returns.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">TextButton</span>
+  </div>
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="p-name">Title<span class="p-req">required</span></span></td><td><span class="type type-str">string</span></td><td>—</td><td class="p-desc">Button label text.</td></tr>
+      <tr><td><span class="p-name">Callback</span></td><td><span class="type type-fn">function()</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Fires on click.</td></tr>
+      <tr><td><span class="p-name">Tooltip</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">nil</span></td><td class="p-desc">Floating tooltip text shown on hover.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════ NOTIFY ════ -->
+<section class="doc-section" id="s-notify">
+  <div class="method-header">
+    <div class="method-label">Hub Feature</div>
+    <div class="method-title"><code>Hub:Notify(config)</code></div>
+    <p class="method-desc">Displays a toast notification in the bottom-right corner. Toasts stack, animate in, drain a progress bar, then dismiss automatically. A close button is always visible.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Returns</span>
+    <span class="returns-type">nil</span>
+  </div>
+
+  <div class="notify-demo">
+    <div class="toast-chip s"><span class="ti">✓</span><span><strong>Silent Aim</strong> — Enabled</span></div>
+    <div class="toast-chip e"><span class="ti">✕</span><span><strong>Error</strong> — API unreachable</span></div>
+    <div class="toast-chip w"><span class="ti">⚠</span><span><strong>Warning</strong> — Low FPS</span></div>
+    <div class="toast-chip i"><span class="ti">ℹ</span><span><strong>Update</strong> — v2.1 available</span></div>
+  </div>
+
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="p-name">Title</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"Notification"</span></td><td class="p-desc">Bold header line on the toast.</td></tr>
+      <tr><td><span class="p-name">Text</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">""</span></td><td class="p-desc">Dimmer body line. If empty, only the title row is shown.</td></tr>
+      <tr><td><span class="p-name">Type</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"info"</span></td><td class="p-desc"><code>"info"</code> · <code>"success"</code> · <code>"error"</code> · <code>"warning"</code> — controls left-bar color and icon.</td></tr>
+      <tr><td><span class="p-name">Duration</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">3</span></td><td class="p-desc">Seconds the toast stays visible before auto-dismissing.</td></tr>
+    </tbody>
+  </table>
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-notify')">Copy</button></div>
+    <pre id="ex-notify"><code><span class="vr">Hub</span>:<span class="fn">Notify</span>({ <span class="vr">Title</span>=<span class="str">"Silent Aim"</span>, <span class="vr">Text</span>=<span class="str">"Enabled"</span>,         <span class="vr">Type</span>=<span class="str">"success"</span>, <span class="vr">Duration</span>=<span class="num">3</span> })
+<span class="vr">Hub</span>:<span class="fn">Notify</span>({ <span class="vr">Title</span>=<span class="str">"Error"</span>,       <span class="vr">Text</span>=<span class="str">"API unreachable"</span>, <span class="vr">Type</span>=<span class="str">"error"</span>,   <span class="vr">Duration</span>=<span class="num">4</span> })
+<span class="vr">Hub</span>:<span class="fn">Notify</span>({ <span class="vr">Title</span>=<span class="str">"Warning"</span>,     <span class="vr">Text</span>=<span class="str">"Low FPS"</span>,         <span class="vr">Type</span>=<span class="str">"warning"</span>, <span class="vr">Duration</span>=<span class="num">5</span> })
+<span class="vr">Hub</span>:<span class="fn">Notify</span>({ <span class="vr">Title</span>=<span class="str">"Update"</span>,      <span class="vr">Text</span>=<span class="str">"v2.1 available"</span>, <span class="vr">Type</span>=<span class="str">"info"</span> })</code></pre>
+  </div>
+</section>
+
+<!-- ════ WATERMARK ════ -->
+<section class="doc-section" id="s-watermark">
+  <div class="method-header">
+    <div class="method-label">Hub Feature</div>
+    <div class="method-title"><code>Hub:SetWatermark(config)</code></div>
+    <p class="method-desc">Pins a small HUD label to a corner of the screen. Supports live placeholders that update every frame. The FPS value is color-coded: green ≥ 50, yellow ≥ 30, red &lt; 30.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Methods</span>
+    <span class="returns-type">SetWatermark · UpdateWatermark(fmt) · RemoveWatermark()</span>
+  </div>
+
+  <div class="wm-preview">
+    <div class="wm-chip">TigerDusty  |  <span class="fps">144 fps</span>  |  23ms</div>
+  </div>
+
+  <div class="params-title">Properties</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="p-name">Format</span></td>
+        <td><span class="type type-str">string</span></td>
+        <td><span class="p-default">"{player} | {fps} fps"</span></td>
+        <td class="p-desc">
+          Template string. Available placeholders:<br>
+          <code>{player}</code> — local player name<br>
+          <code>{fps}</code> — current FPS (color-coded)<br>
+          <code>{ping}</code> — server ping in ms<br>
+          <code>{time}</code> — local clock <code>HH:MM:SS</code><br>
+          <code>{game}</code> — game name
+        </td>
+      </tr>
+      <tr><td><span class="p-name">Position</span></td><td><span class="type type-str">string</span></td><td><span class="p-default">"TopRight"</span></td><td class="p-desc"><code>"TopLeft"</code> · <code>"TopRight"</code> · <code>"BottomLeft"</code> · <code>"BottomRight"</code></td></tr>
+      <tr><td><span class="p-name">BgAlpha</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">0.45</span></td><td class="p-desc">Background transparency. <code>0</code> = fully opaque, <code>1</code> = invisible.</td></tr>
+    </tbody>
+  </table>
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-wm')">Copy</button></div>
+    <pre id="ex-wm"><code><span class="vr">Hub</span>:<span class="fn">SetWatermark</span>({
+    <span class="vr">Format</span>   = <span class="str">"{player}  |  {fps} fps  |  {ping}ms"</span>,
+    <span class="vr">Position</span> = <span class="str">"TopRight"</span>,
+    <span class="vr">BgAlpha</span>  = <span class="num">0.45</span>
+})
+
+<span class="cmt">-- Change format without rebuilding the widget</span>
+<span class="vr">Hub</span>:<span class="fn">UpdateWatermark</span>(<span class="str">"{player}  |  {game}  |  {time}"</span>)
+
+<span class="cmt">-- Remove entirely</span>
+<span class="vr">Hub</span>:<span class="fn">RemoveWatermark</span>()</code></pre>
+  </div>
+</section>
+
+<!-- ════ CONFIG ════ -->
+<section class="doc-section" id="s-config">
+  <div class="method-header">
+    <div class="method-label">Hub Feature</div>
+    <div class="method-title"><code>Hub:SaveConfig / Hub:LoadConfig</code></div>
+    <p class="method-desc">Persist element values to disk between sessions. Any element that has a <code>ConfigKey</code> is automatically registered. Saved to <code>HutameHub_name.cfg</code> using the executor's <code>writefile</code> / <code>readfile</code>. A Notify toast confirms success or failure.</p>
+  </div>
+
+  <div class="callout orange">
+    <span class="callout-icon">⚠</span>
+    <span><strong>Executor required.</strong> <code>writefile</code> and <code>readfile</code> are executor globals. They are not available in a normal Roblox game. The library shows an error notification if they are missing.</span>
+  </div>
+
+  <div class="params-title">Methods</div>
+  <table class="params-table">
+    <thead><tr><th>Method</th><th>Parameter</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="p-name">Hub:SaveConfig(name)</span></td><td><span class="type type-str">string</span></td><td class="p-desc">Writes all registered element values to <code>HutameHub_name.cfg</code>.</td></tr>
+      <tr><td><span class="p-name">Hub:LoadConfig(name)</span></td><td><span class="type type-str">string</span></td><td class="p-desc">Reads the file and restores each element. Shows a toast with the count of restored values.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout green">
+    <span class="callout-icon">✓</span>
+    <span>Add <code>ConfigKey = "my_key"</code> to any <strong>Toggle</strong>, <strong>Slider</strong>, <strong>Dropdown</strong>, or <strong>MultiDropdown</strong> to opt it into the save system — no extra code needed.</span>
+  </div>
+
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-cfg')">Copy</button></div>
+    <pre id="ex-cfg"><code><span class="cmt">-- Register elements by adding ConfigKey</span>
+<span class="vr">Left</span>:<span class="fn">CreateToggle</span>({ <span class="vr">Title</span>=<span class="str">"Silent Aim"</span>, <span class="vr">Default</span>=<span class="kw">false</span>, <span class="vr">ConfigKey</span>=<span class="str">"silent_aim"</span> })
+<span class="vr">Left</span>:<span class="fn">CreateSlider</span>({ <span class="vr">Title</span>=<span class="str">"FOV"</span>, <span class="vr">Min</span>=<span class="num">10</span>, <span class="vr">Max</span>=<span class="num">500</span>, <span class="vr">Default</span>=<span class="num">150</span>, <span class="vr">ConfigKey</span>=<span class="str">"fov"</span> })
+<span class="vr">Right</span>:<span class="fn">CreateDropdown</span>({ <span class="vr">Title</span>=<span class="str">"Aim Part"</span>, <span class="vr">Options</span>={<span class="str">"Head"</span>,<span class="str">"Torso"</span>}, <span class="vr">ConfigKey</span>=<span class="str">"aim_part"</span> })
+<span class="vr">Right</span>:<span class="fn">CreateMultiDropdown</span>({ <span class="vr">Title</span>=<span class="str">"Parts"</span>, <span class="vr">Options</span>={<span class="str">"Head"</span>,<span class="str">"Torso"</span>}, <span class="vr">ConfigKey</span>=<span class="str">"parts"</span> })
+
+<span class="cmt">-- Save / Load (e.g. from a Settings tab button)</span>
+<span class="vr">CfgSection</span>:<span class="fn">CreateButton</span>({
+    <span class="vr">Title</span>    = <span class="str">"Save Config"</span>,
+    <span class="vr">Callback</span> = <span class="kw">function</span>() <span class="vr">Hub</span>:<span class="fn">SaveConfig</span>(<span class="str">"default"</span>) <span class="kw">end</span>
+})
+
+<span class="vr">CfgSection</span>:<span class="fn">CreateButton</span>({
+    <span class="vr">Title</span>    = <span class="str">"Load Config"</span>,
+    <span class="vr">Callback</span> = <span class="kw">function</span>() <span class="vr">Hub</span>:<span class="fn">LoadConfig</span>(<span class="str">"default"</span>) <span class="kw">end</span>
+})</code></pre>
+  </div>
+</section>
+
+<!-- ════ LOADING SCREEN ════ -->
+<section class="doc-section" id="s-loading">
+  <div class="method-header">
+    <div class="method-label">Hub Feature</div>
+    <div class="method-title"><code>Library.new({ LoadingScreen: true })</code></div>
+    <p class="method-desc">A full-screen animated splash is shown automatically when the hub loads. It displays a logo, title, version, a status message and a filling progress bar, then fades out and reveals the main window.</p>
+  </div>
+
+  <div class="callout green">
+    <span class="callout-icon">✓</span>
+    <span>Enabled by default. Pass <code>LoadingScreen = false</code> to skip it entirely.</span>
+  </div>
+
+  <div class="params-title">Properties (inside Library.new config)</div>
+  <table class="params-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="p-name">LoadingScreen</span></td><td><span class="type type-bool">boolean</span></td><td><span class="p-default">true</span></td><td class="p-desc">Set to <code>false</code> to disable the splash entirely.</td></tr>
+      <tr><td><span class="p-name">LoadingDuration</span></td><td><span class="type type-num">number</span></td><td><span class="p-default">1.8</span></td><td class="p-desc">Total seconds the progress bar takes to fill before fading out.</td></tr>
+    </tbody>
+  </table>
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-ls')">Copy</button></div>
+    <pre id="ex-ls"><code><span class="cmt">-- Default: splash shows automatically</span>
+<span class="kw">local</span> <span class="vr">Hub</span> = <span class="vr">Library</span>.<span class="fn">new</span>({
+    <span class="vr">Title</span>           = <span class="str">"MyHub"</span>,
+    <span class="vr">Version</span>         = <span class="str">"v2.0"</span>,
+    <span class="vr">LoadingDuration</span> = <span class="num">2.5</span>,   <span class="cmt">-- slower for more dramatic feel</span>
+})
+
+<span class="cmt">-- Opt out</span>
+<span class="kw">local</span> <span class="vr">Hub</span> = <span class="vr">Library</span>.<span class="fn">new</span>({
+    <span class="vr">Title</span>         = <span class="str">"MyHub"</span>,
+    <span class="vr">LoadingScreen</span> = <span class="kw">false</span>,
+})</code></pre>
+  </div>
+</section>
+
+<!-- ════ SECTION COLLAPSE ════ -->
+<section class="doc-section" id="s-collapse">
+  <div class="method-header">
+    <div class="method-label">UI Behaviour</div>
+    <div class="method-title">Section Collapse</div>
+    <p class="method-desc">Every section header has a collapse arrow (▲/▼). Clicking it folds the section down to just the header row, animating the card height. Clicking again expands it. Useful for tabs with many sections.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Methods on Section</span>
+    <span class="returns-type">Section:Collapse()  ·  Section:Expand()</span>
+  </div>
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-col')">Copy</button></div>
+    <pre id="ex-col"><code><span class="kw">local</span> <span class="vr">Section</span> = <span class="vr">Tab</span>:<span class="fn">CreateSection</span>(<span class="str">"Advanced"</span>)
+
+<span class="cmt">-- Collapse programmatically (e.g. start collapsed)</span>
+<span class="vr">Section</span>:<span class="fn">Collapse</span>()
+
+<span class="cmt">-- Expand again</span>
+<span class="vr">Section</span>:<span class="fn">Expand</span>()
+
+<span class="cmt">-- The user can also click the ▲ arrow in the section header at any time</span></code></pre>
+  </div>
+</section>
+
+<!-- ════ TAB BADGE ════ -->
+<section class="doc-section" id="s-badge">
+  <div class="method-header">
+    <div class="method-label">UI Behaviour</div>
+    <div class="method-title"><code>Tab:SetBadge(n)</code></div>
+    <p class="method-desc">Displays a small accent-colored counter badge on the tab button — like a notification badge. Pass a number to set it, or call <code>ClearBadge()</code> to remove it. Numbers above 99 show as <code>99+</code>.</p>
+  </div>
+  <div class="returns">
+    <span class="returns-label">Methods</span>
+    <span class="returns-type">Tab:SetBadge(n)  ·  Tab:ClearBadge()</span>
+  </div>
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-badge')">Copy</button></div>
+    <pre id="ex-badge"><code><span class="kw">local</span> <span class="vr">CombatTab</span> = <span class="vr">Hub</span>:<span class="fn">CreateTab</span>(<span class="str">"Combat"</span>)
+
+<span class="cmt">-- Show a badge with count (e.g. "3 features active")</span>
+<span class="vr">CombatTab</span>:<span class="fn">SetBadge</span>(<span class="num">3</span>)
+
+<span class="cmt">-- Update count</span>
+<span class="vr">CombatTab</span>:<span class="fn">SetBadge</span>(<span class="num">1</span>)
+
+<span class="cmt">-- Remove badge</span>
+<span class="vr">CombatTab</span>:<span class="fn">ClearBadge</span>()
+
+<span class="cmt">-- Typical pattern: increment when a toggle turns on</span>
+<span class="kw">local</span> <span class="vr">active</span> = <span class="num">0</span>
+<span class="vr">Section</span>:<span class="fn">CreateToggle</span>({
+    <span class="vr">Title</span>    = <span class="str">"Silent Aim"</span>,
+    <span class="vr">Callback</span> = <span class="kw">function</span>(<span class="vr">on</span>)
+        <span class="vr">active</span> = <span class="vr">active</span> + (<span class="vr">on</span> <span class="kw">and</span> <span class="num">1</span> <span class="kw">or</span> -<span class="num">1</span>)
+        <span class="vr">CombatTab</span>:<span class="fn">SetBadge</span>(<span class="vr">active</span>)
+    <span class="kw">end</span>
+})</code></pre>
+  </div>
+</section>
+
+<!-- ════ MOBILE LAYOUT ════ -->
+<section class="doc-section" id="s-mobile">
+  <div class="method-header">
+    <div class="method-label">UI Behaviour</div>
+    <div class="method-title">Mobile Layout</div>
+    <p class="method-desc">When the viewport width drops below <strong>600 px</strong> (phone / tablet), the library automatically switches each tab from a two-column layout to a single full-width scrolling column. Right-column sections are appended below the left ones. The layout re-checks every time the viewport is resized or a tab is switched.</p>
+  </div>
+
+  <div class="callout blue">
+    <span class="callout-icon">📱</span>
+    <span>This is <strong>automatic</strong> — no configuration needed. It activates on phones and small screens, and reverts on larger viewports.</span>
+  </div>
+
+  <table class="params-table">
+    <thead><tr><th>Condition</th><th>Behaviour</th></tr></thead>
+    <tbody>
+      <tr><td class="p-desc">Viewport <code>width &lt; 600px</code></td><td class="p-desc">Single full-width column. Right sections stacked below left sections. Divider hidden.</td></tr>
+      <tr><td class="p-desc">Viewport <code>width ≥ 600px</code></td><td class="p-desc">Normal two-column layout. Divider visible.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════ TOOLTIP ════ -->
+<section class="doc-section" id="s-tooltip">
+  <div class="method-header">
+    <div class="method-label">Visual FX · New in v2.1</div>
+    <div class="method-title"><code>Tooltip</code> parameter</div>
+    <p class="method-desc">Pass a <code>Tooltip</code> string inside any element's config table. When the user hovers over the element for 0.4 seconds, a small floating label fades in near the cursor. Moving away fades it out instantly. The tooltip follows the mouse and automatically repositions itself if it would overflow the screen edge.</p>
+  </div>
+
+  <div class="callout green">
+    <span class="callout-icon">✓</span>
+    <span>Works on all eight element types: <strong>Toggle</strong>, <strong>Slider</strong>, <strong>Dropdown</strong>, <strong>MultiDropdown</strong>, <strong>Textbox</strong>, <strong>Keybind</strong>, <strong>ColorPicker</strong>, and <strong>Button</strong>.</span>
+  </div>
+
+  <div class="params-title">Tooltip behaviour</div>
+  <table class="params-table">
+    <thead><tr><th>Detail</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td class="p-desc">Hover delay before appearing</td><td class="p-desc"><code>0.4 s</code></td></tr>
+      <tr><td class="p-desc">Fade-in duration</td><td class="p-desc"><code>0.18 s</code> — TweenService Sine Out</td></tr>
+      <tr><td class="p-desc">Fade-out duration</td><td class="p-desc"><code>0.12 s</code></td></tr>
+      <tr><td class="p-desc">Frame reuse</td><td class="p-desc">One shared tooltip frame per Hub instance — no memory bloat.</td></tr>
+      <tr><td class="p-desc">Screen overflow guard</td><td class="p-desc">Tooltip flips to the left of the cursor when it would clip the right edge.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-tooltip')">Copy</button></div>
+    <pre id="ex-tooltip"><code><span class="cmt">-- Add Tooltip = "..." to any element config</span>
+<span class="vr">Section</span>:<span class="fn">CreateToggle</span>({
+    <span class="vr">Title</span>    = <span class="str">"Silent Aim"</span>,
+    <span class="vr">Default</span>  = <span class="kw">false</span>,
+    <span class="vr">Tooltip</span>  = <span class="str">"Snaps your bullet to the closest hitbox."</span>,
+    <span class="vr">Callback</span> = <span class="kw">function</span>(<span class="vr">v</span>) <span class="fn">print</span>(<span class="vr">v</span>) <span class="kw">end</span>
+})
+
+<span class="vr">Section</span>:<span class="fn">CreateSlider</span>({
+    <span class="vr">Title</span>    = <span class="str">"FOV Radius"</span>,
+    <span class="vr">Min</span>      = <span class="num">10</span>, <span class="vr">Max</span> = <span class="num">500</span>, <span class="vr">Default</span> = <span class="num">150</span>,
+    <span class="vr">Tooltip</span>  = <span class="str">"Visual FOV circle radius in pixels."</span>,
+    <span class="vr">Callback</span> = <span class="kw">function</span>(<span class="vr">v</span>) <span class="fn">print</span>(<span class="vr">v</span>) <span class="kw">end</span>
+})
+
+<span class="vr">Section</span>:<span class="fn">CreateButton</span>({
+    <span class="vr">Title</span>    = <span class="str">"Reset Settings"</span>,
+    <span class="vr">Tooltip</span>  = <span class="str">"Restores all values to their defaults."</span>,
+    <span class="vr">Callback</span> = <span class="kw">function</span>() <span class="fn">print</span>(<span class="str">"reset"</span>) <span class="kw">end</span>
+})
+
+<span class="vr">Section</span>:<span class="fn">CreateKeybind</span>({
+    <span class="vr">Title</span>    = <span class="str">"Trigger Key"</span>,
+    <span class="vr">Default</span>  = Enum.KeyCode.F,
+    <span class="vr">Tooltip</span>  = <span class="str">"Hold this key to activate while in-game."</span>
+})</code></pre>
+  </div>
+</section>
+
+<!-- ════ SNOW EFFECT ════ -->
+<section class="doc-section" id="s-snow">
+  <div class="method-header">
+    <div class="method-label">Visual FX · New in v2.1</div>
+    <div class="method-title">Snow Effect</div>
+    <p class="method-desc">While the loading screen is visible, animated snowflakes fall across the background. Flakes are lightweight <code>TextLabel</code> instances using unicode characters (<code>• · ✦ ∗ ❄</code>), moved entirely via <strong>TweenService</strong>. A burst of 18 pre-positioned flakes starts immediately, followed by a continuous spawn loop. When the progress bar completes, <code>stopSnow()</code> fades every remaining flake out and destroys them.</p>
+  </div>
+
+  <div class="callout blue">
+    <span class="callout-icon">❄</span>
+    <span>The effect is <strong>automatic</strong> — it runs whenever <code>LoadingScreen</code> is enabled (the default). No extra configuration needed.</span>
+  </div>
+
+  <div class="params-title">Implementation details</div>
+  <table class="params-table">
+    <thead><tr><th>Detail</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td class="p-desc">Max active flakes</td><td class="p-desc"><code>55</code></td></tr>
+      <tr><td class="p-desc">Spawn rate</td><td class="p-desc">~5 per second (Heartbeat, probability-based)</td></tr>
+      <tr><td class="p-desc">Fall duration per flake</td><td class="p-desc"><code>3.5 – 7 s</code> (randomised)</td></tr>
+      <tr><td class="p-desc">Horizontal drift</td><td class="p-desc">±4 % width (randomised per flake)</td></tr>
+      <tr><td class="p-desc">Flake size</td><td class="p-desc"><code>5 – 11 px</code> TextSize</td></tr>
+      <tr><td class="p-desc">Accent colour mix</td><td class="p-desc">30 % of flakes tint to the hub's Accent color.</td></tr>
+      <tr><td class="p-desc">Cleanup</td><td class="p-desc">Completed tweens self-destroy; <code>stopSnow()</code> fades survivors in 0.4 s and calls <code>Debris:AddItem</code>.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout orange">
+    <span class="callout-icon">⚠</span>
+    <span>To disable <strong>both</strong> the loading screen and the snow effect, pass <code>LoadingScreen = false</code> in <code>Library.new()</code>.</span>
+  </div>
+
+  <div class="code-block">
+    <div class="code-block-header"><span class="code-block-lang">luau</span><button class="copy-code" onclick="copyCode(this,'ex-snow')">Copy</button></div>
+    <pre id="ex-snow"><code><span class="cmt">-- Snow effect runs automatically with the loading screen.</span>
+<span class="cmt">-- Slower duration = more time to enjoy the snow!</span>
+<span class="kw">local</span> <span class="vr">Hub</span> = <span class="vr">Library</span>.<span class="fn">new</span>({
+    <span class="vr">Title</span>           = <span class="str">"MyHub"</span>,
+    <span class="vr">Version</span>         = <span class="str">"v2.1"</span>,
+    <span class="vr">Accent</span>          = Color3.<span class="fn">fromRGB</span>(<span class="num">80</span>, <span class="num">180</span>, <span class="num">240</span>),   <span class="cmt">-- ice-blue accent</span>
+    <span class="vr">LoadingDuration</span> = <span class="num">3.0</span>,                           <span class="cmt">-- longer = more snow time</span>
+})
+
+<span class="cmt">-- To disable entirely:</span>
+<span class="kw">local</span> <span class="vr">Hub</span> = <span class="vr">Library</span>.<span class="fn">new</span>({ <span class="vr">LoadingScreen</span> = <span class="kw">false</span> })</code></pre>
+  </div>
+</section>
+<section class="doc-section guide" id="s-utilities"><h1 class="method-title">Profiles and control utilities</h1>
+<p>All examples use the existing <code>Library.new()</code> / <code>Hub:CreateTab()</code> API.
+See <a href="examples/ui-test.lua">the complete interactive test</a> for a profile manager,
+confirmation dialogs, conditional controls and reset buttons.</p>
+<h2>Profiles</h2>
+<p>Give value controls a unique <code>ConfigKey</code>. Toggle, Slider, Dropdown,
+MultiDropdown, Textbox, Keybind and ColorPicker are supported. Buttons are not values.</p>
+<table>
+<thead>
+<tr>
+<th>Hub method</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>SaveProfile(name)</code></td>
+<td>Create or overwrite a profile with current registered values</td>
+</tr>
+<tr>
+<td><code>LoadProfile(name)</code></td>
+<td>Restore registered values and refresh conditions</td>
+</tr>
+<tr>
+<td><code>ListProfiles()</code></td>
+<td>Return sorted names saved through SaveProfile</td>
+</tr>
+<tr>
+<td><code>RenameProfile(oldName, newName)</code></td>
+<td>Rename without overwriting another profile</td>
+</tr>
+<tr>
+<td><code>DeleteProfile(name)</code></td>
+<td>Delete the profile and clear its default selection if needed</td>
+</tr>
+<tr>
+<td><code>SetDefaultProfile(name)</code></td>
+<td>Remember a profile; pass nil to clear</td>
+</tr>
+<tr>
+<td><code>LoadDefaultProfile()</code></td>
+<td>Restore it; call after creating every control</td>
+</tr>
+</tbody></table>
+<p>Mutating profile methods and load methods return <code>ok, error</code>. Names contain 1–48
+letters, digits, underscores or hyphens. Storage requires <code>readfile</code> / <code>writefile</code>;
+rename and delete additionally require <code>delfile</code>. Profiles use <code>HutameHub_NAME.cfg</code>
+and <code>HutameHub_profiles.json</code> in the environment&#39;s filesystem. Existing
+SaveConfig/LoadConfig remain available; old files can be loaded by name but are
+not automatically indexed. Profile loading may partially restore values if a setter fails.</p>
+<h2>Reset</h2>
+<p>Every value control has <code>control:Reset()</code>. <code>Hub:ResetValues()</code> resets all value
+controls, including those without ConfigKey, to their creation defaults. Setters
+keep their existing callback semantics: Textbox and Keybind Set do not call the
+user callback, while conditions and conflict checks still update. Saved profiles
+are unchanged until explicitly saved again.</p>
+<h2>Conditional controls</h2>
+<pre><code class="language-lua">local Enabled = Section:CreateToggle({Title=&quot;Advanced&quot;, Default=false})
+local Amount = Section:CreateSlider({Title=&quot;Amount&quot;, Min=0, Max=100,
+    VisibleWhen=function() return Enabled.State end})
+Section:CreateButton({Title=&quot;Apply&quot;,
+    EnabledWhen=function() return Enabled.State end,
+    Callback=function() print(&quot;Applied&quot;) end})
+-- Alternative for an existing control:
+Hub:SetCondition(Amount, function() return Enabled.State end, &quot;hide&quot;)
+</code></pre>
+<p>Available on the eight config-table control constructors (including Button).
+Use <code>hide</code> or <code>disable</code>. Conditions reevaluate after control callbacks, Set,
+reset and profile loading. Call <code>Hub:RefreshConditions()</code> when external state
+changes. Predicates should only read state. Disabled controls block user input;
+programmatic Set remains available. Hidden controls retain their value.</p>
+<h2>Confirmation</h2>
+<pre><code class="language-lua">Hub:Confirm({Title=&quot;Reset values&quot;, Text=&quot;Restore defaults?&quot;,
+    ConfirmText=&quot;Reset&quot;, CancelText=&quot;Keep values&quot;,
+    OnConfirm=function() Hub:ResetValues() end,
+    OnCancel=function() print(&quot;Cancelled&quot;) end})
+</code></pre>
+<p>Only Confirm runs OnConfirm. The returned handle has <code>Cancel()</code>. A new dialog
+replaces the previous one. Profile deletion and reset methods are direct API
+operations: wrap them in Confirm as the interactive example does.</p>
+<h2>Mobile toggle and key conflicts</h2>
+<p><code>Library.new({MobileToggle=true})</code> shows a draggable 48×48 HH button. Omit the
+option to show it on touch devices only; false disables it. Tap to hide/show the
+main window; drag without toggling. RightControl/custom ToggleKey and Minus still work.</p>
+<p>Duplicate bindings display a warning naming both actions. Checks include toggle
+Keybinds, key selector controls, the window ToggleKey and Minus. None is ignored.
+Warnings do not change bindings or block assignment.</p>
+<h2>Validation</h2>
+<p><code>tests/features.lua</code> covers profile lifecycle, storage errors, reset dispatch,
+condition state and conflict warning deduplication using a headless Lua harness.
+Roblox visual layout, actual touch delivery and modal focus require client testing.</p>
+</section><nav class="page-pagination" aria-label="Previous and next topic"></nav></main><aside class="page-toc" aria-label="On this page"></aside></div>
+<script>
+// ── Copy Loadstring ────────────────────────────────
+function copyLoadstring() {
+  navigator.clipboard.writeText(
+    'local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/hutamev2/HutameHub-Lib/main/Source.lua"))()'
+  ).then(() => {
+    const btn = document.getElementById('copyLsBtn');
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = 'Copy Loadstring'; btn.classList.remove('ok'); }, 2200);
+  });
+}
+
+// ── Copy code block ────────────────────────────────
+function copyCode(btn, id) {
+  const el = document.getElementById(id);
+  navigator.clipboard.writeText(el.innerText).then(() => {
+    btn.textContent = '✓ Copied';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('ok'); }, 2000);
+  });
+}
+
+// ── Sidebar search ─────────────────────────────────
+function filterNav() {
+  const q = document.getElementById('sbSearch').value.toLowerCase();
+  document.querySelectorAll('.sb-links li').forEach(li => {
+    li.style.display = li.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+  document.querySelectorAll('.sb-group').forEach(g => {
+    const vis = [...g.querySelectorAll('li')].some(li => li.style.display !== 'none');
+    g.style.display = vis ? '' : 'none';
+  });
+}
+</script>
+<script src="reading.js"></script></body>
 </html>
