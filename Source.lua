@@ -2576,6 +2576,111 @@ function Library:Confirm(config)
     return {Cancel=function() finish(false) end}
 end
 
+-- Floating keybind list. It stays visible when the main window is hidden.
+function Library:RegisterKeybindDisplay(config)
+    config = config or {}
+    assert(type(config.Title) == "string", "Keybind display requires Title")
+    assert(type(config.Key) == "function", "Keybind display requires Key getter")
+    local entry = {
+        title = config.Title,
+        key = config.Key,
+        active = type(config.Active) == "function" and config.Active or nil,
+        visible = type(config.Visible) == "function" and config.Visible or nil,
+    }
+    self._keybindDisplays = self._keybindDisplays or {}
+    table.insert(self._keybindDisplays, entry)
+    return {
+        Remove = function()
+            for index, current in ipairs(self._keybindDisplays or {}) do
+                if current == entry then table.remove(self._keybindDisplays, index); break end
+            end
+        end,
+    }
+end
+
+function Library:CreateKeybindList(config)
+    config = config or {}
+    if self._keybindListFrame then self._keybindListFrame:Destroy() end
+    if self._keybindListConnection then self._keybindListConnection:Disconnect() end
+
+    local frame = Instance.new("Frame", self.ScreenGui)
+    frame.Name = "KeybindList"
+    frame.Position = config.Position or UDim2.fromOffset(12, 180)
+    frame.Size = UDim2.fromOffset(config.Width or 210, 30)
+    frame.BackgroundColor3 = T.Card
+    frame.BackgroundTransparency = config.Transparency or 0.08
+    frame.BorderSizePixel = 0
+    frame.ZIndex = 140
+    frame.Visible = config.Visible ~= false
+    local stroke = Instance.new("UIStroke", frame)
+    stroke.Color = T.BorderLight; stroke.Thickness = 1
+    local accent = Instance.new("Frame", frame)
+    accent.Size = UDim2.new(1, 0, 0, 1); accent.BackgroundColor3 = self.Accent
+    accent.BorderSizePixel = 0; accent.ZIndex = 142
+    self:_onAccent(function(color) accent.BackgroundColor3 = color end)
+    local title = Instance.new("TextLabel", frame)
+    title.Position = UDim2.fromOffset(8, 4); title.Size = UDim2.new(1, -16, 0, 20)
+    title.BackgroundTransparency = 1; title.Font = Enum.Font.Code; title.TextSize = 11
+    title.TextColor3 = T.TextDim; title.TextXAlignment = Enum.TextXAlignment.Left
+    title.Text = string.upper(config.Title or "KEYBINDS"); title.ZIndex = 142
+
+    local labels, elapsed = {}, 1
+    local function update()
+        local rows = {}
+        if config.IncludeWindowToggle ~= false then
+            table.insert(rows, {title=self.Title, key=self.ToggleKey})
+        end
+        if config.IncludeControls ~= false then
+            for _, binding in ipairs(self._bindings or {}) do
+                table.insert(rows, {title=binding.title, key=binding.get()})
+            end
+        end
+        for _, entry in ipairs(self._keybindDisplays or {}) do
+            local okVisible, visible = true, true
+            if entry.visible then okVisible, visible = pcall(entry.visible) end
+            if okVisible and visible then
+                local okKey, key = pcall(entry.key)
+                local okActive, active = true, nil
+                if entry.active then okActive, active = pcall(entry.active) end
+                if okKey then table.insert(rows, {title=entry.title, key=key, active=okActive and active or nil}) end
+            end
+        end
+        while #labels < #rows do
+            local label = Instance.new("TextLabel", frame)
+            label.BackgroundTransparency = 1; label.Font = Enum.Font.Code; label.TextSize = 11
+            label.TextXAlignment = Enum.TextXAlignment.Left; label.ZIndex = 142
+            table.insert(labels, label)
+        end
+        for index, label in ipairs(labels) do
+            local row = rows[index]
+            label.Visible = row ~= nil
+            if row then
+                local keyName = row.key and row.key.Name or tostring(row.key or "None")
+                label.Position = UDim2.fromOffset(8, 25 + (index - 1) * 19)
+                label.Size = UDim2.new(1, -16, 0, 18)
+                label.Text = string.format("[%s]  %s%s", keyName, row.title,
+                    row.active == nil and "" or (row.active and "  ACTIVE" or "  OFF"))
+                label.TextColor3 = row.active == true and self.Accent or T.TextDim
+            end
+        end
+        frame.Size = UDim2.fromOffset(config.Width or 210, 30 + #rows * 19)
+    end
+    update()
+    self._keybindListConnection = RunService.Heartbeat:Connect(function(delta)
+        elapsed = elapsed + delta
+        if elapsed >= 0.1 then elapsed = 0; update() end
+    end)
+    self._keybindListFrame = frame
+    return {
+        SetVisible = function(_, visible) frame.Visible = not not visible end,
+        Destroy = function()
+            if self._keybindListConnection then self._keybindListConnection:Disconnect(); self._keybindListConnection=nil end
+            if frame.Parent then frame:Destroy() end
+            self._keybindListFrame = nil
+        end,
+    }
+end
+
 local advancedNew = Library.new
 function Library.new(config)
     config = config or {}
@@ -2614,7 +2719,9 @@ end
 local advancedDestroy=Library.Destroy
 function Library:Destroy()
     for _, connection in ipairs(self._extraConnections or {}) do connection:Disconnect() end
+    if self._keybindListConnection then self._keybindListConnection:Disconnect() end
     self._conditions={}; self._resetControls={}; self._controlRows={}; self._bindings={}
+    self._keybindDisplays={}; self._keybindListConnection=nil; self._keybindListFrame=nil
     advancedDestroy(self)
 end
 

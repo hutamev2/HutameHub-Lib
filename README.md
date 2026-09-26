@@ -38,6 +38,7 @@ Dokümantasyon `docs/` içindeki statik sayfadan yayımlanır. `main` dalındaki
 - **Sıfırlama:** `control:Reset()` ve `Hub:ResetValues()`.
 - **Koşullar:** `VisibleWhen`, `EnabledWhen`, `Hub:SetCondition()`.
 - **Tuş çakışması:** aynı tuşa atanan eylemleri bildiren uyarı.
+- **Keybind listesi:** Ana pencere kapalıyken de görünen panel; tuşları ve isteğe bağlı `ACTIVE/OFF` durumunu canlı gösterir.
 - **Onay penceresi:** `Hub:Confirm({Title, Text, OnConfirm, OnCancel})`.
 
 [API rehberi](docs/features.md) · Test örneğindeki **Profiles** sekmesi bütün yeni özellikleri denemek içindir. Profil işlemleri `readfile`/`writefile`, silme ve yeniden adlandırma ayrıca `delfile` gerektirir.
@@ -100,6 +101,22 @@ Section:CreateSlider({
 | Keybind | `Section:CreateKeybind(config)` | `{ Key, Set() }` |
 | ColorPicker | `Section:CreateColorPicker(config)` | `{ Color, Set() }` |
 | Button | `Section:CreateButton(config)` | `TextButton` |
+
+### Keybind listesi
+
+```lua
+local list = Window:CreateKeybindList({Title="KEYBINDS"})
+Window:RegisterKeybindDisplay({
+    Title="TriggerBot",
+    Key=function() return triggerKeybind.Key end,
+    Active=function() return triggerEnabled end,
+})
+list:SetVisible(true)
+```
+
+`IncludeControls=false` otomatik kontrol satırlarını kapatır. `IncludeWindowToggle=false`
+pencere açma tuşunu gizler. Dönen kayıtta `:Remove()`, listede `:SetVisible()` ve
+`:Destroy()` bulunur.
 
 ## 📚 Tam Dokümantasyon
 
