@@ -56,6 +56,12 @@ local Keybind = Inputs:CreateKeybind({
     -- This callback reports a NEW binding, not each key press.
     Callback = function(key) report("Selected key", key.Name) end,
 })
+local KeybindList = Hub:CreateKeybindList({Title="TEST KEYBINDS", IncludeControls=false})
+Hub:RegisterKeybindDisplay({
+    Title="Test toggle",
+    Key=function() return Keybind.Key end,
+    Active=function() return Toggle.State end,
+})
 local Color = Inputs:CreateColorPicker({
     Title = "Accent", Default = Color3.fromRGB(103, 89, 179), ConfigKey = "test_color",
     Tooltip = "Open the RGB sliders and change the accent.",

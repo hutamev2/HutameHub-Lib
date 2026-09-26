@@ -116,6 +116,8 @@ All option-table controls use `Title`, never `Name`. `Tooltip`, `VisibleWhen = f
 
 Also available: `Section:CreateLabel(text, color?)` returns a `TextLabel`; `Section:CreateSeparator()` adds a divider. `Tab:SetBadge(number)` and `Tab:ClearBadge()` manage the tab counter. `Tab:Activate()` switches to a tab. `Hub:SetAccent(Color3)` changes the accent; `Hub:SetTitle(title, version?)` changes the window heading.
 
+For a floating shortcut panel, call `Hub:CreateKeybindList({Title="KEYBINDS"})`. It stays visible when the main window is hidden and automatically lists keybind controls. Register external actions with `Hub:RegisterKeybindDisplay({Title="TriggerBot", Key=function() return bind.Key end, Active=function() return enabled end})`. Use `IncludeControls=false` to show only explicitly registered actions.
+
 ## Profiles, conditions and dialogs
 
 Give each saved value control a distinct `ConfigKey`. `Hub:SaveProfile(name)`, `Hub:LoadProfile(name)`, `Hub:RenameProfile(oldName, newName)`, `Hub:DeleteProfile(name)`, `Hub:SetDefaultProfile(name)`, and `Hub:LoadDefaultProfile()` return `ok, err`. `Hub:ListProfiles()` returns sorted names. Call `LoadDefaultProfile()` **after** creating every control. Profile storage needs `readfile`/`writefile`; rename and delete also need `delfile`. Names use 1–48 letters, digits, `_` or `-`. The older `Hub:SaveConfig(name)` and `Hub:LoadConfig(name)` remain available.

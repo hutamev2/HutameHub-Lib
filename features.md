@@ -32,6 +32,17 @@ file before writing; Overwrite requires confirmation. The library's
 `SaveProfile(name)` method itself creates or overwrites, so use the same guard
 when building your own config manager UI.
 
+## Keybind list
+
+`Hub:CreateKeybindList({Title, Position, Width, Visible, IncludeControls,
+IncludeWindowToggle})` creates a floating list that remains visible while the main
+window is hidden. Registered `CreateKeybind` controls are included by default.
+
+Use `Hub:RegisterKeybindDisplay({Title, Key, Active?, Visible?})` for an action whose
+active state lives outside the UI library. `Key`, `Active`, and `Visible` are getter
+functions. The returned registration has `Remove()`. The list handle has
+`SetVisible(boolean)` and `Destroy()`.
+
 ## Reset
 
 Every value control has `control:Reset()`. `Hub:ResetValues()` resets all value
