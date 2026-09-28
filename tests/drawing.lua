@@ -60,7 +60,7 @@ local multi=section:CreateMultiDropdown({Title="Multi",Options={"A","B"},Default
 local picker=section:CreateColorPicker({Title="Color",Default=color("123abc"),ConfigKey="color"})
 run.RenderStepped:Fire()
 assert(#objects>0)
-input.mouse=vector(hub._position.X+210,hub._position.Y+142)
+input.mouse=vector(hub._position.X+150,hub._position.Y+70)
 input.InputBegan:Fire({UserInputType=Enum.UserInputType.MouseButton1,KeyCode=Enum.KeyCode.Unknown},false)
 assert(toggle.State and changes==1,"Toggle hit testing failed")
 slider:Set(12); assert(slider.Value==10)
@@ -77,6 +77,26 @@ hub:SetCondition(slider,function() return enabled end,"disable")
 assert(slider.Enabled==false)
 enabled=true; hub:RefreshConditions(); assert(slider.Enabled==true)
 dropdown:Open(); run.RenderStepped:Fire()
+local option
+for _, object in ipairs(objects) do
+    if not object.Removed and object.Visible and object.Kind == "Text" and object.Text == "B" then option=object end
+end
+assert(option, "Expanded dropdown option must be rendered")
+input.mouse=vector(option.Position.X+2,option.Position.Y+2)
+input.InputBegan:Fire({UserInputType=Enum.UserInputType.MouseButton1,KeyCode=Enum.KeyCode.Unknown},false)
+assert(dropdown.Selected=="B" and not dropdown.Opened,"Dropdown option hit area must match its drawing")
+-- Scroll a long section: offscreen controls cannot intercept the title/sidebar.
+for i=1,30 do section:CreateToggle({Title="Overflow "..i}) end
+run.RenderStepped:Fire()
+assert(hub._scrollMax[1]>0)
+hub._scroll[1]=hub._scrollMax[1]
+run.RenderStepped:Fire()
+for _,area in ipairs(hub._hits) do
+    if area[1]>=hub._position.X+132 and area[2]>=hub._position.Y+29 then
+        assert(area[2]>=hub._position.Y+42 and area[2]+area[4]<=hub._position.Y+hub._height-35,"Clipped controls must stay inside content")
+    end
+end
+hub._scroll[1]=0
 dropdown:Close(); run.RenderStepped:Fire()
 hub._notice=nil
 hub.MainFrame.Visible=false; run.RenderStepped:Fire()

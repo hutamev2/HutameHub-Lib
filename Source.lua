@@ -2728,13 +2728,13 @@ local DrawingBackend = (function()
             ToggleKey = config.ToggleKey or Enum.KeyCode.RightControl,
             Tabs = {}, ActiveTab = nil, _hits = {},
             _pool = {}, _connections = {}, _visible = true, _scroll = {0, 0}, _scrollMax = {0, 0},
-            _position = Vector2.new(140, 110), _width = 880, _height = 620,
+            _position = Vector2.new(140, 110), _width = 760, _height = 560,
             _bindings = {}, _keybindDisplays = {},
             _bridge = bridge, _request = requestFunction,
         }, Backend)
         if workspace.CurrentCamera then
             local viewport = workspace.CurrentCamera.ViewportSize
-            self._position = Vector2.new(math.max(0, (viewport.X - 880) / 2), math.max(0, (viewport.Y - 620) / 2))
+            self._position = Vector2.new(math.max(0, (viewport.X - 760) / 2), math.max(0, (viewport.Y - 560) / 2))
         end
         self.MainFrame = setmetatable({}, {
             __index = function(_, key)
@@ -2831,9 +2831,9 @@ local DrawingBackend = (function()
                         return
                     end
                 end
-                local col = mouse.X < self._position.X + 178 + (self._width - 178) / 2 and 1 or 2
-                if hit(mouse, self._position.X + 178, self._position.Y + 82,
-                    self._width - 188, self._height - 108) then
+                local col = mouse.X < self._position.X + 132 + (self._width - 144) / 2 and 1 or 2
+                if hit(mouse, self._position.X + 132, self._position.Y + 40,
+                    self._width - 144, self._height - 64) then
                     self._scroll[col] = math.clamp(self._scroll[col] - input.Position.Z * 36, 0, self._scrollMax[col])
                 end
             end
@@ -2862,11 +2862,41 @@ local DrawingBackend = (function()
         return object
     end
 
+    -- Conservative monospace measurements keep fields inside their own column.
+    local function fit(value, width, size)
+        local text = tostring(value or "")
+        local count = math.max(0, math.floor(width / ((size or 13) * 0.63)))
+        if #text <= count then return text end
+        return text:sub(1, math.max(0, count - 3)) .. (count >= 3 and "..." or "")
+    end
+
+    local function wrap(value, width)
+        local count = math.max(1, math.floor(width / 7.8))
+        local lines, line = {}, ""
+        for word in tostring(value or ""):gmatch("%S+") do
+            if #line + #word + 1 > count and line ~= "" then
+                lines[#lines + 1], line = line, ""
+            end
+            while #word > count do
+                lines[#lines + 1], word = word:sub(1, count), word:sub(count + 1)
+            end
+            line = line == "" and word or line .. " " .. word
+        end
+        if line ~= "" or #lines == 0 then lines[#lines + 1] = line end
+        return lines
+    end
+
     function Backend:_box(x, y, w, h, color, z)
+        if self._clip then
+            local clip = self._clip
+            local right, bottom = math.min(x + w, clip[1] + clip[3]), math.min(y + h, clip[2] + clip[4])
+            x, y = math.max(x, clip[1]), math.max(y, clip[2])
+            w, h = right - x, bottom - y
+        end
         if w <= 0 or h <= 0 then return end
         local o = self:_primitive("Square")
-        o.Position = Vector2.new(x, y)
-        o.Size = Vector2.new(w, h)
+        o.Position = Vector2.new(math.floor(x), math.floor(y))
+        o.Size = Vector2.new(math.floor(w), math.floor(h))
         o.Color = color
         o.Filled = true
         o.Thickness = 0
@@ -2875,11 +2905,17 @@ local DrawingBackend = (function()
     end
 
     function Backend:_text(value, x, y, color, size, z)
+        size = size or 13
+        if self._clip then
+            local clip = self._clip
+            if y < clip[2] or y + size + 2 > clip[2] + clip[4] or x < clip[1] then return end
+            value = fit(value, clip[1] + clip[3] - x, size)
+        end
         local o = self:_primitive("Text")
-        o.Position = Vector2.new(x, y)
+        o.Position = Vector2.new(math.floor(x), math.floor(y))
         o.Text = tostring(value or "")
         o.Color = color or WHITE
-        o.Size = size or 13
+        o.Size = size
         o.Font = Drawing and Drawing.Fonts and Drawing.Fonts.Plex or 2
         o.Outline = true
         o.Transparency = 1
@@ -2887,7 +2923,39 @@ local DrawingBackend = (function()
     end
 
     function Backend:_hit(x, y, w, h, callback)
-        self._hits[#self._hits + 1] = {x, y, w, h, callback}
+        if self._clip then
+            local clip = self._clip
+            local right, bottom = math.min(x + w, clip[1] + clip[3]), math.min(y + h, clip[2] + clip[4])
+            x, y = math.max(x, clip[1]), math.max(y, clip[2])
+            w, h = right - x, bottom - y
+        end
+        if w > 0 and h > 0 then self._hits[#self._hits + 1] = {x, y, w, h, callback} end
+    end
+
+    function Backend:_hover(x, y, w, h)
+        local mouse = INPUT:GetMouseLocation()
+        if self._clip and not hit(mouse, self._clip[1], self._clip[2], self._clip[3], self._clip[4]) then return false end
+        return hit(mouse, x, y, w, h)
+    end
+
+    function Backend:_field(x, y, w, h, hovered, z)
+        z = z or 4
+        self:_box(x, y, w, h, Color3.fromRGB(5, 5, 5), z)
+        self:_box(x + 1, y + 1, w - 2, h - 2, hovered and DIM or BORDER, z)
+        self:_box(x + 2, y + 2, w - 4, h - 4, Color3.fromRGB(25, 25, 25), z)
+        self:_box(x + 2, y + 2, w - 4, 1, Color3.fromRGB(38, 38, 38), z)
+    end
+
+    function Backend:_controlHeight(c, width)
+        if c.Visible == false then return 0 end
+        if c.Kind == "label" then return tostring(c.Text or ""):match("%S") and (#wrap(c.Text, width) * 17 + 5) or 0 end
+        if c.Kind == "separator" then return 12 end
+        if c.Kind == "dropdown" or c.Kind == "multi" then
+            return 46 + (c.Opened and math.min(#c.Options, c.MaxVisibleItems) * 22 + 2 or 0)
+        end
+        if c.Kind == "textbox" then return 46 end
+        if c.Kind == "slider" then return 38 end
+        return 26
     end
 
     function Backend:_render()
@@ -2903,81 +2971,89 @@ local DrawingBackend = (function()
         if self._visible then
             local p, w, h = self._position, self._width, self._height
             local x, y = p.X, p.Y
-            self:_box(x - 1, y - 1, w + 2, h + 2, BORDER)
-            self:_box(x, y, w, h, BG)
-            self:_box(x, y, 164, h, PANEL)
-            self:_box(x + 164, y, 1, h, BORDER)
-            self:_text(self.Title, x + 18, y + 21, WHITE, 18)
-            self:_text(self.Version, x + 18, y + 46, DIM, 12)
-            self:_text(self.ActiveTab and self.ActiveTab.Name or "Overview", x + 186, y + 23, WHITE, 22)
-            self:_text("SPECTRE / CONTROL PANEL", x + 186, y + 52, DIM, 11)
-            self:_box(x + 186, y + 76, w - 208, 1, BORDER)
-            self:_text("x", x + w - 30, y + 20, DIM, 20)
-            self:_hit(x + w - 40, y + 10, 34, 40, function() self._visible = false end)
-            self:_hit(x, y, w - 45, 72, function(mouse)
+            -- Nested one-pixel borders, compact title strip and inset content.
+            self:_box(x - 3, y - 3, w + 6, h + 6, Color3.fromRGB(4, 4, 4))
+            self:_box(x - 2, y - 2, w + 4, h + 4, BORDER)
+            self:_box(x - 1, y - 1, w + 2, h + 2, Color3.fromRGB(9, 9, 9))
+            self:_box(x, y, w, h, Color3.fromRGB(27, 27, 27))
+            self:_box(x + 1, y + 1, w - 2, 1, DIM)
+            self:_text(self.Title, x + 10, y + 9, WHITE, 13)
+            self:_text("/ " .. self.Version, x + 20 + #self.Title * 8, y + 9, DIM, 12)
+            self:_text("[" .. self.ToggleKey.Name .. "]", x + w - 84, y + 9, DIM, 12)
+            self:_text("x", x + w - 20, y + 9, DIM, 13)
+            self:_hit(x + w - 30, y + 3, 27, 24, function() self._visible = false end)
+            self:_hit(x, y, w - 32, 29, function(mouse)
                 self._drag = {origin = self._position, mouse = mouse}
             end)
+            self:_box(x + 7, y + 29, w - 14, h - 52, Color3.fromRGB(5, 5, 5))
+            self:_box(x + 8, y + 30, w - 16, h - 54, BORDER)
+            self:_box(x + 9, y + 31, w - 18, h - 56, BG)
+            self:_box(x + 121, y + 31, 1, h - 56, BORDER)
             for index, tab in ipairs(self.Tabs) do
-                local ty, active = y + 96 + (index - 1) * 44, self.ActiveTab == tab
-                if active then
-                    self:_box(x + 10, ty, 144, 36, WHITE)
+                local ty, active = y + 43 + (index - 1) * 33, self.ActiveTab == tab
+                local hovered = self:_hover(x + 15, ty, 101, 27)
+                if active or hovered then
+                    self:_box(x + 15, ty, 101, 27, active and Color3.fromRGB(34,34,34) or PANEL)
+                    self:_box(x + 15, ty, 101, 1, BORDER)
+                    if active then self:_box(x + 15, ty, 2, 27, WHITE) end
                 end
-                self:_text(tab.Name, x + 24, ty + 10, active and BG or DIM, 14)
-                if (tab.Badge or 0) > 0 then self:_text(tostring(tab.Badge), x + 130, ty + 11, active and BG or WHITE, 12) end
-                self:_hit(x + 10, ty, 144, 36, function()
+                self:_text(tab.Name, x + 26, ty + 6, active and WHITE or DIM, 13)
+                if (tab.Badge or 0) > 0 then self:_text(tostring(tab.Badge), x + 99, ty + 6, WHITE, 11) end
+                self:_hit(x + 15, ty, 101, 27, function()
                     self.ActiveTab = tab
                     self._scroll = {0, 0}
                 end)
             end
-            self:_box(x + 18, y + h - 65, 128, 1, BORDER)
-            self:_text(self._bridge and "STREAMPROOF" or "DRAWING", x + 18, y + h - 48, DIM, 10)
-            self:_text(self.ToggleKey.Name .. "  /  toggle menu", x + 18, y + h - 29, WHITE, 10)
+            self:_text(self.ActiveTab and self.ActiveTab.Name or "", x + 11, y + h - 17, DIM, 11)
+            local state = self._bridge and (self._bridgeFailed and "overlay offline" or "streamproof") or "drawing"
+            self:_text(state, x + w - #state * 7 - 12, y + h - 17, DIM, 11)
             if self.ActiveTab then
-                local cw = (w - 222) / 2
-                local bottom = y + h - 24
-                local function controlHeight(c)
-                    if c.Visible == false then return 0 end
-                    local size = c.Kind == "separator" and 15 or c.Kind == "label" and (math.max(1, math.ceil(#c.Text / math.floor((cw - 20) / 7))) * 18 + 8) or 44
-                    if c.Opened and (c.Kind == "dropdown" or c.Kind == "multi") then
-                        size = size + math.min(#c.Options, c.MaxVisibleItems) * 23
-                    end
-                    return size
-                end
+                local cw = math.floor((w - 158) / 2)
+                local top, bottom = y + 42, y + h - 35
                 for col = 1, 2 do
-                    local sx = x + 186 + (col - 1) * (cw + 14)
-                    local sy = y + 94 - self._scroll[col]
+                    local sx = x + 132 + (col - 1) * (cw + 12)
+                    local total = 0
                     for _, section in ipairs(self.ActiveTab.Sections) do
                         if section.Column == col then
-                            local size = 42
+                            local height = 30
                             if not section.Collapsed then
-                                for _, c in ipairs(section.Controls) do size = size + controlHeight(c) end
+                                for _, c in ipairs(section.Controls) do height = height + self:_controlHeight(c, cw - 20) end
                             end
-                            if sy >= y + 82 and sy < bottom then
-                                self:_box(sx, sy, cw, math.min(size, bottom - sy), PANEL)
-                                self:_text(section.Title, sx + 12, sy + 12, WHITE, 14, 3)
-                                self:_text(section.Collapsed and "+" or "-", sx + cw - 25, sy + 11, DIM, 14, 3)
-                                self:_hit(sx, sy, cw, 36, function() section.Collapsed = not section.Collapsed end)
-                            end
-                            sy = sy + 38
+                            section._drawHeight = height
+                            total = total + height + 12
+                        end
+                    end
+                    self._scrollMax[col] = math.max(0, total - 12 - (bottom - top))
+                    self._scroll[col] = math.clamp(self._scroll[col], 0, self._scrollMax[col])
+                    local sy = top - self._scroll[col]
+                    self._clip = {sx, top, cw, bottom - top}
+                    for _, section in ipairs(self.ActiveTab.Sections) do
+                        if section.Column == col then
+                            local height = section._drawHeight
+                            self:_box(sx, sy, cw, height, Color3.fromRGB(4,4,4), 2)
+                            self:_box(sx + 1, sy + 1, cw - 2, height - 2, BORDER, 2)
+                            self:_box(sx + 2, sy + 2, cw - 4, height - 4, PANEL, 2)
+                            self:_box(sx + 3, sy + 3, cw - 6, 1, Color3.fromRGB(86,86,86), 3)
+                            self:_box(sx + 9, sy, math.min(cw - 36, #section.Title * 8 + 8), 16, PANEL, 3)
+                            self:_text(fit(section.Title, cw - 48, 13), sx + 13, sy, WHITE, 13, 4)
+                            self:_text(section.Collapsed and "+" or "-", sx + cw - 20, sy + 4, DIM, 12, 4)
+                            self:_hit(sx, sy, cw, 21, function() section.Collapsed = not section.Collapsed end)
+                            local cy = sy + 23
                             if not section.Collapsed then
                                 for _, c in ipairs(section.Controls) do
                                     c._column = col
-                                    local size = controlHeight(c)
-                                    if sy >= y + 82 and sy + size <= bottom then
-                                        sy = self:_control(c, sx + 10, sy, cw - 20)
-                                    else sy = sy + size end
+                                    cy = self:_control(c, sx + 10, cy, cw - 20)
                                 end
                             end
-                            sy = sy + 18
+                            sy = sy + height + 12
                         end
                     end
-                    self._scrollMax[col] = math.max(0, sy + self._scroll[col] - bottom)
-                    self._scroll[col] = math.min(self._scroll[col], self._scrollMax[col])
+                    self._clip = nil
                     if self._scrollMax[col] > 0 then
-                        local track = h - 118
-                        local thumb = math.max(30, track * track / (track + self._scrollMax[col]))
-                        self:_box(sx + cw + 3, y + 94, 2, track, BORDER, 4)
-                        self:_box(sx + cw + 3, y + 94 + (track - thumb) * self._scroll[col] / self._scrollMax[col], 2, thumb, DIM, 5)
+                        local track = bottom - top
+                        local thumb = math.max(24, track * track / (track + self._scrollMax[col]))
+                        self:_box(sx + cw + 2, top, 2, track, BORDER, 4)
+                        self:_box(sx + cw + 2, top + (track - thumb) * self._scroll[col] / self._scrollMax[col], 2, thumb, DIM, 5)
                     end
                 end
             end
@@ -3009,8 +3085,8 @@ local DrawingBackend = (function()
                     end
                 end
             end
-            self:_box(px, py, panel.Width, 30 + #rows * 19, BG, 20)
-            self:_box(px, py, panel.Width, 1, self.Accent, 21)
+            self:_field(px, py, panel.Width, 30 + #rows * 19, false, 20)
+            self:_box(px + 2, py + 2, panel.Width - 4, 1, DIM, 21)
             self:_text(panel.Title, px + 8, py + 5, WHITE, 12, 22)
             for index, row in ipairs(rows) do
                 local keyName = row.key and row.key.Name or tostring(row.key or "None")
@@ -3023,10 +3099,10 @@ local DrawingBackend = (function()
         if self._notice and os.clock() < self._notice.untilTime then
             local viewport = workspace.CurrentCamera.ViewportSize
             local nx, ny = viewport.X - 300, viewport.Y - 86
-            self:_box(nx, ny, 285, 65, BG, 30)
-            self:_box(nx, ny, 285, 2, self.Accent, 31)
+            self:_field(nx, ny, 285, 65, false, 30)
+            self:_box(nx + 2, ny + 2, 281, 1, DIM, 31)
             self:_text(self._notice.title, nx + 10, ny + 8, WHITE, 13, 32)
-            self:_text(self._notice.text, nx + 10, ny + 30, DIM, 11, 32)
+            self:_text(fit(self._notice.text, 265, 11), nx + 10, ny + 30, DIM, 11, 32)
         end
         if self._watermark then
             local config = self._watermark
@@ -3055,14 +3131,15 @@ local DrawingBackend = (function()
             local viewport = workspace.CurrentCamera.ViewportSize
             local cx, cy = (viewport.X - 340) / 2, (viewport.Y - 135) / 2
             local config = self._confirm
-            self:_box(cx, cy, 340, 135, BG, 40)
-            self:_box(cx, cy, 340, 2, self.Accent, 41)
+            self._hits = {}
+            self:_field(cx, cy, 340, 135, false, 40)
+            self:_box(cx + 2, cy + 2, 336, 1, DIM, 41)
             self:_text(config.Title or "Confirm", cx + 12, cy + 12, WHITE, 14, 42)
             self:_text(config.Text or "", cx + 12, cy + 43, DIM, 12, 42)
-            self:_box(cx + 12, cy + 95, 150, 27, PANEL, 41)
-            self:_box(cx + 178, cy + 95, 150, 27, self.Accent, 41)
+            self:_field(cx + 12, cy + 95, 150, 27, self:_hover(cx + 12, cy + 95, 150, 27), 41)
+            self:_field(cx + 178, cy + 95, 150, 27, self:_hover(cx + 178, cy + 95, 150, 27), 41)
             self:_text("Cancel", cx + 58, cy + 101, WHITE, 12, 42)
-            self:_text("Confirm", cx + 222, cy + 101, BG, 12, 42)
+            self:_text("Confirm", cx + 222, cy + 101, WHITE, 12, 42)
             self:_hit(cx + 12, cy + 95, 150, 27, function()
                 self._confirm = nil
                 if config.OnCancel then pcall(config.OnCancel) end
@@ -3092,94 +3169,121 @@ local DrawingBackend = (function()
     end
 
     function Backend:_control(c, x, y, width)
-        if c.Visible == false then return y end
+        local height = self:_controlHeight(c, width)
+        if height == 0 then return y end
         local function click(hx, hy, hw, hh, callback)
             if c.Enabled ~= false then self:_hit(hx, hy, hw, hh, callback) end
         end
         local kind = c.Kind
+        local ink = c.Enabled == false and DIM or WHITE
         if kind == "separator" then
-            self:_box(x, y + 6, width, 1, BORDER, 3)
-            return y + 15
-        end
-        if kind == "label" then
-            local count = math.max(1, math.floor(width / 7))
-            local lines = math.max(1, math.ceil(#c.Text / count))
-            for index = 1, lines do
-                self:_text(c.Text:sub((index - 1) * count + 1, index * count), x, y + (index - 1) * 18, c.Color or DIM, 12, 3)
+            self:_box(x, y + 4, width, 1, Color3.fromRGB(6,6,6), 3)
+            self:_box(x, y + 5, width, 1, BORDER, 3)
+        elseif kind == "label" then
+            for index, line in ipairs(wrap(c.Text, width)) do
+                self:_text(line, x, y + (index - 1) * 17, c.Color or DIM, 13, 4)
             end
-            return y + lines * 18 + 8
-        end
-        self:_box(x, y, width, 38, BG, 3)
-        self:_text(#c.Title > 23 and c.Title:sub(1, 21) .. "..." or c.Title, x + 10, y + 11, c.Enabled == false and DIM or WHITE, 13, 4)
-        if kind == "toggle" then
-            self:_box(x + width - 42, y + 11, 30, 16, c.State and WHITE or BORDER, 4)
-            self:_box(x + width - (c.State and 25 or 40), y + 13, 11, 12, c.State and BG or DIM, 5)
-            click(x, y, width, 38, function() c:Set(not c.State) end)
+        elseif kind == "toggle" then
+            self:_field(x, y + 3, 14, 14, self:_hover(x, y, width, 22))
+            if c.State then
+                self:_box(x + 3, y + 6, 8, 8, self.Accent, 5)
+                self:_box(x + 3, y + 6, 8, 1, WHITE, 5)
+            end
+            self:_text(fit(c.Title, width - 24, 13), x + 23, y + 2, c.State and ink or DIM, 13, 5)
+            click(x, y, width, 22, function() c:Set(not c.State) end)
         elseif kind == "button" then
-            click(x, y, width, 38, function() pcall(c.Callback) end)
+            self:_field(x, y, width, 22, self:_hover(x, y, width, 22))
+            local title = fit(c.Title, width - 12, 13)
+            self:_text(title, x + math.max(6, (width - #title * 7.8) / 2), y + 3, ink, 13, 5)
+            click(x, y, width, 22, function() pcall(c.Callback) end)
         elseif kind == "slider" then
+            local value = tostring(math.floor(c.Value * 100 + 0.5) / 100)
+            self:_text(fit(c.Title, width - #value * 8 - 12, 13), x, y, ink, 13, 4)
+            self:_text(value, x + width - #value * 8, y, DIM, 13, 4)
+            self:_field(x, y + 19, width, 12, self:_hover(x, y + 17, width, 17))
             local ratio = (c.Value - c.Min) / math.max(0.0001, c.Max - c.Min)
-            self:_box(x + 6, y + 33, (width - 12) * ratio, 3, self.Accent, 4)
-            self:_text(tostring(math.floor(c.Value * 100 + 0.5) / 100), x + width - 44, y + 11, DIM, 11, 4)
-            click(x, y, width, 38, function(mouse)
-                self._slider = {control = c, min = c.Min, max = c.Max, x = x + 6, width = width - 12}
-                c:Set(c.Min + math.clamp((mouse.X - x - 6) / (width - 12), 0, 1) * (c.Max - c.Min))
+            self:_box(x + 2, y + 21, (width - 4) * ratio, 8, DIM, 5)
+            self:_box(x + 2, y + 21, (width - 4) * ratio, 1, WHITE, 5)
+            click(x, y + 16, width, 18, function(mouse)
+                self._slider = {control=c,min=c.Min,max=c.Max,x=x+2,width=width-4}
+                c:Set(c.Min + math.clamp((mouse.X - x - 2) / (width - 4), 0, 1) * (c.Max - c.Min))
             end)
         elseif kind == "dropdown" or kind == "multi" then
+            self:_text(fit(c.Title, width, 13), x, y, ink, 13, 4)
+            self:_field(x, y + 18, width, 22, c.Opened or self:_hover(x, y + 18, width, 22))
             local selected = kind == "multi" and table.concat(c.Selected, ", ") or tostring(c.Selected or "Select")
-            self:_text(#selected > 18 and selected:sub(1, 16) .. "..." or selected, x + width - 145, y + 11, DIM, 11, 4)
-            click(x, y, width, 38, function()
+            self:_text(fit(selected, width - 27, 13), x + 6, y + 21, ink, 13, 5)
+            self:_text(c.Opened and "-" or "+", x + width - 16, y + 21, DIM, 13, 5)
+            click(x, y + 18, width, 22, function()
                 c.Opened = not c.Opened
                 if c.Opened and c._column then
-                    local overflow = y + 28 + math.min(#c.Options, c.MaxVisibleItems) * 23
-                        - (self._position.Y + self._height - 7)
+                    local overflow = y + self:_controlHeight(c, width) - (self._position.Y + self._height - 35)
                     if overflow > 0 then self._scroll[c._column] = self._scroll[c._column] + overflow end
                 end
             end)
             if c.Opened then
                 local count = math.min(c.MaxVisibleItems, #c.Options)
-                y = y + 15
-                self._dropdownAreas[#self._dropdownAreas + 1] = {
-                    x=x,y=y+38,width=width,height=count*23,control=c}
-                for index = (c.OptionScroll or 0) + 1, math.min(#c.Options, (c.OptionScroll or 0) + count) do
+                c.OptionScroll = math.clamp(c.OptionScroll or 0, 0, math.max(0, #c.Options - count))
+                local oy = y + 42
+                local clip = self._clip
+                local at, ab = math.max(oy, clip and clip[2] or oy), math.min(oy + count * 22, clip and clip[2] + clip[4] or oy + count * 22)
+                if ab > at then self._dropdownAreas[#self._dropdownAreas + 1] = {x=x,y=at,width=width,height=ab-at,control=c} end
+                for index = c.OptionScroll + 1, math.min(#c.Options, c.OptionScroll + count) do
                     local value = c.Options[index]
-                    y = y + 23
-                    self:_box(x, y, width, 22, BG, 5)
-                    self:_text(#tostring(value) > math.floor(width / 7) and tostring(value):sub(1, math.floor(width / 7) - 3) .. "..." or tostring(value), x + 8, y + 3, WHITE, 12, 6)
-                    click(x, y, width, 22, function()
+                    local rowY = oy + (index - c.OptionScroll - 1) * 22
+                    local chosen = kind == "multi" and table.find(c.Selected, value) ~= nil or c.Selected == value
+                    self:_box(x, rowY, width, 22, BORDER, 4)
+                    self:_box(x + 1, rowY, width - 2, 22, self:_hover(x, rowY, width, 22) and Color3.fromRGB(39,39,39) or BG, 4)
+                    if chosen then self:_box(x + 2, rowY + 4, 2, 14, self.Accent, 5) end
+                    self:_text(fit(value, width - 18, 13), x + 8, rowY + 3, chosen and WHITE or DIM, 13, 5)
+                    click(x, rowY, width, 22, function()
                         if kind == "multi" then
                             local values, found = {}, false
-                            for _, chosen in ipairs(c.Selected) do
-                                if chosen == value then found = true else values[#values + 1] = chosen end
+                            for _, chosenValue in ipairs(c.Selected) do
+                                if chosenValue == value then found = true else values[#values + 1] = chosenValue end
                             end
                             if not found then values[#values + 1] = value end
                             c:Set(values)
                         else c:Set(value); c.Opened = false end
                     end)
                 end
+                if #c.Options > count then
+                    local track = count * 22
+                    self:_box(x + width - 3, oy + track * c.OptionScroll / #c.Options, 2, track * count / #c.Options, DIM, 6)
+                end
             end
-            return y + (c.Opened and 29 or 44)
         elseif kind == "textbox" then
-            local value = self._capture and self._capture.control == c and self._capture.value or c.Text
-            self:_text((value == "" and c.Placeholder or value):sub(-18), x + width - 145, y + 11, DIM, 11, 4)
-            click(x, y, width, 38, function()
+            local focused = self._capture and self._capture.control == c
+            local value = focused and self._capture.value or c.Text
+            self:_text(fit(c.Title, width, 13), x, y, ink, 13, 4)
+            self:_field(x, y + 18, width, 22, focused or self:_hover(x, y + 18, width, 22))
+            local shown = value == "" and c.Placeholder or value
+            if focused then shown = value:sub(-math.floor((width - 24) / 8)) .. "|" end
+            self:_text(fit(shown, width - 12, 13), x + 6, y + 21, focused and WHITE or DIM, 13, 5)
+            click(x, y + 18, width, 22, function()
                 self._listeningForKey = true
-                self._capture = {kind = "text", control = c, original = c.Text, value = c.Text}
+                self._capture = {kind="text",control=c,original=c.Text,value=c.Text}
             end)
         elseif kind == "keybind" then
-            self:_text(c.Listening and "..." or (c.Key and c.Key.Name or "NONE"), x + width - 70, y + 11, DIM, 11, 4)
-            click(x, y, width, 38, function()
+            local key = c.Listening and "..." or (c.Key and c.Key.Name or "NONE")
+            local kw = math.max(42, #key * 8 + 14)
+            self:_text(fit(c.Title, width - kw - 8, 13), x, y + 3, ink, 13, 4)
+            self:_field(x + width - kw, y, kw, 21, c.Listening or self:_hover(x + width - kw, y, kw, 21))
+            self:_text(key, x + width - kw + 7, y + 3, DIM, 13, 5)
+            click(x, y, width, 22, function()
                 self._listeningForKey = true
                 c.Listening = true
-                self._capture = {kind = "key", control = c}
+                self._capture = {kind="key",control=c}
             end)
         elseif kind == "color" then
-            self:_box(x + width - 22, y + 12, 13, 13, c.Color, 4)
+            self:_text(fit(c.Title, width - 88, 13), x, y + 3, ink, 13, 4)
+            self:_field(x + width - 24, y + 2, 24, 16, self:_hover(x, y, width, 22))
+            self:_box(x + width - 22, y + 4, 20, 12, c.Color, 5)
             local value = self._capture and self._capture.color == c and self._capture.value or c.Color:ToHex()
-            self:_text(value, x + width - 83, y + 11, DIM, 11, 4)
-            click(x, y, width, 38, function() c:Toggle() end)
+            self:_text(value, x + width - 82, y + 3, DIM, 12, 5)
+            click(x, y, width, 22, function() c:Toggle() end)
         end
-        return y + 44
+        return y + height
     end
 
     function Backend:CreateTab(name)
