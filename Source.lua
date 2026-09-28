@@ -2690,10 +2690,10 @@ local DrawingBackend = (function()
     local INPUT = game:GetService("UserInputService")
     local RUN = game:GetService("RunService")
     local WHITE = Color3.fromRGB(235, 235, 235)
-    local DIM = Color3.fromRGB(165, 165, 175)
-    local BG = Color3.fromRGB(22, 22, 31)
-    local PANEL = Color3.fromRGB(29, 30, 43)
-    local BORDER = Color3.fromRGB(60, 60, 72)
+    local DIM = Color3.fromRGB(150, 150, 150)
+    local BG = Color3.fromRGB(13, 13, 13)
+    local PANEL = Color3.fromRGB(22, 22, 22)
+    local BORDER = Color3.fromRGB(48, 48, 48)
     local characters = {Zero="0", One="1", Two="2", Three="3", Four="4", Five="5",
         Six="6", Seven="7", Eight="8", Nine="9", Space=" ", Period=".", Minus="-"}
 
@@ -2724,17 +2724,17 @@ local DrawingBackend = (function()
         end
         local self = setmetatable({
             Title = config.Title or "HutameHub", Version = config.Version or "",
-            Accent = config.Accent or Color3.fromRGB(103, 89, 179),
+            Accent = config.Accent or Color3.fromRGB(235, 235, 235),
             ToggleKey = config.ToggleKey or Enum.KeyCode.RightControl,
             Tabs = {}, ActiveTab = nil, _hits = {},
             _pool = {}, _connections = {}, _visible = true, _scroll = {0, 0}, _scrollMax = {0, 0},
-            _position = Vector2.new(140, 110), _width = 600, _height = 540,
+            _position = Vector2.new(140, 110), _width = 880, _height = 620,
             _bindings = {}, _keybindDisplays = {},
             _bridge = bridge, _request = requestFunction,
         }, Backend)
         if workspace.CurrentCamera then
             local viewport = workspace.CurrentCamera.ViewportSize
-            self._position = Vector2.new((viewport.X - 600) / 2, (viewport.Y - 540) / 2)
+            self._position = Vector2.new(math.max(0, (viewport.X - 880) / 2), math.max(0, (viewport.Y - 620) / 2))
         end
         self.MainFrame = setmetatable({}, {
             __index = function(_, key)
@@ -2831,9 +2831,9 @@ local DrawingBackend = (function()
                         return
                     end
                 end
-                local col = mouse.X < self._position.X + self._width / 2 and 1 or 2
-                if hit(mouse, self._position.X + 8, self._position.Y + 78,
-                    self._width - 16, self._height - 84) then
+                local col = mouse.X < self._position.X + 178 + (self._width - 178) / 2 and 1 or 2
+                if hit(mouse, self._position.X + 178, self._position.Y + 82,
+                    self._width - 188, self._height - 108) then
                     self._scroll[col] = math.clamp(self._scroll[col] - input.Position.Z * 36, 0, self._scrollMax[col])
                 end
             end
@@ -2905,65 +2905,80 @@ local DrawingBackend = (function()
             local x, y = p.X, p.Y
             self:_box(x - 1, y - 1, w + 2, h + 2, BORDER)
             self:_box(x, y, w, h, BG)
-            self:_box(x, y, w, 34, PANEL)
-            self:_box(x, y + 33, w, 2, self.Accent)
-            self:_text(self.Title .. "  " .. self.Version, x + 13, y + 8, WHITE, 15)
-            self:_text("×", x + w - 25, y + 7, WHITE, 18)
-            self:_hit(x + w - 32, y, 32, 33, function() self:Destroy() end)
-            self:_hit(x, y, w - 35, 33, function(mouse)
+            self:_box(x, y, 164, h, PANEL)
+            self:_box(x + 164, y, 1, h, BORDER)
+            self:_text(self.Title, x + 18, y + 21, WHITE, 18)
+            self:_text(self.Version, x + 18, y + 46, DIM, 12)
+            self:_text(self.ActiveTab and self.ActiveTab.Name or "Overview", x + 186, y + 23, WHITE, 22)
+            self:_text("SPECTRE / CONTROL PANEL", x + 186, y + 52, DIM, 11)
+            self:_box(x + 186, y + 76, w - 208, 1, BORDER)
+            self:_text("x", x + w - 30, y + 20, DIM, 20)
+            self:_hit(x + w - 40, y + 10, 34, 40, function() self._visible = false end)
+            self:_hit(x, y, w - 45, 72, function(mouse)
                 self._drag = {origin = self._position, mouse = mouse}
             end)
-            local tabY, tabX = y + 44, x + 10
-            for _, tab in ipairs(self.Tabs) do
-                local active = self.ActiveTab == tab
-                local tabWidth = math.max(58, #tab.Name * 7 + 22)
-                self:_box(tabX, tabY, tabWidth, 27, active and self.Accent or PANEL)
-                self:_text(tab.Name .. ((tab.Badge or 0) > 0 and (" [" .. tab.Badge .. "]") or ""),
-                    tabX + 8, tabY + 6, WHITE, 13)
-                self:_hit(tabX, tabY, tabWidth, 27, function()
+            for index, tab in ipairs(self.Tabs) do
+                local ty, active = y + 96 + (index - 1) * 44, self.ActiveTab == tab
+                if active then
+                    self:_box(x + 10, ty, 144, 36, WHITE)
+                end
+                self:_text(tab.Name, x + 24, ty + 10, active and BG or DIM, 14)
+                if (tab.Badge or 0) > 0 then self:_text(tostring(tab.Badge), x + 130, ty + 11, active and BG or WHITE, 12) end
+                self:_hit(x + 10, ty, 144, 36, function()
                     self.ActiveTab = tab
                     self._scroll = {0, 0}
                 end)
-                tabX = tabX + tabWidth + 3
             end
+            self:_box(x + 18, y + h - 65, 128, 1, BORDER)
+            self:_text(self._bridge and "STREAMPROOF" or "DRAWING", x + 18, y + h - 48, DIM, 10)
+            self:_text(self.ToggleKey.Name .. "  /  toggle menu", x + 18, y + h - 29, WHITE, 10)
             if self.ActiveTab then
+                local cw = (w - 222) / 2
+                local bottom = y + h - 24
+                local function controlHeight(c)
+                    if c.Visible == false then return 0 end
+                    local size = c.Kind == "separator" and 15 or c.Kind == "label" and (math.max(1, math.ceil(#c.Text / math.floor((cw - 20) / 7))) * 18 + 8) or 44
+                    if c.Opened and (c.Kind == "dropdown" or c.Kind == "multi") then
+                        size = size + math.min(#c.Options, c.MaxVisibleItems) * 23
+                    end
+                    return size
+                end
                 for col = 1, 2 do
-                    local sx = x + (col == 1 and 14 or 306)
-                    local sy = y + 86 - self._scroll[col]
+                    local sx = x + 186 + (col - 1) * (cw + 14)
+                    local sy = y + 94 - self._scroll[col]
                     for _, section in ipairs(self.ActiveTab.Sections) do
                         if section.Column == col then
-                            local startY = sy
-                            if startY >= y + 78 and startY < y + h - 26 then
-                                self:_box(sx, startY, 280,
-                                    math.min(section.Collapsed and 31 or #section.Controls * 28 + 33,
-                                        y + h - startY - 6), PANEL)
-                                self:_box(sx, startY, 280, 1, BORDER)
-                                self:_text(section.Title, sx + 9, startY + 6, self.Accent, 13, 3)
-                                self:_hit(sx, startY, 280, 23, function() section.Collapsed = not section.Collapsed end)
+                            local size = 42
+                            if not section.Collapsed then
+                                for _, c in ipairs(section.Controls) do size = size + controlHeight(c) end
                             end
-                            sy = sy + 26
-                            for _, control in ipairs(section.Controls) do
-                                if section.Collapsed then break end
-                                control._column = col
-                                local nextY
-                                if sy >= y + 82 and sy + 27 < y + h then
-                                    nextY = self:_control(control, sx + 9, sy, 260)
-                                else
-                                    local height = control.Visible == false and 0 or
-                                        (control.Kind == "separator" and 15 or control.Kind == "label" and 22 or 28)
-                                    if control.Visible ~= false and control.Opened and
-                                        (control.Kind == "dropdown" or control.Kind == "multi") then
-                                        height = height + math.min(#control.Options, control.MaxVisibleItems) * 23
-                                    end
-                                    nextY = sy + height
+                            if sy >= y + 82 and sy < bottom then
+                                self:_box(sx, sy, cw, math.min(size, bottom - sy), PANEL)
+                                self:_text(section.Title, sx + 12, sy + 12, WHITE, 14, 3)
+                                self:_text(section.Collapsed and "+" or "-", sx + cw - 25, sy + 11, DIM, 14, 3)
+                                self:_hit(sx, sy, cw, 36, function() section.Collapsed = not section.Collapsed end)
+                            end
+                            sy = sy + 38
+                            if not section.Collapsed then
+                                for _, c in ipairs(section.Controls) do
+                                    c._column = col
+                                    local size = controlHeight(c)
+                                    if sy >= y + 82 and sy + size <= bottom then
+                                        sy = self:_control(c, sx + 10, sy, cw - 20)
+                                    else sy = sy + size end
                                 end
-                                sy = nextY
                             end
-                            sy = sy + 14
+                            sy = sy + 18
                         end
                     end
-                    self._scrollMax[col] = math.max(0, sy + self._scroll[col] - (y + h - 6))
+                    self._scrollMax[col] = math.max(0, sy + self._scroll[col] - bottom)
                     self._scroll[col] = math.min(self._scroll[col], self._scrollMax[col])
+                    if self._scrollMax[col] > 0 then
+                        local track = h - 118
+                        local thumb = math.max(30, track * track / (track + self._scrollMax[col]))
+                        self:_box(sx + cw + 3, y + 94, 2, track, BORDER, 4)
+                        self:_box(sx + cw + 3, y + 94 + (track - thumb) * self._scroll[col] / self._scrollMax[col], 2, thumb, DIM, 5)
+                    end
                 end
             end
         end
@@ -3047,7 +3062,7 @@ local DrawingBackend = (function()
             self:_box(cx + 12, cy + 95, 150, 27, PANEL, 41)
             self:_box(cx + 178, cy + 95, 150, 27, self.Accent, 41)
             self:_text("Cancel", cx + 58, cy + 101, WHITE, 12, 42)
-            self:_text("Confirm", cx + 222, cy + 101, WHITE, 12, 42)
+            self:_text("Confirm", cx + 222, cy + 101, BG, 12, 42)
             self:_hit(cx + 12, cy + 95, 150, 27, function()
                 self._confirm = nil
                 if config.OnCancel then pcall(config.OnCancel) end
@@ -3087,28 +3102,33 @@ local DrawingBackend = (function()
             return y + 15
         end
         if kind == "label" then
-            self:_text(c.Text, x, y, c.Color or DIM, 12, 3)
-            return y + 22
+            local count = math.max(1, math.floor(width / 7))
+            local lines = math.max(1, math.ceil(#c.Text / count))
+            for index = 1, lines do
+                self:_text(c.Text:sub((index - 1) * count + 1, index * count), x, y + (index - 1) * 18, c.Color or DIM, 12, 3)
+            end
+            return y + lines * 18 + 8
         end
-        self:_box(x, y, width, 23, BG, 3)
-        self:_text(c.Title, x + 6, y + 4, c.Enabled == false and DIM or WHITE, 12, 4)
+        self:_box(x, y, width, 38, BG, 3)
+        self:_text(#c.Title > 23 and c.Title:sub(1, 21) .. "..." or c.Title, x + 10, y + 11, c.Enabled == false and DIM or WHITE, 13, 4)
         if kind == "toggle" then
-            self:_box(x + width - 23, y + 5, 13, 13, c.State and self.Accent or BORDER, 4)
-            click(x, y, width, 23, function() c:Set(not c.State) end)
+            self:_box(x + width - 42, y + 11, 30, 16, c.State and WHITE or BORDER, 4)
+            self:_box(x + width - (c.State and 25 or 40), y + 13, 11, 12, c.State and BG or DIM, 5)
+            click(x, y, width, 38, function() c:Set(not c.State) end)
         elseif kind == "button" then
-            click(x, y, width, 23, function() pcall(c.Callback) end)
+            click(x, y, width, 38, function() pcall(c.Callback) end)
         elseif kind == "slider" then
             local ratio = (c.Value - c.Min) / math.max(0.0001, c.Max - c.Min)
-            self:_box(x + 6, y + 19, (width - 12) * ratio, 3, self.Accent, 4)
-            self:_text(tostring(math.floor(c.Value * 100 + 0.5) / 100), x + width - 44, y + 4, DIM, 11, 4)
-            click(x, y, width, 23, function(mouse)
+            self:_box(x + 6, y + 33, (width - 12) * ratio, 3, self.Accent, 4)
+            self:_text(tostring(math.floor(c.Value * 100 + 0.5) / 100), x + width - 44, y + 11, DIM, 11, 4)
+            click(x, y, width, 38, function(mouse)
                 self._slider = {control = c, min = c.Min, max = c.Max, x = x + 6, width = width - 12}
                 c:Set(c.Min + math.clamp((mouse.X - x - 6) / (width - 12), 0, 1) * (c.Max - c.Min))
             end)
         elseif kind == "dropdown" or kind == "multi" then
             local selected = kind == "multi" and table.concat(c.Selected, ", ") or tostring(c.Selected or "Select")
-            self:_text(selected, x + width - 105, y + 4, DIM, 11, 4)
-            click(x, y, width, 23, function()
+            self:_text(#selected > 18 and selected:sub(1, 16) .. "..." or selected, x + width - 145, y + 11, DIM, 11, 4)
+            click(x, y, width, 38, function()
                 c.Opened = not c.Opened
                 if c.Opened and c._column then
                     local overflow = y + 28 + math.min(#c.Options, c.MaxVisibleItems) * 23
@@ -3118,13 +3138,14 @@ local DrawingBackend = (function()
             end)
             if c.Opened then
                 local count = math.min(c.MaxVisibleItems, #c.Options)
+                y = y + 15
                 self._dropdownAreas[#self._dropdownAreas + 1] = {
-                    x=x,y=y+23,width=width,height=count*23,control=c}
+                    x=x,y=y+38,width=width,height=count*23,control=c}
                 for index = (c.OptionScroll or 0) + 1, math.min(#c.Options, (c.OptionScroll or 0) + count) do
                     local value = c.Options[index]
                     y = y + 23
                     self:_box(x, y, width, 22, BG, 5)
-                    self:_text(value, x + 8, y + 3, WHITE, 12, 6)
+                    self:_text(#tostring(value) > math.floor(width / 7) and tostring(value):sub(1, math.floor(width / 7) - 3) .. "..." or tostring(value), x + 8, y + 3, WHITE, 12, 6)
                     click(x, y, width, 22, function()
                         if kind == "multi" then
                             local values, found = {}, false
@@ -3137,28 +3158,28 @@ local DrawingBackend = (function()
                     end)
                 end
             end
-            return y + 28
+            return y + (c.Opened and 29 or 44)
         elseif kind == "textbox" then
             local value = self._capture and self._capture.control == c and self._capture.value or c.Text
-            self:_text(value == "" and c.Placeholder or value, x + 92, y + 4, DIM, 11, 4)
-            click(x, y, width, 23, function()
+            self:_text((value == "" and c.Placeholder or value):sub(-18), x + width - 145, y + 11, DIM, 11, 4)
+            click(x, y, width, 38, function()
                 self._listeningForKey = true
                 self._capture = {kind = "text", control = c, original = c.Text, value = c.Text}
             end)
         elseif kind == "keybind" then
-            self:_text(c.Listening and "..." or (c.Key and c.Key.Name or "NONE"), x + width - 70, y + 4, DIM, 11, 4)
-            click(x, y, width, 23, function()
+            self:_text(c.Listening and "..." or (c.Key and c.Key.Name or "NONE"), x + width - 70, y + 11, DIM, 11, 4)
+            click(x, y, width, 38, function()
                 self._listeningForKey = true
                 c.Listening = true
                 self._capture = {kind = "key", control = c}
             end)
         elseif kind == "color" then
-            self:_box(x + width - 22, y + 5, 13, 13, c.Color, 4)
+            self:_box(x + width - 22, y + 12, 13, 13, c.Color, 4)
             local value = self._capture and self._capture.color == c and self._capture.value or c.Color:ToHex()
-            self:_text(value, x + width - 83, y + 4, DIM, 11, 4)
-            click(x, y, width, 23, function() c:Toggle() end)
+            self:_text(value, x + width - 83, y + 11, DIM, 11, 4)
+            click(x, y, width, 38, function() c:Toggle() end)
         end
-        return y + 28
+        return y + 44
     end
 
     function Backend:CreateTab(name)

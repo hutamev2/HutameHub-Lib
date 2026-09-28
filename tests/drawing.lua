@@ -60,7 +60,7 @@ local multi=section:CreateMultiDropdown({Title="Multi",Options={"A","B"},Default
 local picker=section:CreateColorPicker({Title="Color",Default=color("123abc"),ConfigKey="color"})
 run.RenderStepped:Fire()
 assert(#objects>0)
-input.mouse=vector(hub._position.X+30,hub._position.Y+118)
+input.mouse=vector(hub._position.X+210,hub._position.Y+142)
 input.InputBegan:Fire({UserInputType=Enum.UserInputType.MouseButton1,KeyCode=Enum.KeyCode.Unknown},false)
 assert(toggle.State and changes==1,"Toggle hit testing failed")
 slider:Set(12); assert(slider.Value==10)

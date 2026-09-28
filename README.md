@@ -58,6 +58,8 @@ Dokümantasyon `docs/` içindeki statik sayfadan yayımlanır. `main` dalındaki
 
 `Streamproof = true`, custom Drawing kontrollerini Madium `request` üzerinden yerel Windows overlay'ine aktarır. `tools/streamproof_overlay.py` Python standart kütüphanesiyle çalışır ve kendi penceresinde `WDA_EXCLUDEFROMCAPTURE` uygular. Önce yardımcıyı hedef Roblox PID'si ve `--config` olarak Madium Workspace içindeki `HutameHub_overlay.json` yolu ile başlat. Kütüphane bu dosyayı okuyup affinity=17 doğrulanmadan streamproof modunu açmaz. Yardımcı yalnız `127.0.0.1` üzerinde dinler; oturum anahtarı yerel config dosyasında tutulur.
 
+Drawing tasarımı 880×620 siyah–beyaz, keskin köşeli bir paneldir: solda sekmeler, iki bağımsız kaydırılan sütun, 38 px kontrol satırları ve görünür kaydırma göstergeleri vardır. Başlıktaki × menüyü gizler; ToggleKey tekrar açar.
+
 Pencere, sekmeler, iki sütunlu bölümler, toggle, button, slider, tekli/çoklu dropdown, textbox, keybind, renk, label, separator, bildirim, onay kutusu, watermark, profil API'si ve keybind listesi custom çizim katmanındadır. Mouse tekerleğiyle sütunlar ve açık uzun dropdown listeleri kaydırılır. Renk kontrolünde HEX girip Enter'a basılır; metin kutuları Enter ile tamamlanır, Escape ile iptal edilir.
 
 ```lua
