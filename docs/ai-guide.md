@@ -7,6 +7,12 @@ This is a compact, self-contained guide to the current public API in `Source.lua
 
 ## Copyable complete example
 
+### Optional Madium Drawing mode
+
+Add `Streamproof = true` to `Library.new` to use the experimental external Drawing renderer. Start `tools/streamproof_overlay.py` for the Roblox PID first, passing `--config` with the executor Workspace's `HutameHub_overlay.json` path. The library reads that local bridge file, uses Madium `request` to send drawing commands to localhost, and requires the helper to confirm `WDA_EXCLUDEFROMCAPTURE` (affinity 17). It keeps the method names, profiles and floating keybind list, and does not create a ScreenGui. Mobile, loading/snow effects and tooltips are not implemented. Text commits with Enter and cancels with Escape; colors use HEX input. Mouse wheel scrolls columns and dropdown lists.
+
+Native Madium `Drawing.new` was visible in the tested OBS Display Capture replay; `Renderer = "Drawing"` selects that native mode without a streamproof claim. On 2026-09-28 the user confirmed that the external overlay menu remained visible locally and was absent from their Replay recording. This confirmation applies to the tested OBS setup. See [the Drawing demo](examples/streamproof.lua).
+
 ```lua
 local Library = loadstring(game:HttpGet(
     "https://raw.githubusercontent.com/hutamev2/HutameHub-Lib/main/Source.lua"

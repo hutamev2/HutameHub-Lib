@@ -2681,9 +2681,719 @@ function Library:CreateKeybindList(config)
     }
 end
 
+-- Drawing backend is activated only when Streamproof is explicitly requested.
+-- Keep the normal ScreenGui path unchanged for existing consumers.
+local DrawingBackend = (function()
+    local Backend = {}
+    Backend.__index = Backend
+
+    local INPUT = game:GetService("UserInputService")
+    local RUN = game:GetService("RunService")
+    local WHITE = Color3.fromRGB(235, 235, 235)
+    local DIM = Color3.fromRGB(165, 165, 175)
+    local BG = Color3.fromRGB(22, 22, 31)
+    local PANEL = Color3.fromRGB(29, 30, 43)
+    local BORDER = Color3.fromRGB(60, 60, 72)
+    local characters = {Zero="0", One="1", Two="2", Three="3", Four="4", Five="5",
+        Six="6", Seven="7", Eight="8", Nine="9", Space=" ", Period=".", Minus="-"}
+
+    local function hit(p, x, y, w, h)
+        return p.X >= x and p.X <= x + w and p.Y >= y and p.Y <= y + h
+    end
+
+    function Backend.new(config)
+        local bridge, requestFunction
+        if config.Streamproof then
+            requestFunction = request or http_request
+            assert(type(requestFunction) == "function", "Streamproof requires the Madium request API")
+            local ok, settings = pcall(function()
+                return HttpService:JSONDecode(readfile(config.StreamproofConfig or "HutameHub_overlay.json"))
+            end)
+            assert(ok and type(settings) == "table", "Start tools/streamproof_overlay.py before enabling Streamproof")
+            assert(type(settings.url) == "string" and settings.url:match("^http://127%.0%.0%.1:%d+$"), "Invalid local overlay address")
+            local response = requestFunction({Url=settings.url.."/status",Method="GET",
+                Headers={Authorization="Bearer "..settings.token}})
+            assert(response.StatusCode == 200, "Local overlay unavailable")
+            local status = HttpService:JSONDecode(response.Body)
+            assert(status.captureExcluded == true and status.affinity == 17 and status.windowFound,
+                "Local overlay did not confirm capture exclusion and the Roblox window")
+            bridge = settings
+        else
+            assert(type(Drawing) == "table" and type(Drawing.new) == "function",
+                "Drawing renderer requires the executor Drawing API")
+        end
+        local self = setmetatable({
+            Title = config.Title or "HutameHub", Version = config.Version or "",
+            Accent = config.Accent or Color3.fromRGB(103, 89, 179),
+            ToggleKey = config.ToggleKey or Enum.KeyCode.RightControl,
+            Tabs = {}, ActiveTab = nil, _hits = {},
+            _pool = {}, _connections = {}, _visible = true, _scroll = {0, 0}, _scrollMax = {0, 0},
+            _position = Vector2.new(140, 110), _width = 600, _height = 540,
+            _bindings = {}, _keybindDisplays = {},
+            _bridge = bridge, _request = requestFunction,
+        }, Backend)
+        if workspace.CurrentCamera then
+            local viewport = workspace.CurrentCamera.ViewportSize
+            self._position = Vector2.new((viewport.X - 600) / 2, (viewport.Y - 540) / 2)
+        end
+        self.MainFrame = setmetatable({}, {
+            __index = function(_, key)
+                if key == "Visible" then return self._visible end
+            end,
+            __newindex = function(_, key, value)
+                if key == "Visible" then self._visible = not not value end
+            end,
+        })
+        if bridge then
+            task.spawn(function()
+                while not self._destroyed do
+                    if self._frameJson then
+                        local ok, response = pcall(requestFunction, {Url=bridge.url.."/frame",Method="POST",
+                            Headers={Authorization="Bearer "..bridge.token,["Content-Type"]="application/json"},
+                            Body=self._frameJson})
+                        if not ok or response.StatusCode ~= 200 then
+                            if not self._bridgeFailed then warn("HutameHub overlay connection failed") end
+                            self._bridgeFailed = true
+                        else self._bridgeFailed = false end
+                    end
+                    task.wait(1/30)
+                end
+            end)
+        end
+        self._connections[1] = RUN.RenderStepped:Connect(function() self:_render() end)
+        self._connections[2] = INPUT.InputBegan:Connect(function(input, processed)
+            if (input.KeyCode == self.ToggleKey or input.KeyCode == Enum.KeyCode.Minus)
+                and not processed and not self._capture then
+                self._visible = not self._visible
+                return
+            end
+            if self._capture then
+                local capture = self._capture
+                self._capture = nil
+                if capture.kind == "key" then
+                    capture.control.Listening = false
+                    capture.control:Set(input.KeyCode ~= Enum.KeyCode.Unknown and input.KeyCode or input.UserInputType)
+                elseif capture.kind == "text" and input.KeyCode == Enum.KeyCode.Return then
+                    capture.control:Set(capture.value)
+                elseif capture.kind == "text" and input.KeyCode == Enum.KeyCode.Backspace then
+                    capture.value = capture.value:sub(1, -2)
+                    self._capture = capture
+                elseif capture.kind == "text" and input.KeyCode == Enum.KeyCode.Escape then
+                    capture.control:Set(capture.original)
+                elseif capture.kind == "text" then
+                    local char = input.KeyCode.Name
+                    local shifted = INPUT:IsKeyDown(Enum.KeyCode.LeftShift) or INPUT:IsKeyDown(Enum.KeyCode.RightShift)
+                    if char == "V" and type(getclipboard) == "function" and
+                        (INPUT:IsKeyDown(Enum.KeyCode.LeftControl) or INPUT:IsKeyDown(Enum.KeyCode.RightControl)) then
+                        local ok, pasted = pcall(getclipboard)
+                        if ok and type(pasted) == "string" then capture.value = capture.value .. pasted end
+                    elseif #char == 1 then
+                        capture.value = capture.value .. (shifted and char or char:lower())
+                    elseif characters[char] then
+                        capture.value = capture.value .. (shifted and char == "Minus" and "_" or characters[char])
+                    end
+                    self._capture = capture
+                end
+                if not self._capture then self._releaseListening = true end
+                return
+            end
+            if input.UserInputType == Enum.UserInputType.MouseButton1 and self._visible then
+                local mouse = INPUT:GetMouseLocation()
+                for i = #self._hits, 1, -1 do
+                    local area = self._hits[i]
+                    if hit(mouse, area[1], area[2], area[3], area[4]) then
+                        area[5](mouse)
+                        return
+                    end
+                end
+            end
+            if not processed then
+                for _, binding in ipairs(self._bindings) do
+                    if binding.key == input.KeyCode and binding.callback then
+                        pcall(binding.callback, input.KeyCode)
+                    end
+                end
+            end
+        end)
+        self._connections[3] = INPUT.InputChanged:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseMovement and self._drag then
+                self._position = self._drag.origin + (INPUT:GetMouseLocation() - self._drag.mouse)
+            elseif input.UserInputType == Enum.UserInputType.MouseMovement and self._slider then
+                local s = self._slider
+                s.control:Set(s.min + math.clamp((INPUT:GetMouseLocation().X - s.x) / s.width, 0, 1) * (s.max - s.min))
+            elseif input.UserInputType == Enum.UserInputType.MouseWheel and self._visible then
+                local mouse = INPUT:GetMouseLocation()
+                for _, area in ipairs(self._dropdownAreas or {}) do
+                    if hit(mouse, area.x, area.y, area.width, area.height) then
+                        local control = area.control
+                        control.OptionScroll = math.clamp((control.OptionScroll or 0) - input.Position.Z,
+                            0, math.max(0, #control.Options - control.MaxVisibleItems))
+                        return
+                    end
+                end
+                local col = mouse.X < self._position.X + self._width / 2 and 1 or 2
+                if hit(mouse, self._position.X + 8, self._position.Y + 78,
+                    self._width - 16, self._height - 84) then
+                    self._scroll[col] = math.clamp(self._scroll[col] - input.Position.Z * 36, 0, self._scrollMax[col])
+                end
+            end
+        end)
+        self._connections[4] = INPUT.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                self._drag = nil
+                self._slider = nil
+            end
+        end)
+        return self
+    end
+
+    function Backend:_primitive(kind)
+        self._index = self._index + 1
+        local object = self._pool[self._index]
+        if not object or self._kinds[self._index] ~= kind then
+            if object then object:Remove() end
+            if self._bridge then
+                object = {Visible=false,Remove=function(item) item.Visible=false end}
+            else object = Drawing.new(kind) end
+            self._pool[self._index] = object
+            self._kinds[self._index] = kind
+        end
+        object.Visible = true
+        return object
+    end
+
+    function Backend:_box(x, y, w, h, color, z)
+        if w <= 0 or h <= 0 then return end
+        local o = self:_primitive("Square")
+        o.Position = Vector2.new(x, y)
+        o.Size = Vector2.new(w, h)
+        o.Color = color
+        o.Filled = true
+        o.Thickness = 0
+        o.Transparency = 1
+        o.ZIndex = z or 1
+    end
+
+    function Backend:_text(value, x, y, color, size, z)
+        local o = self:_primitive("Text")
+        o.Position = Vector2.new(x, y)
+        o.Text = tostring(value or "")
+        o.Color = color or WHITE
+        o.Size = size or 13
+        o.Font = Drawing and Drawing.Fonts and Drawing.Fonts.Plex or 2
+        o.Outline = true
+        o.Transparency = 1
+        o.ZIndex = z or 2
+    end
+
+    function Backend:_hit(x, y, w, h, callback)
+        self._hits[#self._hits + 1] = {x, y, w, h, callback}
+    end
+
+    function Backend:_render()
+        self:RefreshConditions()
+        if self._releaseListening then
+            self._listeningForKey = false
+            self._releaseListening = nil
+        end
+        self._index = 0
+        self._hits = {}
+        self._dropdownAreas = {}
+        self._kinds = self._kinds or {}
+        if self._visible then
+            local p, w, h = self._position, self._width, self._height
+            local x, y = p.X, p.Y
+            self:_box(x - 1, y - 1, w + 2, h + 2, BORDER)
+            self:_box(x, y, w, h, BG)
+            self:_box(x, y, w, 34, PANEL)
+            self:_box(x, y + 33, w, 2, self.Accent)
+            self:_text(self.Title .. "  " .. self.Version, x + 13, y + 8, WHITE, 15)
+            self:_text("×", x + w - 25, y + 7, WHITE, 18)
+            self:_hit(x + w - 32, y, 32, 33, function() self:Destroy() end)
+            self:_hit(x, y, w - 35, 33, function(mouse)
+                self._drag = {origin = self._position, mouse = mouse}
+            end)
+            local tabY, tabX = y + 44, x + 10
+            for _, tab in ipairs(self.Tabs) do
+                local active = self.ActiveTab == tab
+                local tabWidth = math.max(58, #tab.Name * 7 + 22)
+                self:_box(tabX, tabY, tabWidth, 27, active and self.Accent or PANEL)
+                self:_text(tab.Name .. ((tab.Badge or 0) > 0 and (" [" .. tab.Badge .. "]") or ""),
+                    tabX + 8, tabY + 6, WHITE, 13)
+                self:_hit(tabX, tabY, tabWidth, 27, function()
+                    self.ActiveTab = tab
+                    self._scroll = {0, 0}
+                end)
+                tabX = tabX + tabWidth + 3
+            end
+            if self.ActiveTab then
+                for col = 1, 2 do
+                    local sx = x + (col == 1 and 14 or 306)
+                    local sy = y + 86 - self._scroll[col]
+                    for _, section in ipairs(self.ActiveTab.Sections) do
+                        if section.Column == col then
+                            local startY = sy
+                            if startY >= y + 78 and startY < y + h - 26 then
+                                self:_box(sx, startY, 280,
+                                    math.min(section.Collapsed and 31 or #section.Controls * 28 + 33,
+                                        y + h - startY - 6), PANEL)
+                                self:_box(sx, startY, 280, 1, BORDER)
+                                self:_text(section.Title, sx + 9, startY + 6, self.Accent, 13, 3)
+                                self:_hit(sx, startY, 280, 23, function() section.Collapsed = not section.Collapsed end)
+                            end
+                            sy = sy + 26
+                            for _, control in ipairs(section.Controls) do
+                                if section.Collapsed then break end
+                                control._column = col
+                                local nextY
+                                if sy >= y + 82 and sy + 27 < y + h then
+                                    nextY = self:_control(control, sx + 9, sy, 260)
+                                else
+                                    local height = control.Visible == false and 0 or
+                                        (control.Kind == "separator" and 15 or control.Kind == "label" and 22 or 28)
+                                    if control.Visible ~= false and control.Opened and
+                                        (control.Kind == "dropdown" or control.Kind == "multi") then
+                                        height = height + math.min(#control.Options, control.MaxVisibleItems) * 23
+                                    end
+                                    nextY = sy + height
+                                end
+                                sy = nextY
+                            end
+                            sy = sy + 14
+                        end
+                    end
+                    self._scrollMax[col] = math.max(0, sy + self._scroll[col] - (y + h - 6))
+                    self._scroll[col] = math.min(self._scroll[col], self._scrollMax[col])
+                end
+            end
+        end
+        local panel = self._keybindPanel
+        if panel and panel.Visible then
+            local viewport = workspace.CurrentCamera.ViewportSize
+            local px = viewport.X * panel.Position.X.Scale + panel.Position.X.Offset
+            local py = viewport.Y * panel.Position.Y.Scale + panel.Position.Y.Offset
+            local rows = {}
+            if panel.IncludeWindowToggle then
+                rows[#rows + 1] = {title = self.Title, key = self.ToggleKey}
+            end
+            if panel.IncludeControls then
+                for _, binding in ipairs(self._bindings) do
+                    rows[#rows + 1] = {title = binding.control.Title, key = binding.key}
+                end
+            end
+            for _, entry in ipairs(self._keybindDisplays) do
+                local okVisible, visible = true, true
+                if entry.visible then okVisible, visible = pcall(entry.visible) end
+                if okVisible and visible then
+                    local okKey, key = pcall(entry.key)
+                    local okActive, active = true, nil
+                    if entry.active then okActive, active = pcall(entry.active) end
+                    if okKey then
+                        rows[#rows + 1] = {title = entry.title, key = key,
+                            active = okActive and active or nil}
+                    end
+                end
+            end
+            self:_box(px, py, panel.Width, 30 + #rows * 19, BG, 20)
+            self:_box(px, py, panel.Width, 1, self.Accent, 21)
+            self:_text(panel.Title, px + 8, py + 5, WHITE, 12, 22)
+            for index, row in ipairs(rows) do
+                local keyName = row.key and row.key.Name or tostring(row.key or "None")
+                local state = row.active == nil and "" or (row.active and " ACTIVE" or " OFF")
+                self:_text("[" .. keyName .. "] " .. row.title .. state,
+                    px + 8, py + 25 + (index - 1) * 19,
+                    row.active == true and self.Accent or DIM, 11, 22)
+            end
+        end
+        if self._notice and os.clock() < self._notice.untilTime then
+            local viewport = workspace.CurrentCamera.ViewportSize
+            local nx, ny = viewport.X - 300, viewport.Y - 86
+            self:_box(nx, ny, 285, 65, BG, 30)
+            self:_box(nx, ny, 285, 2, self.Accent, 31)
+            self:_text(self._notice.title, nx + 10, ny + 8, WHITE, 13, 32)
+            self:_text(self._notice.text, nx + 10, ny + 30, DIM, 11, 32)
+        end
+        if self._watermark then
+            local config = self._watermark
+            local viewport = workspace.CurrentCamera.ViewportSize
+            local now = os.clock()
+            self._fpsStart = self._fpsStart or now
+            self._fpsFrames = (self._fpsFrames or 0) + 1
+            if now - self._fpsStart >= 0.5 then
+                self._fps = math.floor(self._fpsFrames / (now - self._fpsStart) + 0.5)
+                self._fpsFrames, self._fpsStart = 0, now
+                pcall(function() self._ping = math.floor(game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()) end)
+            end
+            local text = (config.Format or "{player} | {fps} fps"):gsub("{player}", LocalPlayer and LocalPlayer.Name or "Player")
+                :gsub("{game}", tostring(game.Name or "Roblox"))
+                :gsub("{time}", os.date("%H:%M:%S"))
+                :gsub("{fps}", tostring(self._fps or 60))
+                :gsub("{ping}", tostring(self._ping or 0))
+            local width = math.max(90, #text * 7 + 18)
+            local bottom = config.Position == "BottomLeft" or config.Position == "BottomRight"
+            local left = config.Position == "TopLeft" or config.Position == "BottomLeft"
+            local wx, wy = left and 10 or viewport.X - width - 10, bottom and viewport.Y - 32 or 10
+            self:_box(wx, wy, width, 22, BG, 20)
+            self:_text(text, wx + 8, wy + 4, DIM, 11, 21)
+        end
+        if self._confirm then
+            local viewport = workspace.CurrentCamera.ViewportSize
+            local cx, cy = (viewport.X - 340) / 2, (viewport.Y - 135) / 2
+            local config = self._confirm
+            self:_box(cx, cy, 340, 135, BG, 40)
+            self:_box(cx, cy, 340, 2, self.Accent, 41)
+            self:_text(config.Title or "Confirm", cx + 12, cy + 12, WHITE, 14, 42)
+            self:_text(config.Text or "", cx + 12, cy + 43, DIM, 12, 42)
+            self:_box(cx + 12, cy + 95, 150, 27, PANEL, 41)
+            self:_box(cx + 178, cy + 95, 150, 27, self.Accent, 41)
+            self:_text("Cancel", cx + 58, cy + 101, WHITE, 12, 42)
+            self:_text("Confirm", cx + 222, cy + 101, WHITE, 12, 42)
+            self:_hit(cx + 12, cy + 95, 150, 27, function()
+                self._confirm = nil
+                if config.OnCancel then pcall(config.OnCancel) end
+            end)
+            self:_hit(cx + 178, cy + 95, 150, 27, function()
+                self._confirm = nil
+                if config.OnConfirm then pcall(config.OnConfirm) end
+            end)
+        end
+        for i = self._index + 1, #self._pool do
+            self._pool[i].Visible = false
+        end
+        if self._bridge and os.clock() - (self._lastPublish or 0) >= 1/30 then
+            local shapes = {}
+            for index, object in ipairs(self._pool) do
+                if object.Visible then
+                    local shape = {kind=self._kinds[index],p={object.Position.X,object.Position.Y},
+                        color=object.Color:ToHex(),z=object.ZIndex}
+                    if shape.kind == "Square" then shape.s={object.Size.X,object.Size.Y}
+                    else shape.text=object.Text; shape.size=object.Size end
+                    shapes[#shapes + 1] = shape
+                end
+            end
+            self._frameJson = HttpService:JSONEncode({shapes=shapes})
+            self._lastPublish = os.clock()
+        end
+    end
+
+    function Backend:_control(c, x, y, width)
+        if c.Visible == false then return y end
+        local function click(hx, hy, hw, hh, callback)
+            if c.Enabled ~= false then self:_hit(hx, hy, hw, hh, callback) end
+        end
+        local kind = c.Kind
+        if kind == "separator" then
+            self:_box(x, y + 6, width, 1, BORDER, 3)
+            return y + 15
+        end
+        if kind == "label" then
+            self:_text(c.Text, x, y, c.Color or DIM, 12, 3)
+            return y + 22
+        end
+        self:_box(x, y, width, 23, BG, 3)
+        self:_text(c.Title, x + 6, y + 4, c.Enabled == false and DIM or WHITE, 12, 4)
+        if kind == "toggle" then
+            self:_box(x + width - 23, y + 5, 13, 13, c.State and self.Accent or BORDER, 4)
+            click(x, y, width, 23, function() c:Set(not c.State) end)
+        elseif kind == "button" then
+            click(x, y, width, 23, function() pcall(c.Callback) end)
+        elseif kind == "slider" then
+            local ratio = (c.Value - c.Min) / math.max(0.0001, c.Max - c.Min)
+            self:_box(x + 6, y + 19, (width - 12) * ratio, 3, self.Accent, 4)
+            self:_text(tostring(math.floor(c.Value * 100 + 0.5) / 100), x + width - 44, y + 4, DIM, 11, 4)
+            click(x, y, width, 23, function(mouse)
+                self._slider = {control = c, min = c.Min, max = c.Max, x = x + 6, width = width - 12}
+                c:Set(c.Min + math.clamp((mouse.X - x - 6) / (width - 12), 0, 1) * (c.Max - c.Min))
+            end)
+        elseif kind == "dropdown" or kind == "multi" then
+            local selected = kind == "multi" and table.concat(c.Selected, ", ") or tostring(c.Selected or "Select")
+            self:_text(selected, x + width - 105, y + 4, DIM, 11, 4)
+            click(x, y, width, 23, function()
+                c.Opened = not c.Opened
+                if c.Opened and c._column then
+                    local overflow = y + 28 + math.min(#c.Options, c.MaxVisibleItems) * 23
+                        - (self._position.Y + self._height - 7)
+                    if overflow > 0 then self._scroll[c._column] = self._scroll[c._column] + overflow end
+                end
+            end)
+            if c.Opened then
+                local count = math.min(c.MaxVisibleItems, #c.Options)
+                self._dropdownAreas[#self._dropdownAreas + 1] = {
+                    x=x,y=y+23,width=width,height=count*23,control=c}
+                for index = (c.OptionScroll or 0) + 1, math.min(#c.Options, (c.OptionScroll or 0) + count) do
+                    local value = c.Options[index]
+                    y = y + 23
+                    self:_box(x, y, width, 22, BG, 5)
+                    self:_text(value, x + 8, y + 3, WHITE, 12, 6)
+                    click(x, y, width, 22, function()
+                        if kind == "multi" then
+                            local values, found = {}, false
+                            for _, chosen in ipairs(c.Selected) do
+                                if chosen == value then found = true else values[#values + 1] = chosen end
+                            end
+                            if not found then values[#values + 1] = value end
+                            c:Set(values)
+                        else c:Set(value); c.Opened = false end
+                    end)
+                end
+            end
+            return y + 28
+        elseif kind == "textbox" then
+            local value = self._capture and self._capture.control == c and self._capture.value or c.Text
+            self:_text(value == "" and c.Placeholder or value, x + 92, y + 4, DIM, 11, 4)
+            click(x, y, width, 23, function()
+                self._listeningForKey = true
+                self._capture = {kind = "text", control = c, original = c.Text, value = c.Text}
+            end)
+        elseif kind == "keybind" then
+            self:_text(c.Listening and "..." or (c.Key and c.Key.Name or "NONE"), x + width - 70, y + 4, DIM, 11, 4)
+            click(x, y, width, 23, function()
+                self._listeningForKey = true
+                c.Listening = true
+                self._capture = {kind = "key", control = c}
+            end)
+        elseif kind == "color" then
+            self:_box(x + width - 22, y + 5, 13, 13, c.Color, 4)
+            local value = self._capture and self._capture.color == c and self._capture.value or c.Color:ToHex()
+            self:_text(value, x + width - 83, y + 4, DIM, 11, 4)
+            click(x, y, width, 23, function() c:Toggle() end)
+        end
+        return y + 28
+    end
+
+    function Backend:CreateTab(name)
+        local tab = {Name = name, Sections = {}, _lib = self}
+        function tab:SetBadge(value) self.Badge = value end
+        function tab:ClearBadge() self.Badge = 0 end
+        function tab:Activate() self._lib.ActiveTab = self end
+        function tab:Deactivate() if self._lib.ActiveTab == self then self._lib.ActiveTab = nil end end
+        function tab:CreateSection(title, column)
+            local section = {Title = title, Column = column == "right" and 2 or 1, Controls = {}, _lib = self._lib}
+            function section:Collapse() self.Collapsed = true end
+            function section:Expand() self.Collapsed = false end
+            self.Sections[#self.Sections + 1] = section
+            local function add(kind, config)
+                config = config or {}
+                local c = {Kind = kind, Title = config.Title or kind, Callback = config.Callback or function() end,
+                    Value = config.Default, State = config.Default == true,
+                    Selected = config.Default or (config.Options and config.Options[1]) or "",
+                    Text = tostring(config.Default or ""), Key = config.Default or Enum.KeyCode.None,
+                    Min = config.Min or 0, Max = config.Max or 100,
+                    MaxVisibleItems = math.clamp(math.floor(tonumber(config.MaxVisibleItems) or 6), 1, 20),
+                    Options = config.Options or {}, Placeholder = config.Placeholder or ""}
+                if kind == "slider" then c.Value = tonumber(config.Default) or c.Min end
+                if kind == "multi" then c.Selected = config.Default or {} end
+                if kind == "color" then c.Color = config.Default or Color3.fromRGB(255,255,255) end
+                local initial = kind == "toggle" and c.State or kind == "dropdown" and c.Selected
+                    or kind == "multi" and c.Selected or kind == "textbox" and c.Text
+                    or kind == "keybind" and c.Key or kind == "color" and c.Color or c.Value
+                function c:Set(value)
+                    if self.Kind == "toggle" then self.State = not not value
+                    elseif self.Kind == "dropdown" then self.Selected = value
+                    elseif self.Kind == "textbox" then self.Text = tostring(value)
+                    elseif self.Kind == "keybind" then self.Key = value
+                    elseif self.Kind == "multi" then self.Selected = value or {}
+                    elseif self.Kind == "color" then self.Color = value
+                    elseif self.Kind == "slider" then
+                        local decimals = math.clamp(tonumber(config.Decimals) or 0, 0, 6)
+                        local factor = 10 ^ decimals
+                        self.Value = math.floor(math.clamp(tonumber(value) or self.Min, self.Min, self.Max) * factor + 0.5) / factor
+                        value = self.Value
+                    else self.Value = value end
+                    pcall(self.Callback, value)
+                    section._lib:RefreshConditions()
+                end
+                function c:Reset() self:Set(initial) end
+                function c:GetSelected()
+                    local values = {}
+                    for index,value in ipairs(self.Selected) do values[index] = value end
+                    return values
+                end
+                function c:Refresh(options)
+                    self.Options = options or {}
+                    self.OptionScroll = 0
+                end
+                function c:Open() self.Opened = true end
+                function c:Close() self.Opened = false end
+                section.Controls[#section.Controls + 1] = c
+                if config.ConfigKey then
+                    section._lib._configElements = section._lib._configElements or {}
+                    assert(not section._lib._configElements[config.ConfigKey], "Duplicate ConfigKey: " .. config.ConfigKey)
+                    section._lib._configElements[config.ConfigKey] = {
+                        get = function()
+                            if kind == "toggle" then return c.State end
+                            if kind == "dropdown" then return c.Selected end
+                            if kind == "textbox" then return HttpService:JSONEncode(c.Text) end
+                            if kind == "keybind" then return c.Key.Name end
+                            if kind == "multi" then return HttpService:JSONEncode(c.Selected) end
+                            if kind == "color" then return c.Color:ToHex() end
+                            return c.Value
+                        end,
+                        set = function(value)
+                            if kind == "toggle" then value = value == true or value == "true"
+                            elseif kind == "slider" then value = tonumber(value)
+                            elseif kind == "textbox" then value = HttpService:JSONDecode(value)
+                            elseif kind == "keybind" then value = Enum.KeyCode[value] end
+                            if kind == "multi" then value = HttpService:JSONDecode(value) end
+                            if kind == "color" then value = Color3.fromHex(value) end
+                            c:Set(value)
+                        end,
+                    }
+                end
+                section._lib._resetControls = section._lib._resetControls or {}
+                table.insert(section._lib._resetControls, c)
+                if config.VisibleWhen then section._lib:SetCondition(c, config.VisibleWhen, "hide") end
+                if config.EnabledWhen then section._lib:SetCondition(c, config.EnabledWhen, "disable") end
+                return c
+            end
+            function section:CreateToggle(config)
+                local c = add("toggle", config)
+                if config and config.Keybind then
+                    self._lib._bindings[#self._lib._bindings + 1] = {
+                        control=c, key=config.Keybind, callback=function() c:Set(not c.State) end}
+                end
+                return c
+            end
+            function section:CreateButton(config) return add("button", config) end
+            function section:CreateSlider(config) return add("slider", config) end
+            function section:CreateDropdown(config) return add("dropdown", config) end
+            function section:CreateMultiDropdown(config) return add("multi", config) end
+            function section:CreateColorPicker(config)
+                local c = add("color", config)
+                function c:Toggle()
+                    local hub = section._lib
+                    if self.Opened then
+                        self.Opened = false
+                        hub._capture = nil
+                        hub._releaseListening = true
+                        return
+                    end
+                    self.Opened = true
+                    local proxy = {Set = function(_, value)
+                        local ok, color = pcall(Color3.fromHex, value)
+                        if ok then c:Set(color) end
+                        c.Opened = false
+                    end}
+                    local value = self.Color:ToHex()
+                    hub._listeningForKey = true
+                    hub._capture = {kind="text", color=self, control=proxy, original=value, value=value}
+                end
+                return c
+            end
+            function section:CreateTextbox(config) return add("textbox", config) end
+            function section:CreateKeybind(config)
+                local c = add("keybind", config)
+                self._lib._bindings[#self._lib._bindings + 1] = {control = c, key = c.Key,
+                    callback = nil}
+                local original = c.Set
+                function c:Set(value)
+                    original(self, value)
+                    for _, b in ipairs(section._lib._bindings) do
+                        if b.control == self then b.key = value end
+                    end
+                end
+                return c
+            end
+            function section:CreateLabel(value, color)
+                local c = add("label", {Title = value})
+                c.Text, c.Color = value, color
+                function c:Set(text) self.Text = tostring(text) end
+                return c
+            end
+            function section:CreateSeparator() return add("separator", {}) end
+            return section
+        end
+        self.Tabs[#self.Tabs + 1] = tab
+        if not self.ActiveTab then self.ActiveTab = tab end
+        return tab
+    end
+
+    function Backend:SetAccent(color) self.Accent = color end
+    function Backend:SetWatermark(config) self._watermark = config or {} end
+    function Backend:UpdateWatermark(format)
+        if self._watermark then self._watermark.Format = format end
+    end
+    function Backend:RemoveWatermark() self._watermark = nil end
+    function Backend:SetCondition(control, test, mode)
+        self._conditions = self._conditions or {}
+        table.insert(self._conditions, {control = control, test = test, mode = mode or "hide"})
+        self:RefreshConditions()
+    end
+    function Backend:RefreshConditions()
+        for _, condition in ipairs(self._conditions or {}) do
+            local ok, value = pcall(condition.test)
+            condition.control[condition.mode == "hide" and "Visible" or "Enabled"] = ok and not not value
+        end
+    end
+    Backend.ResetValues = Library.ResetValues
+    Backend.SaveConfig = Library.SaveConfig
+    Backend.LoadConfig = Library.LoadConfig
+    Backend.ListProfiles = Library.ListProfiles
+    Backend.SaveProfile = Library.SaveProfile
+    Backend.LoadProfile = Library.LoadProfile
+    Backend.RenameProfile = Library.RenameProfile
+    Backend.DeleteProfile = Library.DeleteProfile
+    Backend.SetDefaultProfile = Library.SetDefaultProfile
+    Backend.LoadDefaultProfile = Library.LoadDefaultProfile
+    function Backend:SetTitle(title, version)
+        self.Title = title or self.Title
+        self.Version = version or self.Version
+    end
+    function Backend:RegisterKeybindDisplay(config)
+        local entry = {title = config.Title, key = config.Key, active = config.Active, visible = config.Visible}
+        self._keybindDisplays[#self._keybindDisplays + 1] = entry
+        return {Remove = function()
+            for index, value in ipairs(self._keybindDisplays) do
+                if value == entry then table.remove(self._keybindDisplays, index); break end
+            end
+        end}
+    end
+    function Backend:CreateKeybindList(config)
+        config = config or {}
+        local panel = {Visible = config.Visible ~= false, Title = config.Title or "KEYBINDS",
+            Position = config.Position or UDim2.fromOffset(12, 180), Width = config.Width or 210,
+            IncludeControls = config.IncludeControls ~= false,
+            IncludeWindowToggle = config.IncludeWindowToggle ~= false}
+        self._keybindPanel = panel
+        return {
+            SetVisible = function(_, visible) panel.Visible = not not visible end,
+            Destroy = function() if self._keybindPanel == panel then self._keybindPanel = nil end end,
+        }
+    end
+    function Backend:Confirm(config)
+        config = config or {}
+        self._confirm = config
+        return {Cancel = function() if self._confirm == config then self._confirm = nil end end}
+    end
+    function Backend:Notify(config)
+        config = config or {}
+        self._notice = {title = tostring(config.Title or self.Title),
+            text = tostring(config.Text or ""), untilTime = os.clock() + (config.Duration or 4)}
+    end
+    function Backend:Destroy()
+        self._destroyed = true
+        if self._bridge then
+            task.spawn(function()
+                pcall(self._request, {Url=self._bridge.url.."/frame",Method="DELETE",
+                    Headers={Authorization="Bearer "..self._bridge.token}})
+            end)
+        end
+        for _, connection in ipairs(self._connections) do connection:Disconnect() end
+        for _, object in ipairs(self._pool) do object:Remove() end
+        table.clear(self._pool)
+        table.clear(self._hits)
+        self._capture = nil
+        self._visible = false
+    end
+    return Backend
+end)()
+
 local advancedNew = Library.new
 function Library.new(config)
     config = config or {}
+    if config.Streamproof or config.Renderer == "Drawing" then
+        return DrawingBackend.new(config)
+    end
     local hub = advancedNew(config)
     hub._extraConnections = {}
     if config.MobileToggle == true or (config.MobileToggle ~= false and UserInputService.TouchEnabled) then

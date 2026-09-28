@@ -54,6 +54,26 @@ Dokümantasyon `docs/` içindeki statik sayfadan yayımlanır. `main` dalındaki
 
 ## 🚀 Hızlı Başlangıç
 
+### Drawing modu (Madium)
+
+`Streamproof = true`, custom Drawing kontrollerini Madium `request` üzerinden yerel Windows overlay'ine aktarır. `tools/streamproof_overlay.py` Python standart kütüphanesiyle çalışır ve kendi penceresinde `WDA_EXCLUDEFROMCAPTURE` uygular. Önce yardımcıyı hedef Roblox PID'si ve `--config` olarak Madium Workspace içindeki `HutameHub_overlay.json` yolu ile başlat. Kütüphane bu dosyayı okuyup affinity=17 doğrulanmadan streamproof modunu açmaz. Yardımcı yalnız `127.0.0.1` üzerinde dinler; oturum anahtarı yerel config dosyasında tutulur.
+
+Pencere, sekmeler, iki sütunlu bölümler, toggle, button, slider, tekli/çoklu dropdown, textbox, keybind, renk, label, separator, bildirim, onay kutusu, watermark, profil API'si ve keybind listesi custom çizim katmanındadır. Mouse tekerleğiyle sütunlar ve açık uzun dropdown listeleri kaydırılır. Renk kontrolünde HEX girip Enter'a basılır; metin kutuları Enter ile tamamlanır, Escape ile iptal edilir.
+
+```lua
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/hutamev2/HutameHub-Lib/main/Source.lua"))()
+local Window = Library.new({Title = "HutameHub", Streamproof = true})
+local Tab = Window:CreateTab("Main")
+local Section = Tab:CreateSection("Controls", "left")
+Section:CreateToggle({Title = "Enabled", Default = false, Callback = function(value)
+    print(value)
+end})
+```
+
+Kontrollerin headless testleri ve canlı Madium aktarımı geçti. 2026-09-28 kullanıcı Replay testinde external overlay menüsünün kayıtta görünmediğini doğruladı; sonuç test edilen OBS Ekran Yakalama düzeni içindir. Native Madium Drawing'in aynı düzenle kayda girdiği doğrulandı: yalnız native çizim isteyenler `Renderer = "Drawing"` kullanabilir; bu seçenek streamproof değildir. Bu modda standart `ScreenGui` efektleri ve mobil düğme çizilmez. [Canlı Drawing denemesi](docs/examples/streamproof.lua).
+
+Drawing penceresinde `MainFrame.Visible` uyumludur; `ScreenGui` ve gerçek Roblox GUI nesneleri sunulmaz. Kontrolleri `Set`, `Refresh` ve `Reset` gibi kütüphane metotlarıyla yönet.
+
 ```lua
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/hutamev2/HutameHub-Lib/main/Source.lua"))()
 

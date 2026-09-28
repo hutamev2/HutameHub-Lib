@@ -74,7 +74,7 @@ type HutameWindow = {
     SetCondition: (self: HutameWindow, control: HutameControl, predicate: () -> boolean, mode: ("hide" | "disable")?) -> (),
     Confirm: (self: HutameWindow, options: ConfirmOptions?) -> {Cancel: () -> ()},
 }
-type WindowOptions = {Title: string?, Version: string?, Accent: Color3?, ToggleKey: Enum.KeyCode?, LoadingScreen: boolean?, LoadingDuration: number?, SnowEffect: boolean?, MobileToggle: boolean?}
+type WindowOptions = {Title: string?, Version: string?, Accent: Color3?, ToggleKey: Enum.KeyCode?, LoadingScreen: boolean?, LoadingDuration: number?, SnowEffect: boolean?, MobileToggle: boolean?, Streamproof: boolean?, StreamproofConfig: string?, Renderer: "Drawing"?}
 type HutameLibrary = {new: (options: WindowOptions?) -> HutameWindow}
 
 -- After these aliases, annotate your loader:
