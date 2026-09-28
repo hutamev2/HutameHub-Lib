@@ -2747,20 +2747,32 @@ local DrawingBackend = (function()
         if bridge then
             task.spawn(function()
                 while not self._destroyed do
-                    if self._frameJson then
+                    if self._frameJson and (self._frameJson ~= self._sentFrameJson or
+                        os.clock() - (self._lastSend or 0) >= 0.4) then
+                        local frame = self._frameJson
                         local ok, response = pcall(requestFunction, {Url=bridge.url.."/frame",Method="POST",
                             Headers={Authorization="Bearer "..bridge.token,["Content-Type"]="application/json"},
-                            Body=self._frameJson})
+                            Body=frame})
                         if not ok or response.StatusCode ~= 200 then
                             if not self._bridgeFailed then warn("HutameHub overlay connection failed") end
                             self._bridgeFailed = true
-                        else self._bridgeFailed = false end
+                        else
+                            self._bridgeFailed = false
+                            self._sentFrameJson, self._lastSend = frame, os.clock()
+                        end
                     end
                     task.wait(1/30)
                 end
             end)
         end
-        self._connections[1] = RUN.RenderStepped:Connect(function() self:_render() end)
+        self._connections[1] = RUN.RenderStepped:Connect(function()
+            local now = os.clock()
+            local interval = (self._drag or self._slider or self._capture) and 1/60 or 1/30
+            if now - (self._lastRender or 0) >= interval then
+                self._lastRender = now
+                self:_render()
+            end
+        end)
         self._connections[2] = INPUT.InputBegan:Connect(function(input, processed)
             if (input.KeyCode == self.ToggleKey or input.KeyCode == Enum.KeyCode.Minus)
                 and not processed and not self._capture then
@@ -2946,9 +2958,17 @@ local DrawingBackend = (function()
         self:_box(x + 2, y + 2, w - 4, 1, Color3.fromRGB(38, 38, 38), z)
     end
 
+    function Backend:_labelLines(c, width)
+        if c._wrappedText ~= c.Text or c._wrappedWidth ~= width then
+            c._wrappedText, c._wrappedWidth = c.Text, width
+            c._wrappedLines = wrap(c.Text, width)
+        end
+        return c._wrappedLines
+    end
+
     function Backend:_controlHeight(c, width)
         if c.Visible == false then return 0 end
-        if c.Kind == "label" then return tostring(c.Text or ""):match("%S") and (#wrap(c.Text, width) * 17 + 5) or 0 end
+        if c.Kind == "label" then return tostring(c.Text or ""):match("%S") and (#self:_labelLines(c, width) * 17 + 5) or 0 end
         if c.Kind == "separator" then return 12 end
         if c.Kind == "dropdown" or c.Kind == "multi" then
             return 46 + (c.Opened and math.min(#c.Options, c.MaxVisibleItems) * 22 + 2 or 0)
@@ -3180,7 +3200,7 @@ local DrawingBackend = (function()
             self:_box(x, y + 4, width, 1, Color3.fromRGB(6,6,6), 3)
             self:_box(x, y + 5, width, 1, BORDER, 3)
         elseif kind == "label" then
-            for index, line in ipairs(wrap(c.Text, width)) do
+            for index, line in ipairs(self:_labelLines(c, width)) do
                 self:_text(line, x, y + (index - 1) * 17, c.Color or DIM, 13, 4)
             end
         elseif kind == "toggle" then

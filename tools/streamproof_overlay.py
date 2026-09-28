@@ -35,6 +35,7 @@ user32.SetWindowPos.argtypes = [wintypes.HWND, wintypes.HWND, ctypes.c_int, ctyp
 user32.GetClientRect.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.RECT)]
 user32.ClientToScreen.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.POINT)]
 user32.IsIconic.argtypes = [wintypes.HWND]
+user32.IsWindow.argtypes = [wintypes.HWND]
 user32.IsWindowVisible.argtypes = [wintypes.HWND]
 user32.GetWindowThreadProcessId.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.DWORD)]
 CALLBACK = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
@@ -80,7 +81,7 @@ token = secrets.token_urlsafe(32)
 lock = threading.Lock()
 state = {"shapes": [], "updated": 0.0}
 status = {"captureExcluded": True, "affinity": affinity.value, "pid": args.pid,
-          "windowFound": bool(find_window())}
+          "windowFound": bool(find_window()), "frameCount": 0, "redrawCount": 0}
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -127,6 +128,7 @@ class Handler(BaseHTTPRequestHandler):
             with lock:
                 state["shapes"] = shapes
                 state["updated"] = time.monotonic()
+                status["frameCount"] += 1
             self.respond(200, {"ok": True})
         except (ValueError, KeyError, TypeError):
             self.respond(400, {"error": "Invalid frame"})
@@ -146,11 +148,19 @@ args.config.parent.mkdir(parents=True, exist_ok=True)
 args.config.write_text(json.dumps({"url": f"http://127.0.0.1:{args.port}", "token": token}), encoding="utf-8")
 print(json.dumps(status), flush=True)
 shown = False
+last_shapes = None
+last_geometry = None
+cached_target = None
+last_window_check = 0.0
 
 
 def paint():
-    global shown
-    target = find_window()
+    global shown, last_shapes, last_geometry, cached_target, last_window_check
+    now = time.monotonic()
+    if now - last_window_check >= 0.5 or (cached_target and not user32.IsWindow(cached_target)):
+        cached_target = find_window()
+        last_window_check = now
+    target = cached_target
     status["windowFound"] = bool(target)
     with lock:
         shapes = state["shapes"] if time.monotonic() - state["updated"] < 1.0 else []
@@ -162,7 +172,16 @@ def paint():
         if not shown:
             root.deiconify()
             shown = True
-        user32.SetWindowPos(hwnd, ctypes.c_void_p(-1), point.x, point.y, rect.right, rect.bottom, 0x0010)
+            last_geometry = None
+        geometry = (point.x, point.y, rect.right, rect.bottom)
+        if geometry != last_geometry:
+            user32.SetWindowPos(hwnd, ctypes.c_void_p(-1), *geometry, 0x0010)
+            last_geometry = geometry
+        if shapes == last_shapes:
+            root.after(16, paint)
+            return
+        last_shapes = shapes
+        status["redrawCount"] += 1
         canvas.delete("all")
         for shape in sorted(shapes, key=lambda item: item.get("z", 1)):
             try:

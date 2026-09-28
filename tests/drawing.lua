@@ -49,6 +49,20 @@ Drawing={Fonts={Plex=2},new=function(kind)
 end}
 local Library=dofile("Source.lua")
 local hub=Library.new({Title="Test",Renderer="Drawing"})
+-- Fast game frames must not multiply UI work.
+local realClock, tick = os.clock, 1
+os.clock=function() return tick end
+local originalRender, renders = hub._render, 0
+hub._render=function(self) renders=renders+1; originalRender(self) end
+run.RenderStepped:Fire()
+tick=1.001; run.RenderStepped:Fire()
+assert(renders==1,"Idle rendering must be capped")
+tick=1.04; run.RenderStepped:Fire()
+assert(renders==2)
+hub._capture={}
+tick=1.06; run.RenderStepped:Fire()
+assert(renders==3,"Active input must retain 60 Hz responsiveness")
+hub._capture=nil; hub._render=originalRender; os.clock=realClock
 local section=hub:CreateTab("Main"):CreateSection("Controls")
 local changes=0
 local toggle=section:CreateToggle({Title="Toggle",Default=false,ConfigKey="toggle",Callback=function() changes=changes+1 end})
@@ -58,7 +72,7 @@ local textbox=section:CreateTextbox({Title="Text",Default="hello",ConfigKey="tex
 local key=section:CreateKeybind({Title="Key",Default=Enum.KeyCode.F,ConfigKey="key"})
 local multi=section:CreateMultiDropdown({Title="Multi",Options={"A","B"},Default={"A"},ConfigKey="multi"})
 local picker=section:CreateColorPicker({Title="Color",Default=color("123abc"),ConfigKey="color"})
-run.RenderStepped:Fire()
+hub:_render()
 assert(#objects>0)
 input.mouse=vector(hub._position.X+150,hub._position.Y+70)
 input.InputBegan:Fire({UserInputType=Enum.UserInputType.MouseButton1,KeyCode=Enum.KeyCode.Unknown},false)
@@ -76,7 +90,7 @@ local enabled=false
 hub:SetCondition(slider,function() return enabled end,"disable")
 assert(slider.Enabled==false)
 enabled=true; hub:RefreshConditions(); assert(slider.Enabled==true)
-dropdown:Open(); run.RenderStepped:Fire()
+dropdown:Open(); hub:_render()
 local option
 for _, object in ipairs(objects) do
     if not object.Removed and object.Visible and object.Kind == "Text" and object.Text == "B" then option=object end
@@ -87,21 +101,21 @@ input.InputBegan:Fire({UserInputType=Enum.UserInputType.MouseButton1,KeyCode=Enu
 assert(dropdown.Selected=="B" and not dropdown.Opened,"Dropdown option hit area must match its drawing")
 -- Scroll a long section: offscreen controls cannot intercept the title/sidebar.
 for i=1,30 do section:CreateToggle({Title="Overflow "..i}) end
-run.RenderStepped:Fire()
+hub:_render()
 assert(hub._scrollMax[1]>0)
 hub._scroll[1]=hub._scrollMax[1]
-run.RenderStepped:Fire()
+hub:_render()
 for _,area in ipairs(hub._hits) do
     if area[1]>=hub._position.X+132 and area[2]>=hub._position.Y+29 then
         assert(area[2]>=hub._position.Y+42 and area[2]+area[4]<=hub._position.Y+hub._height-35,"Clipped controls must stay inside content")
     end
 end
 hub._scroll[1]=0
-dropdown:Close(); run.RenderStepped:Fire()
+dropdown:Close(); hub:_render()
 hub._notice=nil
-hub.MainFrame.Visible=false; run.RenderStepped:Fire()
+hub.MainFrame.Visible=false; hub:_render()
 for _,object in ipairs(objects) do if not object.Removed then assert(not object.Visible) end end
-hub:CreateKeybindList({Title="Keys"}); run.RenderStepped:Fire()
+hub:CreateKeybindList({Title="Keys"}); hub:_render()
 local visible=0
 for _,object in ipairs(objects) do if not object.Removed and object.Visible then visible=visible+1 end end
 assert(visible>0,"Keybind panel must survive hidden main window")

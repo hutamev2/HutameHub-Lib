@@ -60,6 +60,8 @@ Dokümantasyon `docs/` içindeki statik sayfadan yayımlanır. `main` dalındaki
 
 Drawing tasarımı 760×560 siyah–beyaz private UI düzenidir: solda kompakt sekmeler, ince çift çerçeveler, kare checkbox, gömülü slider ve tam genişlikte dropdown/textbox alanları. Bölümler ve açılır listeler bağımsız kaydırılır; çizimler ve tıklama alanları içerik sınırında kırpılır. Boş durum etiketleri yer kaplamaz. Başlıktaki x menüyü gizler; ToggleKey tekrar açar. Görsel referans: [ro0ti Roblox UI Kits](https://github.com/ro0ti/Roblox-Scripting-UI) içindeki Splix, Linoria, Gamesneeze ve Informant örnekleri; uygulama mevcut Drawing backend üzerinde geliştirilmiştir.
 
+Sabit menü 30 Hz, sürükleme/slider/metin girdisi 60 Hz güncellenir. Değişmeyen frame yalnız 400 ms canlılık aralığında gönderilir; helper aynı şekilleri yeniden çizmez ve Roblox HWND aramasını önbelleğe alır. Dinamik etiketlerin satır bölmesi yalnız metin veya genişlik değiştiğinde hesaplanır.
+
 Pencere, sekmeler, iki sütunlu bölümler, toggle, button, slider, tekli/çoklu dropdown, textbox, keybind, renk, label, separator, bildirim, onay kutusu, watermark, profil API'si ve keybind listesi custom çizim katmanındadır. Mouse tekerleğiyle sütunlar ve açık uzun dropdown listeleri kaydırılır. Renk kontrolünde HEX girip Enter'a basılır; metin kutuları Enter ile tamamlanır, Escape ile iptal edilir.
 
 ```lua
