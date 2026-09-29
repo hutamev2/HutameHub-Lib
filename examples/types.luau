@@ -54,8 +54,14 @@ type HutameTab = {
 type NotificationOptions = {Title: string?, Text: string?, Type: ("info" | "success" | "warning" | "error")?, Duration: number?}
 type WatermarkOptions = {Format: string?, Position: ("TopLeft" | "TopRight" | "BottomLeft" | "BottomRight")?, BgAlpha: number?}
 type ConfirmOptions = {Title: string?, Text: string?, ConfirmText: string?, CancelText: string?, OnConfirm: (() -> ())?, OnCancel: (() -> ())?}
+type CrosshairOptions = {Visible: boolean?, Preview: boolean?, Style: ("Cross" | "Dot" | "T" | "Circle")?, Size: number?, Gap: number?, Thickness: number?, Color: Color3?, Dot: boolean?, Outline: boolean?, OffsetX: number?, OffsetY: number?}
+type StatusHUDOptions = {Visible: boolean?, Weapon: string?, Ammo: number?, Health: number?, Armor: number?, LowHealth: boolean?, LowArmor: boolean?}
+
 type HutameWindow = {
     Title: string, Version: string, Accent: Color3, ToggleKey: Enum.KeyCode,
+    -- Available only with Streamproof=true or Renderer="Drawing".
+    SetCrosshair: ((self: HutameWindow, config: CrosshairOptions?) -> ())?,
+    SetStatusHUD: ((self: HutameWindow, config: StatusHUDOptions?) -> ())?,
     CreateTab: (self: HutameWindow, title: string) -> HutameTab,
     SetAccent: (self: HutameWindow, color: Color3) -> (),
     SetTitle: (self: HutameWindow, title: string?, version: string?) -> (),
