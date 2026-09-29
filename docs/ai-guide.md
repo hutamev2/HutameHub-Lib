@@ -145,3 +145,8 @@ For a config manager UI with distinct **Create**, **Overwrite** and **Load** act
 - Do not claim Roblox visual/touch behavior was tested from this guide alone. The repository's headless tests cover selected logic; run the UI in a client to verify appearance and interaction.
 
 Further reading: [source](https://raw.githubusercontent.com/hutamev2/HutameHub-Lib/main/Source.lua), [Luau types](https://hutamev2.github.io/HutameHub-Lib/examples/types.luau), [feature details](https://hutamev2.github.io/HutameHub-Lib/features.md), [full test example](https://hutamev2.github.io/HutameHub-Lib/examples/ui-test.lua).
+
+
+## Passive crosshair and status HUD (Drawing only)
+
+Use `modules/LegitHUD.lua` with `LegitHUD.new(Hub, {IsFarming=callback})` before loading configs. It adds the Legit editor and observes only local player vitals and equipped Tool.Ammo events. Per-weapon crosshair profiles have their own UserId-scoped file and explicit save button. Default FPS cap is 200, restored on destroy; actual FPS depends on the scene/hardware. Destroying Hub also cleans the module. `Hub:SetCrosshair(config)` and `Hub:SetStatusHUD(config)` accept snapshots or nil to remove them. Circle shapes require the current overlay helper. See README for the full API scope and validation limits.

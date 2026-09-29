@@ -52,6 +52,23 @@ Dokümantasyon `docs/` içindeki statik sayfadan yayımlanır. `main` dalındaki
 | 🏗️ **OOP Mimari** | `Window → Tab → Section → Element` hiyerarşisi |
 | 🔒 **CoreGui Koruması** | Otomatik güvenli parent seçimi |
 
+## Spectre Legit HUD
+
+`modules/LegitHUD.lua`, Drawing/Streamproof pencereye bir **Legit** sekmesi ekler. Crosshair: Cross, Dot, T, Circle; boyut, boşluk, kalınlık, HEX renk, dış çizgi, merkez noktası ve ofset. Sekme açıkken seçilen profil önizlenir; oyunda eldeki silah profili, bulunamazsa Default kullanılır. **Silah profillerini kaydet** düğmesi `scripts/spectre_crosshair_<UserId>.json` dosyasına yazar. Silahlar envanterden keşfedilir; crosshair profilleri genel config'ten ayrı tutulur.
+
+Mermi sayacı eldeki `Tool.Ammo`, can Humanoid, zırh `BodyEffects.Armor` sinyallerinden güncellenir. Can/zırh eşikleri mutlak puandır. Uyarılar eşik geçişinde üretilir; 5 puan yeniden kurma aralığı ve 8 saniye bildirim sınırı vardır. Zirhsız doğma uyarı üretmez. Menü gizliyken crosshair/HUD açık kalır; aynı capture-excluded overlay kullanılır. Circle için güncel Python helper gerekir.
+
+```lua
+local LegitHUD = loadstring(game:HttpGet("https://raw.githubusercontent.com/hutamev2/HutameHub-Lib/main/modules/LegitHUD.lua"))()
+local HUD = LegitHUD.new(Window, {IsFarming = function() return false end})
+-- Create before loading the window's saved config.
+-- Window:Destroy() also cleans up HUD listeners and restores its prior FPS cap.
+```
+
+FPS hedefi varsayılan 200; 120/144/165/200/240/360 seçilebilir. Farm açıksa farm sınırına müdahale etmez. Per-frame iş yalnız sınırlı bir diziye `dt` yazılmasıdır; FPS ve p95 kare süresi dört saniyede hesaplanır. HUD dünya/oyuncu taraması yapmaz; profil diske yalnız kaydet düğmesinde yazılır. Sabit crosshair sürekli yeni frame trafiği üretmez. 200 FPS hedefi donanımın/sahnenin bunu sağlayacağını garanti etmez; canlı kare süresi testi gerekir.
+
+Drawing-only API: `Window:SetCrosshair({...})`, `Window:SetStatusHUD({...})`; `nil` kaldırır. Kaynak oyun verilerini bu metotlara snapshot olarak iletir. Headless `tests/legit.lua` profil doğrulaması, equip/unequip, Ammo/Health/Armor değişimleri, uyarılar, UserId dosyası, bağlantı temizliği ve FPS geri yüklemeyi doğrular.
+
 ## 🚀 Hızlı Başlangıç
 
 ### Drawing modu (Madium)

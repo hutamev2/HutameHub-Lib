@@ -3078,6 +3078,7 @@ local DrawingBackend = (function()
                 end
             end
         end
+        self:_renderHUD()
         local panel = self._keybindPanel
         if panel and panel.Visible then
             local viewport = workspace.CurrentCamera.ViewportSize
@@ -3179,12 +3180,72 @@ local DrawingBackend = (function()
                     local shape = {kind=self._kinds[index],p={object.Position.X,object.Position.Y},
                         color=object.Color:ToHex(),z=object.ZIndex}
                     if shape.kind == "Square" then shape.s={object.Size.X,object.Size.Y}
+                    elseif shape.kind == "Circle" then shape.radius=object.Radius; shape.thickness=object.Thickness
                     else shape.text=object.Text; shape.size=object.Size end
                     shapes[#shapes + 1] = shape
                 end
             end
             self._frameJson = HttpService:JSONEncode({shapes=shapes})
             self._lastPublish = os.clock()
+        end
+    end
+
+    -- HUD values are snapshots supplied by event listeners; no game tree scans here.
+    function Backend:SetCrosshair(config) self._crosshair = config end
+    function Backend:SetStatusHUD(config) self._statusHUD = config end
+
+    function Backend:_renderHUD()
+        local camera = workspace.CurrentCamera
+        if not camera then return end
+        local viewport = camera.ViewportSize
+        local cross = self._crosshair
+        if cross and cross.Visible ~= false then
+            local x, y = math.floor(viewport.X / 2 + (cross.OffsetX or 0)), math.floor(viewport.Y / 2 + (cross.OffsetY or 0))
+            if cross.Preview and self._visible then
+                x, y = self._position.X + self._width - 166, self._position.Y + self._height - 66
+                self:_field(x-72,y-28,144,58,false,14)
+                self:_text("Onizleme",x-30,y-23,DIM,11,15)
+            end
+            local size, gap = math.clamp(cross.Size or 7, 2, 24), math.clamp(cross.Gap or 4, 0, 20)
+            local thick = math.clamp(cross.Thickness or 1, 1, 5)
+            local color = cross.Color or WHITE
+            local edge = Color3.fromRGB(1,1,1)
+            local function bar(bx, by, bw, bh)
+                if cross.Outline ~= false then self:_box(bx-1,by-1,bw+2,bh+2,edge,15) end
+                self:_box(bx,by,bw,bh,color,16)
+            end
+            local style = cross.Style or "Cross"
+            if style == "Circle" then
+                local function circle(radius, thickness, ink, z)
+                    local o = self:_primitive("Circle")
+                    o.Position=Vector2.new(x,y); o.Radius=radius; o.Thickness=thickness
+                    o.Color=ink; o.Filled=false; o.NumSides=40; o.Transparency=1; o.ZIndex=z
+                end
+                if cross.Outline ~= false then circle(size+gap,thick+2,edge,15) end
+                circle(size+gap,thick,color,16)
+            elseif style ~= "Dot" then
+                local half = math.floor(thick/2)
+                bar(x-gap-size,y-half,size,thick); bar(x+gap+1,y-half,size,thick)
+                bar(x-half,y+gap+1,thick,size)
+                if style ~= "T" then bar(x-half,y-gap-size,thick,size) end
+            end
+            if style == "Dot" or cross.Dot then
+                local dotSize = style == "Dot" and math.min(size,8) or thick
+                bar(x-math.floor(dotSize/2),y-math.floor(dotSize/2),dotSize,dotSize)
+            end
+        end
+        local hud = self._statusHUD
+        if hud and hud.Visible ~= false then
+            local x, y = math.floor(viewport.X/2)-132, viewport.Y-104
+            self:_field(x,y,264,70,false,17)
+            self:_text(fit(hud.Weapon or "Silah yok",166,13),x+10,y+8,WHITE,13,18)
+            local ammo = hud.Ammo ~= nil and tostring(hud.Ammo) or "--"
+            self:_text(ammo,x+218,y+6,WHITE,17,18)
+            local health = hud.Health ~= nil and tostring(math.ceil(hud.Health)) or "--"
+            local armor = hud.Armor ~= nil and tostring(math.ceil(hud.Armor)) or "--"
+            self:_text("HP "..health.."  |  ZIRH "..armor,x+10,y+32,DIM,12,18)
+            local warnings = (hud.LowHealth and "DUSUK CAN  " or "") .. (hud.LowArmor and "DUSUK ZIRH" or "")
+            self:_text(warnings,x+10,y+50,WHITE,11,18)
         end
     end
 

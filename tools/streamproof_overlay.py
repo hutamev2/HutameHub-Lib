@@ -190,6 +190,10 @@ def paint():
                 if shape["kind"] == "Square":
                     width, height = shape["s"]
                     canvas.create_rectangle(x, y, x + width, y + height, fill=color, outline="")
+                elif shape["kind"] == "Circle":
+                    radius = max(1, min(64, shape["radius"]))
+                    canvas.create_oval(x-radius, y-radius, x+radius, y+radius, outline=color,
+                                       width=max(1, min(8, shape.get("thickness", 1))))
                 elif shape["kind"] == "Text":
                     text, size = shape["text"], shape["size"]
                     canvas.create_text(x + 1, y + 1, text=text, fill="#010101", anchor="nw",

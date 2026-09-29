@@ -115,6 +115,18 @@ dropdown:Close(); hub:_render()
 hub._notice=nil
 hub.MainFrame.Visible=false; hub:_render()
 for _,object in ipairs(objects) do if not object.Removed then assert(not object.Visible) end end
+-- HUD must survive menu hiding and export a circle understood by the helper.
+hub:SetCrosshair({Style="Circle",Size=8,Gap=2,Thickness=2,Outline=true})
+hub:SetStatusHUD({Weapon="Test gun",Ammo=6,Health=20,Armor=10,LowHealth=true,LowArmor=true})
+hub._bridge={}; hub._lastPublish=-1; hub:_render()
+local shapes=http:JSONDecode(hub._frameJson).shapes
+local circles,warning=0,false
+for _,shape in ipairs(shapes) do
+    if shape.kind=="Circle" then circles=circles+1; assert(shape.radius==10 and shape.thickness) end
+    if shape.kind=="Text" and shape.text:find("DUSUK CAN") then warning=true end
+end
+assert(circles==2 and warning,"Hidden-menu HUD and circle serialization failed")
+hub._bridge=nil; hub:SetCrosshair(nil); hub:SetStatusHUD(nil)
 hub:CreateKeybindList({Title="Keys"}); hub:_render()
 local visible=0
 for _,object in ipairs(objects) do if not object.Removed and object.Visible then visible=visible+1 end end
