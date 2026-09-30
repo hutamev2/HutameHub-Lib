@@ -2727,7 +2727,8 @@ local DrawingBackend = (function()
             Accent = config.Accent or Color3.fromRGB(235, 235, 235),
             ToggleKey = config.ToggleKey or Enum.KeyCode.RightControl,
             Tabs = {}, ActiveTab = nil, _hits = {},
-            _pool = {}, _connections = {}, _visible = true, _scroll = {0, 0}, _scrollMax = {0, 0},
+            _pool = {}, _kinds = {}, _kindPools = {}, _usedKinds = {}, _drawState = {},
+            _connections = {}, _visible = true, _scroll = {0, 0}, _scrollMax = {0, 0},
             _position = Vector2.new(140, 110), _width = 760, _height = 560,
             _bindings = {}, _keybindDisplays = {},
             _bridge = bridge, _request = requestFunction,
@@ -2860,18 +2861,36 @@ local DrawingBackend = (function()
     end
 
     function Backend:_primitive(kind)
-        self._index = self._index + 1
-        local object = self._pool[self._index]
-        if not object or self._kinds[self._index] ~= kind then
-            if object then object:Remove() end
+        local used = (self._usedKinds[kind] or 0) + 1
+        self._usedKinds[kind] = used
+        local kindPool = self._kindPools[kind]
+        if not kindPool then
+            kindPool = {}
+            self._kindPools[kind] = kindPool
+        end
+        local object = kindPool[used]
+        if not object then
             if self._bridge then
                 object = {Visible=false,Remove=function(item) item.Visible=false end}
             else object = Drawing.new(kind) end
-            self._pool[self._index] = object
-            self._kinds[self._index] = kind
+            kindPool[used] = object
+            self._pool[#self._pool + 1] = object
+            self._kinds[#self._kinds + 1] = kind
         end
-        object.Visible = true
+        self:_drawProperty(object, "Visible", true)
         return object
+    end
+
+    function Backend:_drawProperty(object, key, value)
+        local state = self._drawState[object]
+        if not state then
+            state = {}
+            self._drawState[object] = state
+        end
+        if state[key] ~= value then
+            object[key] = value
+            state[key] = value
+        end
     end
 
     -- Conservative monospace measurements keep fields inside their own column.
@@ -2907,13 +2926,13 @@ local DrawingBackend = (function()
         end
         if w <= 0 or h <= 0 then return end
         local o = self:_primitive("Square")
-        o.Position = Vector2.new(math.floor(x), math.floor(y))
-        o.Size = Vector2.new(math.floor(w), math.floor(h))
-        o.Color = color
-        o.Filled = true
-        o.Thickness = 0
-        o.Transparency = 1
-        o.ZIndex = z or 1
+        self:_drawProperty(o, "Position", Vector2.new(math.floor(x), math.floor(y)))
+        self:_drawProperty(o, "Size", Vector2.new(math.floor(w), math.floor(h)))
+        self:_drawProperty(o, "Color", color)
+        self:_drawProperty(o, "Filled", true)
+        self:_drawProperty(o, "Thickness", 0)
+        self:_drawProperty(o, "Transparency", 1)
+        self:_drawProperty(o, "ZIndex", z or 1)
     end
 
     function Backend:_text(value, x, y, color, size, z)
@@ -2924,14 +2943,14 @@ local DrawingBackend = (function()
             value = fit(value, clip[1] + clip[3] - x, size)
         end
         local o = self:_primitive("Text")
-        o.Position = Vector2.new(math.floor(x), math.floor(y))
-        o.Text = tostring(value or "")
-        o.Color = color or WHITE
-        o.Size = size
-        o.Font = Drawing and Drawing.Fonts and Drawing.Fonts.Plex or 2
-        o.Outline = true
-        o.Transparency = 1
-        o.ZIndex = z or 2
+        self:_drawProperty(o, "Position", Vector2.new(math.floor(x), math.floor(y)))
+        self:_drawProperty(o, "Text", tostring(value or ""))
+        self:_drawProperty(o, "Color", color or WHITE)
+        self:_drawProperty(o, "Size", size)
+        self:_drawProperty(o, "Font", Drawing and Drawing.Fonts and Drawing.Fonts.Plex or 2)
+        self:_drawProperty(o, "Outline", true)
+        self:_drawProperty(o, "Transparency", 1)
+        self:_drawProperty(o, "ZIndex", z or 2)
     end
 
     function Backend:_hit(x, y, w, h, callback)
@@ -2984,10 +3003,9 @@ local DrawingBackend = (function()
             self._listeningForKey = false
             self._releaseListening = nil
         end
-        self._index = 0
+        self._usedKinds = {}
         self._hits = {}
         self._dropdownAreas = {}
-        self._kinds = self._kinds or {}
         if self._visible then
             local p, w, h = self._position, self._width, self._height
             local x, y = p.X, p.Y
@@ -3170,8 +3188,10 @@ local DrawingBackend = (function()
                 if config.OnConfirm then pcall(config.OnConfirm) end
             end)
         end
-        for i = self._index + 1, #self._pool do
-            self._pool[i].Visible = false
+        for kind, kindPool in pairs(self._kindPools) do
+            for i = (self._usedKinds[kind] or 0) + 1, #kindPool do
+                self:_drawProperty(kindPool[i], "Visible", false)
+            end
         end
         if self._bridge and os.clock() - (self._lastPublish or 0) >= 1/30 then
             local shapes = {}
@@ -3218,8 +3238,14 @@ local DrawingBackend = (function()
             if style == "Circle" then
                 local function circle(radius, thickness, ink, z)
                     local o = self:_primitive("Circle")
-                    o.Position=Vector2.new(x,y); o.Radius=radius; o.Thickness=thickness
-                    o.Color=ink; o.Filled=false; o.NumSides=40; o.Transparency=1; o.ZIndex=z
+                    self:_drawProperty(o,"Position",Vector2.new(x,y))
+                    self:_drawProperty(o,"Radius",radius)
+                    self:_drawProperty(o,"Thickness",thickness)
+                    self:_drawProperty(o,"Color",ink)
+                    self:_drawProperty(o,"Filled",false)
+                    self:_drawProperty(o,"NumSides",40)
+                    self:_drawProperty(o,"Transparency",1)
+                    self:_drawProperty(o,"ZIndex",z)
                 end
                 if cross.Outline ~= false then circle(size+gap,thick+2,edge,15) end
                 circle(size+gap,thick,color,16)
@@ -3587,6 +3613,10 @@ local DrawingBackend = (function()
         for _, connection in ipairs(self._connections) do connection:Disconnect() end
         for _, object in ipairs(self._pool) do object:Remove() end
         table.clear(self._pool)
+        table.clear(self._kinds)
+        table.clear(self._kindPools)
+        table.clear(self._usedKinds)
+        table.clear(self._drawState)
         table.clear(self._hits)
         self._capture = nil
         self._visible = false

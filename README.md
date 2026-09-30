@@ -79,6 +79,8 @@ Drawing tasarımı 760×560 siyah–beyaz private UI düzenidir: solda kompakt s
 
 Sabit menü 30 Hz, sürükleme/slider/metin girdisi 60 Hz güncellenir. Değişmeyen frame yalnız 400 ms canlılık aralığında gönderilir; helper aynı şekilleri yeniden çizmez ve Roblox HWND aramasını önbelleğe alır. Dinamik etiketlerin satır bölmesi yalnız metin veya genişlik değiştiğinde hesaplanır.
 
+Sekme değişiminde Drawing nesneleri artık türüne göre havuzda tutulur; Square/Text/Circle sırası değişse de nesneler yeniden oluşturulmaz. Değeri değişmeyen konum, renk, metin ve diğer Drawing özellikleri tekrar yazılmaz. Bu iyileştirme hem `Renderer = "Drawing"` hem `Streamproof = true` için geçerlidir.
+
 Pencere, sekmeler, iki sütunlu bölümler, toggle, button, slider, tekli/çoklu dropdown, textbox, keybind, renk, label, separator, bildirim, onay kutusu, watermark, profil API'si ve keybind listesi custom çizim katmanındadır. Mouse tekerleğiyle sütunlar ve açık uzun dropdown listeleri kaydırılır. Renk kontrolünde HEX girip Enter'a basılır; metin kutuları Enter ile tamamlanır, Escape ile iptal edilir.
 
 ```lua
